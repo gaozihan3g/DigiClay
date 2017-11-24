@@ -121,6 +121,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1201794551}
   - component: {fileID: 1201794550}
+  - component: {fileID: 1201794552}
   m_Layer: 0
   m_Name: Mesh Generator
   m_TagString: Untagged
@@ -139,16 +140,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db70a26ed0aec8f41abe9e69a14553c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _radius: 1
-  _height: 2
+  _radius: 0.45
+  _height: 0.3
   _segment: 36
   _verticalSegment: 30
-  _thickness: 0.1
+  _thickness: 0.01
   _materials:
   - {fileID: 2100000, guid: 552910309e4c92347b23c08905814cc9, type: 2}
   - {fileID: 2100000, guid: d9ad6ce66e083ac448aaa95481238412, type: 2}
   - {fileID: 2100000, guid: 88a8da803d13587408ff43c49308aeb1, type: 2}
   _root: {fileID: 0}
+  _dirty: 0
 --- !u!4 &1201794551
 Transform:
   m_ObjectHideFlags: 0
@@ -162,6 +164,20 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1201794552
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1201794549}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ac8753a863a4d3429344418bf50e2c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  radius: 0.1
+  strength: 0.5
+  _mesh: {fileID: 0}
 --- !u!1001 &1245881787
 Prefab:
   m_ObjectHideFlags: 0

@@ -20,8 +20,10 @@ public class Deformable : MonoBehaviour
     MeshRenderer _meshRenderer;
     MeshCollider _meshCollider;
 
-    void Start()
+    IEnumerator Start()
     {
+        yield return new WaitForEndOfFrame();
+
         _meshFilter = GetComponentInChildren<MeshFilter>();
         _meshRenderer = GetComponentInChildren<MeshRenderer>();
         _meshCollider = GetComponentInChildren<MeshCollider>();
@@ -46,7 +48,11 @@ public class Deformable : MonoBehaviour
             if (dist < radius)
             {
                 Vector3 dir = new Vector3(vertices[i].x, 0, vertices[i].z).normalized;
-                vertices[i] += dir * strength * Time.deltaTime * Falloff(dist, radius);
+
+                int sign = Vector3.Angle(eventData.pointerCurrentRaycast.worldNormal, dir) < 90f ? -1 : 1;
+                Debug.Log(Vector3.Angle(eventData.pointerCurrentRaycast.worldNormal, dir));
+
+                vertices[i] += dir * sign * strength * Time.deltaTime * Falloff(dist, radius);
             }
         }
 
