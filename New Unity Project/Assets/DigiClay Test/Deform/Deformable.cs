@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using Pose = HTC.UnityPlugin.PoseTracker.Pose;
 
 public class Deformable : MonoBehaviour
     , IInitializePotentialDragHandler
@@ -68,12 +67,5 @@ public class Deformable : MonoBehaviour
     public void OnInitializePotentialDrag(PointerEventData eventData)
     {
 
-    }
-
-    private Pose GetEventPose(PointerEventData eventData)
-    {
-        var cam = eventData.pointerPressRaycast.module.eventCamera;
-        var ray = cam.ScreenPointToRay(eventData.position);
-        return new Pose(ray.origin, Quaternion.LookRotation(ray.direction, cam.transform.up));
     }
 }

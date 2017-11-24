@@ -5,11 +5,11 @@ using UnityEngine;
 public class MeshGenerator : MonoBehaviour {
 
     [SerializeField]
-    [Range(0.1f, 2f)]
+    [Range(0.05f, 0.5f)]
     float _radius = 1;
 
     [SerializeField]
-    [Range(0.1f, 2f)]
+    [Range(0.01f, 1f)]
     float _height = 1;
 
     [SerializeField]
@@ -21,7 +21,7 @@ public class MeshGenerator : MonoBehaviour {
     int _verticalSegment = 10;
 
     [SerializeField]
-    [Range(0.01f, 2f)]
+    [Range(0.001f, 0.2f)]
     float _thickness = 0.01f;
 
     public Material[] _materials;
@@ -33,7 +33,9 @@ public class MeshGenerator : MonoBehaviour {
     MeshRenderer _meshRenderer;
     MeshCollider _meshCollider;
 
-    Matrix4x4 matrix4X;
+	float _delta;
+	float _heightDelta;
+
 
     // Use this for initialization
     void Start() {
@@ -45,6 +47,7 @@ public class MeshGenerator : MonoBehaviour {
             GameObject go = new GameObject("GeometryRoot");
             go.transform.parent = this.transform;
             _root = go.transform;
+			_root.localPosition = Vector3.zero;
 
             _meshFilter = go.AddComponent<MeshFilter>();
             _meshRenderer = go.AddComponent<MeshRenderer>();
@@ -57,10 +60,6 @@ public class MeshGenerator : MonoBehaviour {
             _meshRenderer = GetComponentInChildren<MeshRenderer>();
             _meshCollider = GetComponentInChildren<MeshCollider>();
         }
-
-        matrix4X = _root.worldToLocalMatrix;
-
-        Debug.Log(matrix4X);
 
         Mesh mesh = new Mesh();
         mesh.name = "Generated Mesh";
@@ -76,109 +75,209 @@ public class MeshGenerator : MonoBehaviour {
         _meshRenderer.materials = _materials;
     }
 
-    void MeshGeneration(ref Mesh mesh)
-    {
-        List<Vector3> outerVertices = new List<Vector3>();
-        List<Vector3> innerVertices = new List<Vector3>();
 
-        List<Vector3> newNormals = new List<Vector3>();
+	void MeshGeneration(ref Mesh mesh)
+	{
+		List<Vector3> finalVertices = new List<Vector3>();
+		List<int> outerTriangles = new List<int>();
+		List<int> innerTriangles = new List<int>();
+		List<int> edgeTriangles = new List<int>();
+		int offset = 0;
 
-        List<int> outerTriangles = new List<int>();
-        List<int> innerTriangles = new List<int>();
-        List<int> edgeTriangles = new List<int>();
+		_delta = 2f * Mathf.PI / (float)_segment;
+		_heightDelta = (float)_height / (float)_verticalSegment;
 
-        float theta = 0f;
-        float delta = 2f * Mathf.PI / (float)_segment;
+		GenerateOuterBottom (finalVertices, outerTriangles, ref offset);
+		GenerateInnerBottom (finalVertices, innerTriangles, ref offset);
+		GenerateOuterSide (finalVertices, outerTriangles, ref offset);
+		GenerateInnerSide (finalVertices, innerTriangles, ref offset);
+		GenerateEdge (finalVertices, edgeTriangles, ref offset);
 
-        float heightTheta = 0f;
-        float heightDelta = (float)_height / (float)_verticalSegment;
+		mesh.vertices = finalVertices.ToArray();
 
-        // origin
-        outerVertices.Add(Vector3.zero);
-        // inner origin
-        Vector3 innerOrigin = new Vector3(0f, Mathf.Min(_thickness, 0.5f * heightDelta), 0f);
-        innerVertices.Add(innerOrigin);
+		mesh.subMeshCount = 3;
+		//set outer submesh
+		mesh.SetTriangles(outerTriangles.ToArray(), 0);
+		mesh.SetTriangles(innerTriangles.ToArray(), 1);
+		mesh.SetTriangles(edgeTriangles.ToArray(), 2);
 
-        float innerRadius = Mathf.Max(0, _radius - _thickness);
+		mesh.RecalculateNormals();
+	}
 
-        // add vertices
-        for (int j = 0; j < _verticalSegment + 1; ++j)
-        {
-            for (int i = 0; i < _segment; ++i)
-            {
-                outerVertices.Add(new Vector3(_radius * Mathf.Cos(theta), heightTheta, _radius * Mathf.Sin(theta)));
-                innerVertices.Add(new Vector3(innerRadius * Mathf.Cos(theta), heightTheta + (j == 0 ? innerOrigin.y : 0), innerRadius * Mathf.Sin(theta)));
-                theta += delta;
-            }
-            heightTheta += heightDelta;
-        }
+	void GenerateOuterBottom(List<Vector3> finalVertices, List<int> finalTriangles, ref int offset)
+	{
+		List<Vector3> newVertices = new List<Vector3>();
+		List<int> newTriangles = new List<int>();
+		float theta = 0f;
 
-        List<Vector3> allVertices = new List<Vector3>();
-        allVertices.AddRange(outerVertices);
-        allVertices.AddRange(innerVertices);
-        mesh.vertices = allVertices.ToArray();
+		// origin
+		newVertices.Add(Vector3.zero);
 
-        int offset = outerVertices.Count;
+		for (int i = 0; i < _segment; ++i)
+		{
+			newVertices.Add(new Vector3(_radius * Mathf.Cos(theta), 0, _radius * Mathf.Sin(theta)));
+			theta += _delta;
+		}
 
-        //add triangles
+		finalVertices.AddRange (newVertices);
 
-        //bottom
-        for (int i = 0; i < _segment - 1; ++i)
-        {
-            CreateTriangle(outerTriangles, 0, i + 1, i + 2);
-            CreateTriangle(innerTriangles, 0, i + 2, i + 1, offset);
-        }
+		//add triangles
+		for (int i = 1; i <= _segment; ++i)
+		{
+			CreateTriangle(newTriangles, 0, i, i % _segment + 1);
+		}
 
-        //last one
-        CreateTriangle(outerTriangles, 0, _segment, 1);
-        CreateTriangle(innerTriangles, 0, 1, _segment, offset);
+		finalTriangles.AddRange (newTriangles);
+
+		offset = finalVertices.Count;
+	}
+
+	void GenerateInnerBottom(List<Vector3> finalVertices, List<int> finalTriangles, ref int offset)
+	{
+		List<Vector3> newVertices = new List<Vector3>();
+		List<int> newTriangles = new List<int>();
+		float theta = 0f;
+		float heightTheta = 0f;
 
 
-        //side
-        for (int j = 0; j < _verticalSegment; ++j)
-        {
-            for (int i = 1; i < _segment; ++i)
-            {
-                CreateTriangle(outerTriangles, i + j * _segment, i + _segment + j * _segment, i + 1 + j * _segment);
-                CreateTriangle(outerTriangles, i + 1 + j * _segment, i + _segment + j * _segment, i + 1 + _segment + j * _segment);
+		// inner origin
+		Vector3 innerOrigin = new Vector3(0f, Mathf.Min(_thickness, 0.5f * _heightDelta), 0f);
+		newVertices.Add(innerOrigin);
 
-                CreateTriangle(innerTriangles, i + j * _segment, i + 1 + j * _segment, i + _segment + j * _segment, offset);
-                CreateTriangle(innerTriangles, i + 1 + j * _segment, i + 1 + _segment + j * _segment, i + _segment + j * _segment, offset);
-            }
+		float innerRadius = Mathf.Max(0, _radius - _thickness);
 
-            //last two
-            CreateTriangle(outerTriangles, _segment + j * _segment, _segment + _segment + j * _segment, 1 + j * _segment);
-            CreateTriangle(outerTriangles, 1 + j * _segment, _segment + _segment + j * _segment, 1 + _segment + j * _segment);
+		theta = 0;
+		for (int i = 0; i < _segment; ++i)
+		{
+			newVertices.Add(new Vector3(innerRadius * Mathf.Cos(theta), heightTheta + innerOrigin.y, innerRadius * Mathf.Sin(theta)));
+			theta += _delta;
+		}
 
-            CreateTriangle(innerTriangles, _segment + j * _segment, 1 + j * _segment, _segment + _segment + j * _segment, offset);
-            CreateTriangle(innerTriangles, 1 + j * _segment, 1 + _segment + j * _segment, _segment + _segment + j * _segment, offset);
-        }
+		finalVertices.AddRange (newVertices);
 
-        //edge
-        int outerLastVertexIndex = offset - 1;
-        int innerLastVertexIndex = 2 * offset - 1;
+		//add triangles
+		for (int i = 1; i <= _segment; ++i)
+		{
+			CreateTriangle(newTriangles, 0, i % _segment + 1, i, offset);
+		}
 
-        //Debug.Log("outIndex " + outerLastVertexIndex + " innerIndex " + innerLastVertexIndex + " total " + mesh.vertexCount);
+		finalTriangles.AddRange (newTriangles);
 
-        for (int i = 1; i < _segment; ++i)
-        {
-            CreateTriangle(edgeTriangles, outerLastVertexIndex - _segment + i, innerLastVertexIndex - _segment + i, innerLastVertexIndex - _segment + i + 1);
-            CreateTriangle(edgeTriangles, outerLastVertexIndex - _segment + i, innerLastVertexIndex - _segment + i + 1, outerLastVertexIndex - _segment + i + 1);
-        }
-        //last two
-        CreateTriangle(edgeTriangles, outerLastVertexIndex, innerLastVertexIndex, innerLastVertexIndex - _segment + 1);
-        CreateTriangle(edgeTriangles, outerLastVertexIndex, innerLastVertexIndex - _segment + 1, outerLastVertexIndex - _segment + 1);
+		offset = finalVertices.Count;
+	}
 
-        //Debug.Log(edgeTriangles.Count / 3);
+	void GenerateOuterSide(List<Vector3> finalVertices, List<int> finalTriangles, ref int offset)
+	{
+		List<Vector3> newVertices = new List<Vector3>();
+		List<int> newTriangles = new List<int>();
+		float theta = 0f;
+		float heightTheta = 0f;
 
-        mesh.subMeshCount = 3;
-        //set outer submesh
-        mesh.SetTriangles(outerTriangles.ToArray(), 0);
-        mesh.SetTriangles(innerTriangles.ToArray(), 1);
-        mesh.SetTriangles(edgeTriangles.ToArray(), 2);
+		for (int j = 0; j < _verticalSegment + 1; ++j)
+		{
+			for (int i = 0; i < _segment; ++i)
+			{
+				newVertices.Add(new Vector3(_radius * Mathf.Cos(theta), heightTheta, _radius * Mathf.Sin(theta)));
+				theta += _delta;
+			}
+			heightTheta += _heightDelta;
+		}
 
-        mesh.RecalculateNormals();
-    }
+		finalVertices.AddRange (newVertices);
+
+		for (int j = 0; j < _verticalSegment; ++j)
+		{
+			for (int i = 0; i < _segment; ++i)
+			{
+				CreateTriangle (newTriangles, i + _segment * j, (i + 1) % _segment + _segment * j, i + _segment * (j + 1), (i + 1) % _segment + _segment * (j + 1), offset);
+			}
+		}
+
+		finalTriangles.AddRange (newTriangles);
+
+		offset = finalVertices.Count;
+
+	}
+
+	void GenerateInnerSide(List<Vector3> finalVertices, List<int> finalTriangles, ref int offset)
+	{
+		List<Vector3> newVertices = new List<Vector3>();
+		List<int> newTriangles = new List<int>();
+		float theta = 0f;
+		float heightTheta = 0f;
+
+		Vector3 innerOrigin = new Vector3(0f, Mathf.Min(_thickness, 0.5f * _heightDelta), 0f);
+		float innerRadius = Mathf.Max(0, _radius - _thickness);
+
+		for (int j = 0; j < _verticalSegment + 1; ++j)
+		{
+			for (int i = 0; i < _segment; ++i)
+			{
+				newVertices.Add(new Vector3(innerRadius * Mathf.Cos(theta), heightTheta + (j == 0 ? innerOrigin.y : 0), innerRadius * Mathf.Sin(theta)));
+				theta += _delta;
+			}
+			heightTheta += _heightDelta;
+		}
+
+		finalVertices.AddRange (newVertices);
+
+		for (int j = 0; j < _verticalSegment; ++j)
+		{
+			for (int i = 0; i < _segment; ++i)
+			{
+				CreateTriangle (newTriangles, (i + 1) % _segment + _segment * j, i + _segment * j, (i + 1) % _segment + _segment * (j + 1), i + _segment * (j + 1), offset);
+			}
+		}
+
+		finalTriangles.AddRange (newTriangles);
+
+		offset = finalVertices.Count;
+
+	}
+
+	void GenerateEdge(List<Vector3> finalVertices, List<int> finalTriangles, ref int offset)
+	{
+		List<Vector3> newVertices = new List<Vector3>();
+		List<int> newTriangles = new List<int>();
+		float theta = 0f;
+
+		float innerRadius = Mathf.Max(0, _radius - _thickness);
+
+		for (int i = 0; i < _segment; ++i)
+		{
+			newVertices.Add(new Vector3(_radius * Mathf.Cos(theta), _height, _radius * Mathf.Sin(theta)));
+			newVertices.Add(new Vector3(innerRadius * Mathf.Cos(theta), _height, innerRadius * Mathf.Sin(theta)));
+			theta += _delta;
+		}
+
+		finalVertices.AddRange (newVertices);
+
+		for (int i = 0; i < _segment; ++i)
+		{
+			CreateTriangle(newTriangles, 2 * i, 2 * ((i + 1) % _segment) , 2 * i + 1, 2 * ((i + 1) % _segment) + 1, offset);
+		}
+
+		finalTriangles.AddRange (newTriangles);
+
+		offset = finalVertices.Count;
+	}
+
+	/// <summary>
+	/// Creates the triangles from four points.
+	/// C D,
+	/// A B
+	/// </summary>
+	/// <param name="list">List.</param>
+	/// <param name="a">The alpha component.</param>
+	/// <param name="b">The blue component.</param>
+	/// <param name="c">C.</param>
+	/// <param name="d">D.</param>
+	/// <param name="offset">Offset.</param>
+	void CreateTriangle(List<int> list, int a, int b, int c, int d, int offset = 0)
+	{
+		CreateTriangle (list, a, c, b, offset);
+		CreateTriangle (list, b, c, d, offset);
+	}
 
     void CreateTriangle(List<int> list, int a, int b, int c, int offset = 0)
     {
@@ -192,12 +291,12 @@ public class MeshGenerator : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-        //Mesh mesh = _meshFilter.sharedMesh;
-        //mesh.Clear();
+        Mesh mesh = _meshFilter.sharedMesh;
+        mesh.Clear();
 
-        //MeshGeneration(ref mesh);
+        MeshGeneration(ref mesh);
 
-        //_meshFilter.mesh = mesh;
-        //_meshCollider.sharedMesh = mesh;
+        _meshFilter.mesh = mesh;
+        _meshCollider.sharedMesh = mesh;
     }
 }
