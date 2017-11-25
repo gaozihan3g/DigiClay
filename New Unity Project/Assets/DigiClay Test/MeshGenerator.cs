@@ -13,11 +13,11 @@ public class MeshGenerator : MonoBehaviour {
     float _height = 1;
 
     [SerializeField]
-    [Range(3, 36)]
+    [Range(3, 60)]
     int _segment = 8;
 
     [SerializeField]
-    [Range(1, 30)]
+    [Range(1, 100)]
     int _verticalSegment = 10;
 
     [SerializeField]
@@ -52,7 +52,6 @@ public class MeshGenerator : MonoBehaviour {
             _meshFilter = go.AddComponent<MeshFilter>();
             _meshRenderer = go.AddComponent<MeshRenderer>();
             _meshCollider = go.AddComponent<MeshCollider>();
-            go.AddComponent<Deformable>();
         }
         else
         {
@@ -88,9 +87,9 @@ public class MeshGenerator : MonoBehaviour {
 		_heightDelta = (float)_height / (float)_verticalSegment;
 
 		GenerateOuterBottom (finalVertices, outerTriangles, ref offset);
-		GenerateInnerBottom (finalVertices, innerTriangles, ref offset);
+//		GenerateInnerBottom (finalVertices, innerTriangles, ref offset);
 		GenerateOuterSide (finalVertices, outerTriangles, ref offset);
-		GenerateInnerSide (finalVertices, innerTriangles, ref offset);
+//		GenerateInnerSide (finalVertices, innerTriangles, ref offset);
 		GenerateEdge (finalVertices, edgeTriangles, ref offset);
 
 		mesh.vertices = finalVertices.ToArray();
@@ -291,12 +290,12 @@ public class MeshGenerator : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-        Mesh mesh = _meshFilter.sharedMesh;
-        mesh.Clear();
-
-        MeshGeneration(ref mesh);
-
-        _meshFilter.mesh = mesh;
-        _meshCollider.sharedMesh = mesh;
+//        Mesh mesh = _meshFilter.sharedMesh;
+//        mesh.Clear();
+//
+//        MeshGeneration(ref mesh);
+//
+//        _meshFilter.mesh = mesh;
+//        _meshCollider.sharedMesh = mesh;
     }
 }
