@@ -208,9 +208,9 @@ public class MeshGenerator : MonoBehaviour {
 			heightTheta += _heightDelta;
 		}
 
-		for (int i = 0; i < newVertices.Count; ++i) {
-			Debug.Log ("i = " + i + " vertices : " + newVertices[i] + " uv: " + newUVs[i]);
-		}
+//		for (int i = 0; i < newVertices.Count; ++i) {
+//			Debug.Log ("i = " + i + " vertices : " + newVertices[i] + " uv: " + newUVs[i]);
+//		}
 
 
 		finalVertices.AddRange (newVertices);
