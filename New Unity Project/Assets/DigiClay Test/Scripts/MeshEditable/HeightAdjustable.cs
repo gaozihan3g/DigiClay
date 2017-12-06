@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(MeshGenerator))]
 public class HeightAdjustable : MonoBehaviour {
 
 	[Range(DigiClayConstant.MIN_HEIGHT, DigiClayConstant.MAX_HEIGHT)]
@@ -26,6 +27,7 @@ public class HeightAdjustable : MonoBehaviour {
 		_meshCollider = GetComponentInChildren<MeshCollider>();
 
 		// this could be null, if the mesh is not generated from code
+		// added required component
 		_meshGenerator = GetComponent<MeshGenerator> ();
 
 		if (_meshGenerator != null) {
@@ -56,6 +58,9 @@ public class HeightAdjustable : MonoBehaviour {
 
 		_meshFilter.mesh.vertices = newVerts;
 
+		_meshFilter.mesh.RecalculateNormals ();
+
+		//TODO not ideal
 		_meshCollider.sharedMesh = _meshFilter.mesh;
 
 		_oldHeight = _height;

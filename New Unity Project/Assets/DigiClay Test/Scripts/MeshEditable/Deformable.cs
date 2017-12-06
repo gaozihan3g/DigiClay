@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using DigiClay;
 
 public class Deformable : MonoBehaviour
     , IInitializePotentialDragHandler
@@ -12,25 +13,24 @@ public class Deformable : MonoBehaviour
 	[Range(0.01f, 1f)]
     public float _radius = 0.5f;
 	[Range(0.01f, 1f)]
-    public float _strength = 0.01f;
+    public float _strength = 0.1f;
 	public bool _symmetric = true;
 	public bool _push = true;
 
     MeshFilter _meshFilter;
     MeshCollider _meshCollider;
 
-	IEnumerator Start()
-    {
-		yield return new WaitForEndOfFrame ();
-
-        _meshFilter = GetComponentInChildren<MeshFilter>();
-        _meshCollider = GetComponentInChildren<MeshCollider>();
-    }
-
-	void OnDrawGizmos()
+	void Awake()
 	{
-		
+//		_advMeshContext = GetComponent<AdvancedMeshContext> ();
+		_meshFilter = GetComponentInChildren<MeshFilter>();
+		_meshCollider = GetComponentInChildren<MeshCollider>();
 	}
+
+	void Start()
+    {
+//		_advMesh = _advMeshContext.Mesh;
+    }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
@@ -44,8 +44,6 @@ public class Deformable : MonoBehaviour
     {
 		if (SystemManager.Instance.Mode != SystemManager.EditMode.Sculpture)
 			return;
-
-		Debug.Log(eventData.pointerCurrentRaycast.worldPosition + " frame count: " + Time.frameCount);
 
 		Vector3[] vertices = _meshFilter.mesh.vertices;
 
@@ -77,18 +75,11 @@ public class Deformable : MonoBehaviour
 					vertices[i] += radialUnitDir * _strength * Time.deltaTime * Falloff(dist, _radius) * pushSign * outerSign;
 			}
         }
-
 		_meshFilter.mesh.vertices = vertices;
 		_meshFilter.mesh.RecalculateNormals ();
     }
 
-    float Falloff(float dist, float radius)
-    {
-//        return Mathf.Clamp01(1f - dist / radius);
 
-		return Mathf.Clamp01 (Mathf.Pow (360.0f, -Mathf.Pow (dist / radius, 2.5f) - 0.01f));
-
-    }
 
     public void OnEndDrag(PointerEventData eventData)
     {
@@ -103,4 +94,10 @@ public class Deformable : MonoBehaviour
     {
 
     }
+
+	float Falloff(float dist, float radius)
+	{
+		//        return Mathf.Clamp01(1f - dist / radius);
+		return Mathf.Clamp01 (Mathf.Pow (360.0f, -Mathf.Pow (dist / radius, 2.5f) - 0.01f));
+	}
 }

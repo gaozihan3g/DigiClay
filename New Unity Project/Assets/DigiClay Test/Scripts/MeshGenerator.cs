@@ -36,49 +36,62 @@ public class MeshGenerator : MonoBehaviour {
     [SerializeField]
     Transform _root = null;
 
+//	AdvancedMeshContext _advMeshContext;
     MeshFilter _meshFilter;
     MeshRenderer _meshRenderer;
     MeshCollider _meshCollider;
 
+//	public AdvancedMesh _advMesh;
+
 	float _delta;
 	float _heightDelta;
 
+	[SerializeField]
+	bool OuterBottom = true;
+	[SerializeField]
+	bool InnerBottom = true;
+	[SerializeField]
+	bool OuterSide = true;
+	[SerializeField]
+	bool InnerSide = true;
+	[SerializeField]
+	bool Edge = true;
 
-    // Use this for initialization
-    void Start() {
-
-        //_root = GameObject.Find("GeometryRoot").transform;
-
-        if (_root == null)
-        {
-            GameObject go = new GameObject("GeometryRoot");
-            go.transform.parent = this.transform;
-            _root = go.transform;
+	void Awake()
+	{
+		if (_root == null)
+		{
+			GameObject go = new GameObject("GeometryRoot");
+			go.transform.parent = this.transform;
+			_root = go.transform;
 			_root.localPosition = Vector3.zero;
 
-            _meshFilter = go.AddComponent<MeshFilter>();
-            _meshRenderer = go.AddComponent<MeshRenderer>();
-            _meshCollider = go.AddComponent<MeshCollider>();
-        }
-        else
-        {
-            _meshFilter = GetComponentInChildren<MeshFilter>();
-            _meshRenderer = GetComponentInChildren<MeshRenderer>();
-            _meshCollider = GetComponentInChildren<MeshCollider>();
-        }
+			_meshFilter = go.AddComponent<MeshFilter>();
+			_meshRenderer = go.AddComponent<MeshRenderer>();
+			_meshCollider = go.AddComponent<MeshCollider>();
+		}
+		else
+		{
+			_meshFilter = GetComponentInChildren<MeshFilter>();
+			_meshRenderer = GetComponentInChildren<MeshRenderer>();
+			_meshCollider = GetComponentInChildren<MeshCollider>();
+		}
+	}
 
-        Mesh mesh = new Mesh();
-        mesh.name = "Generated Mesh";
+    void Start() {
 
-        MeshGeneration(ref mesh);
+		Mesh generatedMesh = new Mesh();
+        generatedMesh.name = "Generated Mesh";
 
-        _meshFilter.mesh = mesh;
-        _meshCollider.sharedMesh = mesh;
+        MeshGeneration(ref generatedMesh);
 
-        if (_materials.Length < mesh.subMeshCount)
-            Debug.LogError("Materials are needed for submeshes!");
+		_meshFilter.mesh = generatedMesh;
+		_meshCollider.sharedMesh = generatedMesh;
 
-        _meshRenderer.materials = _materials;
+		Debug.Assert (_materials.Length >= generatedMesh.subMeshCount, "Materials are needed for submeshes!");
+
+		for (int i = 0; i < generatedMesh.subMeshCount; i++)
+			_meshRenderer.sharedMaterials[i] = _materials[i];
     }
 
 
@@ -94,11 +107,17 @@ public class MeshGenerator : MonoBehaviour {
 		_delta = 2f * Mathf.PI / (float)_segment;
 		_heightDelta = (float)_height / (float)_verticalSegment;
 
-		GenerateOuterBottom (finalVertices, outerTriangles, finalUVs, ref offset);
-		GenerateInnerBottom (finalVertices, innerTriangles, finalUVs, ref offset);
-		GenerateOuterSide (finalVertices, outerTriangles, finalUVs, ref offset);
-		GenerateInnerSide (finalVertices, innerTriangles, finalUVs, ref offset);
-		GenerateEdge (finalVertices, edgeTriangles, finalUVs, ref offset);
+
+		if (OuterBottom)
+			GenerateOuterBottom (finalVertices, outerTriangles, finalUVs, ref offset);
+		if (InnerBottom)
+			GenerateInnerBottom (finalVertices, innerTriangles, finalUVs, ref offset);
+		if (OuterSide)
+			GenerateOuterSide (finalVertices, outerTriangles, finalUVs, ref offset);
+		if (InnerSide)
+			GenerateInnerSide (finalVertices, innerTriangles, finalUVs, ref offset);
+		if (Edge)
+			GenerateEdge (finalVertices, edgeTriangles, finalUVs, ref offset);
 
 		mesh.vertices = finalVertices.ToArray();
 		mesh.uv = finalUVs.ToArray ();
@@ -106,11 +125,26 @@ public class MeshGenerator : MonoBehaviour {
 //		Debug.Log ("vertices : " + mesh.vertices.Length);
 //		Debug.Log ("UVs : " + mesh.uv.Length);
 
-		mesh.subMeshCount = 3;
+		int meshCount = 0;
+
+		if (outerTriangles.Count != 0)
+			++meshCount;
+		if (innerTriangles.Count != 0)
+			++meshCount;
+		if (edgeTriangles.Count != 0)
+			++meshCount;
+
+		mesh.subMeshCount = meshCount;
+
+		int subMeshIndex = 0;
 		//set outer submesh
-		mesh.SetTriangles(outerTriangles.ToArray(), 0);
-		mesh.SetTriangles(innerTriangles.ToArray(), 1);
-		mesh.SetTriangles(edgeTriangles.ToArray(), 2);
+
+		if (outerTriangles.Count != 0)
+			mesh.SetTriangles(outerTriangles.ToArray(), subMeshIndex++);
+		if (innerTriangles.Count != 0)
+			mesh.SetTriangles(innerTriangles.ToArray(), subMeshIndex++);
+		if (edgeTriangles.Count != 0)
+			mesh.SetTriangles(edgeTriangles.ToArray(), subMeshIndex++);
 
 		mesh.RecalculateNormals();
 	}

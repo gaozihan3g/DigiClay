@@ -9,7 +9,8 @@ public class SystemManager : MonoBehaviour {
 	{
 		HeightControl,
 		Sculpture,
-		Paint
+		Paint,
+		Smooth
 	}
 
 	[SerializeField]
@@ -36,13 +37,22 @@ public class SystemManager : MonoBehaviour {
 		}
 	}
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
+	void Start()
+	{
+		OnScreenUIManager.Instance.AddCommand ("Sculpture", () => {
+			Mode = EditMode.Sculpture;
+		});
+
+		OnScreenUIManager.Instance.AddCommand ("Height", () => {
+			Mode = EditMode.HeightControl;
+		});
+
+		OnScreenUIManager.Instance.AddCommand ("Paint", () => {
+			Mode = EditMode.Paint;
+		});
+		OnScreenUIManager.Instance.AddCommand ("Smooth", () => {
+			Mode = EditMode.Smooth;
+		});
+
 	}
 }
