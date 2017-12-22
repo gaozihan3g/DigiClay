@@ -231,6 +231,9 @@ public class MeshGenerator : MonoBehaviour {
 
 		for (int j = 0; j < _verticalSegment + 1; ++j)
 		{
+			theta = 0f;
+
+//			_segment + 1
 			for (int i = 0; i < _segment + 1; ++i)
 			{
 				newVertices.Add(new Vector3(_radius * Mathf.Cos(theta), heightTheta, _radius * Mathf.Sin(theta)));
@@ -238,7 +241,7 @@ public class MeshGenerator : MonoBehaviour {
 
 				theta += _delta;
 			}
-			theta -= _delta;
+
 			heightTheta += _heightDelta;
 		}
 
@@ -280,6 +283,8 @@ public class MeshGenerator : MonoBehaviour {
 
 		for (int j = 0; j < _verticalSegment + 1; ++j)
 		{
+			theta = 0f;
+
 			for (int i = 0; i < _segment; ++i)
 			{
 				newVertices.Add(new Vector3(innerRadius * Mathf.Cos(theta), heightTheta + (j == 0 ? innerOrigin.y : 0), innerRadius * Mathf.Sin(theta)));

@@ -4,35 +4,103 @@ using UnityEngine;
 
 public class MeshVisualizer : MonoBehaviour {
 
-	public List<int> _vertexIndices;
+    public enum DisplayType
+    {
+        All,
+        Weights,
+        Individuals
+    }
+
+    public DisplayType displayType = DisplayType.All;
+
+    public Color ColorA = Color.red;
+    public Color ColorB = Color.blue;
+
+    public List<int> _vertexIndices;
 	public List<Color> _vertexColors;
-	public float size = 1f;
+	public float size = 0.1f;
 
 	public MeshFilter _meshFilter;
 	Mesh _mesh;
 
-	// Use this for initialization
-	void Start () {
+    float[] weights;
 
-		if (_meshFilter == null)
-			_meshFilter = GetComponent<MeshFilter> ();
+    public float[] Weights
+    {
+        get
+        {
+            return weights;
+        }
 
-		_mesh = _meshFilter.mesh;
+        set
+        {
+            weights = value;
+        }
+    }
+
+    // Use this for initialization
+    void Awake() {
+
+        if (_meshFilter == null)
+            _meshFilter = GetComponent<MeshFilter>();
+    }
+
+    private void Start()
+    {
+        _mesh = _meshFilter.mesh;
+
+        weights = new float[_mesh.vertexCount];
 	}
 
-	void OnDrawGizmos()
+    void OnDrawGizmos()
 	{
 		if (_mesh == null)
 			return;
-		
-		if (_vertexIndices == null)
-			return;
 
-		for (int i = 0; i < _vertexIndices.Count; ++i) {
-			var vi = _vertexIndices [i];
-			Gizmos.color = _vertexColors [i];
-			Gizmos.DrawSphere (_mesh.vertices [vi] + transform.position, size);
-		}
+        switch (displayType)
+        {
+            case DisplayType.All:
+                DisplayAll();
+                break;
+            case DisplayType.Weights:
+                DisplayWeights();
+                break;
+            case DisplayType.Individuals:
+                DisplayIndividuals();
+                break;
+        }
+    }
 
-	}
+    void DisplayAll()
+    {
+        for (int i = 0; i < _mesh.vertexCount; ++i)
+        {
+            Gizmos.color = ColorA;
+			Gizmos.DrawSphere(_mesh.vertices[i] * transform.localScale.x + transform.position, size * transform.localScale.x);
+        }
+    }
+
+    void DisplayWeights()
+    {
+        for (int i = 0; i < _mesh.vertexCount; ++i)
+        {
+            float t = weights[i];
+            Gizmos.color = Color.Lerp(ColorA, ColorB, t);
+			Gizmos.DrawSphere(_mesh.vertices[i] * transform.localScale.x + transform.position, size * transform.localScale.x);
+        }
+    }
+
+    void DisplayIndividuals()
+    {
+        for (int i = 0; i < _vertexIndices.Count; i++)
+        {
+            Gizmos.color = ColorA;
+			Gizmos.DrawSphere(_mesh.vertices[i] * transform.localScale.x + transform.position, size * transform.localScale.x);
+        }
+    }
+
+    public void DeformCallBack(BasicDeformable bd)
+    {
+        weights = bd.WeightList.ToArray();
+    }
 }
