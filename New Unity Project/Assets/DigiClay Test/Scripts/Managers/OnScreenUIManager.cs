@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using DigiClay;
 
 public class OnScreenUIManager : MonoBehaviour {
 
 	public static OnScreenUIManager Instance;
 
 	Dictionary<string, Action> _commandDict = new Dictionary<string, Action>();
+
+	public DigiClay.Cursor Cursor;
 
 	void Awake()
 	{
@@ -18,9 +21,15 @@ public class OnScreenUIManager : MonoBehaviour {
 		}
 	}
 
+
+    //OnScreenUIManager.Instance.AddCommand ("Sculpture", () => {
+    //Mode = EditMode.Sculpture;
+    //});
+
 	public void AddCommand(string s, Action a)
 	{
-		_commandDict.Add (s, a);	
+        if (!_commandDict.ContainsKey(s))
+    		_commandDict.Add (s, a);
 	}
 
 	// Use this for initialization

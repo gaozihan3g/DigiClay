@@ -8,14 +8,15 @@ public class HeightAdjustable : MonoBehaviour {
 	[Range(DigiClayConstant.MIN_HEIGHT, DigiClayConstant.MAX_HEIGHT)]
 	public float _height = 1f;
 
-	float _oldHeight;
+    public ControlWidget controlWidget;
+
+	
 
 	MeshFilter _meshFilter;
 	MeshCollider _meshCollider;
 
 	MeshGenerator _meshGenerator;
 	float _originalHeight = 1f;
-
 
 	Vector3[] _originalVertices;
 
@@ -31,20 +32,34 @@ public class HeightAdjustable : MonoBehaviour {
 		_meshGenerator = GetComponent<MeshGenerator> ();
 
 		if (_meshGenerator != null) {
-			_height = _originalHeight = _meshGenerator.Height;
+			_height = _meshGenerator.Height;
 		}
 
 		_originalVertices = _meshFilter.mesh.vertices;
-
-		_oldHeight = _height;
 	}
 
+    private void OnEnable()
+    {
+        controlWidget.controlStartEvent.AddListener(HeightChangeBeginHandler);
+        controlWidget.controlChangedEvent.AddListener(HeightChangeHandler);
+    }
 
-	void Update () {
+
+    void Update () {
+
+	}
+
+    public void HeightChangeBeginHandler()
+    {
+        Debug.Log("HeightChangeBeginHandler");
+        _originalHeight = _height;
+    }
+
+    public void HeightChangeHandler(float newValue)
+    {
+        Debug.Log("HeightChangeHandler");
+
 		if (SystemManager.Instance.Mode != SystemManager.EditMode.HeightControl)
-			return;
-
-		if (_height == _oldHeight)
 			return;
 
 		if (_meshFilter == null)
@@ -52,17 +67,18 @@ public class HeightAdjustable : MonoBehaviour {
 
 		Vector3[] newVerts = _meshFilter.mesh.vertices;
 
-		for (int i = 0; i < newVerts.Length; ++i) {
-			newVerts [i].y = _originalVertices [i].y * _height / _originalHeight;
+        _height = _originalHeight * newValue;
+
+		for (int i = 0; i < newVerts.Length; ++i)
+		{
+            newVerts[i].y = _originalVertices[i].y * _height;
 		}
 
 		_meshFilter.mesh.vertices = newVerts;
 
-		_meshFilter.mesh.RecalculateNormals ();
+		_meshFilter.mesh.RecalculateNormals();
 
 		//TODO not ideal
 		_meshCollider.sharedMesh = _meshFilter.mesh;
-
-		_oldHeight = _height;
-	}
+    }
 }
