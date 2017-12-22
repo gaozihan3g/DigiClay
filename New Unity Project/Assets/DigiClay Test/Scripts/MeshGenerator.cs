@@ -31,6 +31,9 @@ public class MeshGenerator : MonoBehaviour {
     [Range(0.001f, 0.2f)]
     float _thickness = 0.01f;
 
+    public float noiseScale;
+    public float noiseSpan;
+
     public Material[] _materials;
 
     [SerializeField]
@@ -56,6 +59,8 @@ public class MeshGenerator : MonoBehaviour {
 	bool InnerSide = true;
 	[SerializeField]
 	bool Edge = true;
+
+    Perlin _perlin = new Perlin();
 
 	void Awake()
 	{
@@ -92,6 +97,11 @@ public class MeshGenerator : MonoBehaviour {
 
 		for (int i = 0; i < generatedMesh.subMeshCount; i++)
 			_meshRenderer.sharedMaterials[i] = _materials[i];
+
+        OnScreenUIManager.Instance.AddCommand("Save Mesh", ()=>{
+            MeshIOManager.Instance.ExportMesh(_meshFilter.mesh);
+        });
+
     }
 
 
@@ -233,7 +243,11 @@ public class MeshGenerator : MonoBehaviour {
 		{
 			for (int i = 0; i < _segment + 1; ++i)
 			{
-				newVertices.Add(new Vector3(_radius * Mathf.Cos(theta), heightTheta, _radius * Mathf.Sin(theta)));
+                var pos = new Vector3(_radius * Mathf.Cos(theta), heightTheta, _radius * Mathf.Sin(theta));
+
+                var finalPos = pos + new Vector3(pos.x, 0f, pos.z).normalized * _perlin.Noise(pos.x * noiseSpan, pos.y * noiseSpan, pos.z * noiseSpan) * noiseScale;
+
+                newVertices.Add(finalPos);
 				newUVs.Add (new Vector2 ( 1f / (float)_segment * i, 1f / (float)_verticalSegment * j));
 
 				theta += _delta;
