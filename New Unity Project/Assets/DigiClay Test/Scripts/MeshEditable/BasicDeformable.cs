@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using Pose = HTC.UnityPlugin.PoseTracker.Pose;
 using System.Collections;
+using HTC.UnityPlugin.Vive;
 
 public class BasicDeformable : MonoBehaviour
     , IColliderEventDragStartHandler
@@ -41,7 +42,10 @@ public class BasicDeformable : MonoBehaviour
     Vector3 _originalLocalPos;
 	Transform _originalTransform;
 
+	public float maxDist = 0.1f;
+
 	bool _isSymmetric;
+	int _role;
 
     Dictionary<int, float> verticeWeightDictionary = new Dictionary<int, float>();
 
@@ -131,6 +135,11 @@ public class BasicDeformable : MonoBehaviour
         {
             deformStart.Invoke(this);
         }
+
+		_role = eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue;
+
+		HapticManager.Instance.StartHaptic ((HandRole)_role);
+//		HapticManager.Instance.StartRightHaptic ();
     }
 
     public virtual void OnColliderEventDragUpdate(ColliderButtonEventData eventData)
@@ -146,7 +155,12 @@ public class BasicDeformable : MonoBehaviour
 
         Vector3 offsetVector = currentWorldPosition - originalWorldPosition;
 
-        //float offsetDistance = Vector3.Distance(originalWorldPosition, currentWorldPosition);
+		float offsetDistance = Vector3.Distance(originalWorldPosition, currentWorldPosition);
+		// 0m - 0.1m
+
+		//Haptic
+		HapticManager.Instance.Strength = Mathf.InverseLerp(0, maxDist, offsetDistance);
+
 
         //Debug.Log(string.Format("origin {0} | current {1} | offset {2}", originalWorldPosition.ToString("F3"), currentWorldPosition.ToString("F3"), offsetVector.ToString("F3")));
 
@@ -216,6 +230,8 @@ public class BasicDeformable : MonoBehaviour
         {
             deformEnd.Invoke(this);
         }
+			
+		HapticManager.Instance.EndHaptic ((HandRole)_role);
     }
 
 	public void UndoDeform(Vector3[] vertices)

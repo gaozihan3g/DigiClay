@@ -97,11 +97,6 @@ public class MeshGenerator : MonoBehaviour {
 
 		for (int i = 0; i < generatedMesh.subMeshCount; i++)
 			_meshRenderer.sharedMaterials[i] = _materials[i];
-
-        OnScreenUIManager.Instance.AddCommand("Save Mesh", ()=>{
-            MeshIOManager.Instance.ExportMesh(_meshFilter.mesh);
-        });
-
     }
 
 

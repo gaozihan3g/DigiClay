@@ -133,6 +133,7 @@ public class DeformManager : MonoBehaviour {
 		//initialization
 		Debug.Log("DefromManager Start");
 
+
 		ViveInput.AddPress (HandRole.RightHand, ControllerButton.Pad, () => {
 
 			float x = ViveInput.GetAxis(HandRole.RightHand, ControllerAxis.PadX);
@@ -196,6 +197,13 @@ public class DeformManager : MonoBehaviour {
 		ViveInput.AddPressUp (HandRole.RightHand, ControllerButton.Menu, () => {
 			Symmetric = !Symmetric;
 		});
+	}
+
+	void Update()
+	{
+//		var triggerValue = ViveInput.GetAxis(HandRole.RightHand, ControllerAxis.Trigger);
+//		Strength = triggerValue;
+//		Debug.Log ("right hand trigger " + triggerValue);
 	}
 
 	public void RegisterUndo(BasicDeformable bd, Vector3[] verts)
