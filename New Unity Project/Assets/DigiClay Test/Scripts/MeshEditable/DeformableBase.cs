@@ -99,6 +99,13 @@ public abstract class DeformableBase : MonoBehaviour
 	void Start () {
 		
 	}
+
+	void Init()
+	{
+		m_innerRadius = DeformManager.Instance.InnerRadius;
+		m_outerRadius = DeformManager.Instance.OuterRadius;
+		m_strength = DeformManager.Instance.Strength;
+	}
 	
 	// Update is called once per frame
 	void Update () {

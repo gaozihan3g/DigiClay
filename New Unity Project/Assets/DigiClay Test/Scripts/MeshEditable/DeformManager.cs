@@ -147,7 +147,6 @@ public class DeformManager : MonoBehaviour {
 		//initialization
 		Debug.Log("DefromManager Start");
 
-
 		ViveInput.AddPress (HandRole.RightHand, ControllerButton.Pad, () => {
 
 			float x = ViveInput.GetAxis(HandRole.RightHand, ControllerAxis.PadX);
