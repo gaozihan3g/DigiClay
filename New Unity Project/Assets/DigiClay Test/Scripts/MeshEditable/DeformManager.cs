@@ -9,9 +9,9 @@ using DigiClay;
 
 public class DeformManager : MonoBehaviour {
 
-    public static DeformManager Instance;
+	public static DeformManager Instance;
 
-	Stack<UndoArgs> _undoStack = new Stack<UndoArgs>();
+	Stack<UndoArgs> m_undoStack = new Stack<UndoArgs>();
 
 	[Serializable]
 	public class UnityEventDeform : UnityEvent<DeformArgs> { }
@@ -32,10 +32,10 @@ public class DeformManager : MonoBehaviour {
 
 	public class UndoArgs
 	{
-		public BasicDeformable deformable;
+		public DeformableBase deformable;
 		public Vector3[] verts;
 
-		public UndoArgs(BasicDeformable bd, Vector3[] v)
+		public UndoArgs(DeformableBase bd, Vector3[] v)
 		{
 			deformable = bd;
 			verts = v;
@@ -43,6 +43,20 @@ public class DeformManager : MonoBehaviour {
 	}
 
 	public UnityEventDeform ValueChanged;
+
+	[SerializeField]
+	private bool[] m_ready = { false, false };
+
+	public bool IsBothHandReady {
+		get {
+			return m_ready[0] && m_ready[1];
+		}
+	}
+
+	public void SetHandStatus(HandRole role, bool value)
+	{
+		m_ready [(int)role] = value;
+	}
 
 	[Range(0.01f, 5f)]
 	[SerializeField]
@@ -206,17 +220,17 @@ public class DeformManager : MonoBehaviour {
 //		Debug.Log ("right hand trigger " + triggerValue);
 	}
 
-	public void RegisterUndo(BasicDeformable bd, Vector3[] verts)
+	public void RegisterUndo(DeformableBase bd, Vector3[] verts)
 	{
-		_undoStack.Push (new UndoArgs(bd, verts));
+		m_undoStack.Push (new UndoArgs(bd, verts));
 	}
 
 	public void PerformUndo()
 	{
-		if (_undoStack.Count == 0)
+		if (m_undoStack.Count == 0)
 			return;
 
-		var args = _undoStack.Pop ();
+		var args = m_undoStack.Pop ();
 		args.deformable.UndoDeform (args.verts);
 	}
 }

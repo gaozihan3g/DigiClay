@@ -18,7 +18,7 @@ public class MeshVisualizer : MonoBehaviour {
 
     public List<int> _vertexIndices;
 	public List<Color> _vertexColors;
-	public float size = 0.1f;
+	public float size = 0.01f;
 
 	public MeshFilter _meshFilter;
 	Mesh _mesh;
@@ -47,7 +47,7 @@ public class MeshVisualizer : MonoBehaviour {
 
     private void Start()
     {
-        _mesh = _meshFilter.mesh;
+		_mesh = _meshFilter.mesh;
 
         weights = new float[_mesh.vertexCount];
 	}
@@ -99,7 +99,7 @@ public class MeshVisualizer : MonoBehaviour {
         }
     }
 
-    public void DeformCallBack(BasicDeformable bd)
+	public void DeformCallBack(DeformableBase bd)
     {
         weights = bd.WeightList.ToArray();
     }

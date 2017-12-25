@@ -53,21 +53,21 @@ public class HapticManager : MonoBehaviour {
 
 	void Init()
 	{
-		OnScreenUIManager.Instance.AddCommand ("Right", () => {
-			StartRightHaptic();
-		});
-
-		OnScreenUIManager.Instance.AddCommand ("Left", () => {
-			StartLeftHaptic();
-		});
-
-		OnScreenUIManager.Instance.AddCommand ("Stop Left", () => {
-			EndLeftHaptic();
-		});
-
-		OnScreenUIManager.Instance.AddCommand ("Stop Right", () => {
-			EndRightHaptic();
-		});
+//		OnScreenUIManager.Instance.AddCommand ("Right", () => {
+//			StartRightHaptic();
+//		});
+//
+//		OnScreenUIManager.Instance.AddCommand ("Left", () => {
+//			StartLeftHaptic();
+//		});
+//
+//		OnScreenUIManager.Instance.AddCommand ("Stop Left", () => {
+//			EndLeftHaptic();
+//		});
+//
+//		OnScreenUIManager.Instance.AddCommand ("Stop Right", () => {
+//			EndRightHaptic();
+//		});
 	}
 
 	public void StartHaptic(HandRole role)
@@ -79,32 +79,35 @@ public class HapticManager : MonoBehaviour {
 
 	public void EndHaptic(HandRole role)
 	{
+		if (!coroutineDic.ContainsKey (role))
+			return;
+		
 		IEnumerator c = coroutineDic [role];
 		StopCoroutine (c);
 		coroutineDic.Remove (role);
 	}
 
-	public void StartRightHaptic(ushort duration = 1, ushort interval = 1)
-	{
-		_rightCoroutine = HapticSequence (HandRole.RightHand, duration, interval);
-		StartCoroutine(_rightCoroutine);
-	}
-
-	public void StartLeftHaptic(ushort duration = 1, ushort interval = 1)
-	{
-		_leftCoroutine = HapticSequence (HandRole.LeftHand, duration, interval);
-		StartCoroutine(_leftCoroutine);
-	}
-
-	public void EndRightHaptic()
-	{
-		StopCoroutine(_rightCoroutine);
-	}
-
-	public void EndLeftHaptic()
-	{
-		StopCoroutine(_leftCoroutine);
-	}
+//	public void StartRightHaptic(ushort duration = 1, ushort interval = 1)
+//	{
+//		_rightCoroutine = HapticSequence (HandRole.RightHand, duration, interval);
+//		StartCoroutine(_rightCoroutine);
+//	}
+//
+//	public void StartLeftHaptic(ushort duration = 1, ushort interval = 1)
+//	{
+//		_leftCoroutine = HapticSequence (HandRole.LeftHand, duration, interval);
+//		StartCoroutine(_leftCoroutine);
+//	}
+//
+//	public void EndRightHaptic()
+//	{
+//		StopCoroutine(_rightCoroutine);
+//	}
+//
+//	public void EndLeftHaptic()
+//	{
+//		StopCoroutine(_leftCoroutine);
+//	}
 
 	IEnumerator HapticSequence(HandRole role, ushort duration = 500, ushort interval = 500)
 	{
