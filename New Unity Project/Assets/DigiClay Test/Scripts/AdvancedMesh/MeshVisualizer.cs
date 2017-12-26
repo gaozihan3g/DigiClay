@@ -21,10 +21,7 @@ public class MeshVisualizer : MonoBehaviour {
     public List<int> _vertexIndices;
 	public List<Color> _vertexColors;
 	public float size = 0.01f;
-<<<<<<< Updated upstream
-=======
-    public float length = 0.1f;
->>>>>>> Stashed changes
+    public float length = 0.05f;
 
 	public MeshFilter _meshFilter;
 	Mesh _mesh;
@@ -53,15 +50,7 @@ public class MeshVisualizer : MonoBehaviour {
 
     private void Start()
     {
-<<<<<<< Updated upstream
 		_mesh = _meshFilter.mesh;
-=======
-        if (Application.isPlaying)
-            _mesh = _meshFilter.mesh;
-        else
-            _mesh = _meshFilter.sharedMesh;
->>>>>>> Stashed changes
-
         weights = new float[_mesh.vertexCount];
 	}
 
