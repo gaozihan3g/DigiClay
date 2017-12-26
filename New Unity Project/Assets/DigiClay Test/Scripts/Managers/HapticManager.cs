@@ -109,7 +109,7 @@ public class HapticManager : MonoBehaviour {
 //		StopCoroutine(_leftCoroutine);
 //	}
 
-	IEnumerator HapticSequence(HandRole role, ushort duration = 500, ushort interval = 500)
+	IEnumerator HapticSequence(HandRole role)
 	{
 		while (true)
 		{

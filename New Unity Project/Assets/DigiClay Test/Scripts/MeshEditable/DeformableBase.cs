@@ -4,6 +4,7 @@ using UnityEngine;
 using HTC.UnityPlugin.ColliderEvent;
 using System;
 using UnityEngine.Events;
+using DigiClay;
 
 public abstract class DeformableBase : MonoBehaviour
 , IColliderEventDragStartHandler
@@ -25,6 +26,9 @@ public abstract class DeformableBase : MonoBehaviour
 	[SerializeField]
 	protected float m_strength = 0.1f;
 
+	//a ref, this might be null
+	[SerializeField]
+	protected ClayMeshContext m_clayMeshContext;
 	protected MeshFilter m_meshFilter;
 	protected MeshCollider m_meshCollider;
 
@@ -69,16 +73,21 @@ public abstract class DeformableBase : MonoBehaviour
 	{
 		m_meshFilter = GetComponentInChildren<MeshFilter>();
 		m_meshCollider = GetComponentInChildren<MeshCollider>();
+
+		// this might be null
+		m_clayMeshContext = GetComponent<ClayMeshContext>();
 	}
 
 	protected void OnEnable()
 	{
-		DeformManager.Instance.ValueChanged.AddListener (DeformParameterChangedHandler);
+		if (DeformManager.Instance != null)
+			DeformManager.Instance.ValueChanged.AddListener (DeformParameterChangedHandler);
 	}
 
 	protected void OnDisable()
 	{
-		DeformManager.Instance.ValueChanged.RemoveListener (DeformParameterChangedHandler);
+		if (DeformManager.Instance != null)
+			DeformManager.Instance.ValueChanged.RemoveListener (DeformParameterChangedHandler);
 	}
 
 	protected void DeformParameterChangedHandler(DeformManager.DeformArgs args)
@@ -91,13 +100,18 @@ public abstract class DeformableBase : MonoBehaviour
 	public void UndoDeform(Vector3[] vertices)
 	{
 		m_meshFilter.mesh.vertices = vertices;
-		m_meshFilter.mesh.RecalculateNormals();
+
+		if (m_clayMeshContext != null)
+			m_clayMeshContext.clayMesh.RecalculateNormals ();
+		else
+			m_meshFilter.mesh.RecalculateNormals();
+			
 		m_meshCollider.sharedMesh = m_meshFilter.mesh;
 	}
 
 	// Use this for initialization
 	void Start () {
-		
+		Init ();
 	}
 
 	void Init()
@@ -124,6 +138,8 @@ public abstract class DeformableBase : MonoBehaviour
 			return 0f;
 
 		//linear
-		return (1f - Mathf.InverseLerp(inner, outer, value));
+//		return (1f - Mathf.InverseLerp(inner, outer, value));
+
+		return (outer - value) / (outer - inner);
 	}
 }

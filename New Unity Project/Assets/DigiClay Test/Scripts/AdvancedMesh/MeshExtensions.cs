@@ -4,10 +4,9 @@ using UnityEngine;
 
 namespace DigiClay
 {
-
     public static class MeshExtensions
     {
-        public static void FixUVSeam(this Mesh mesh, Vector2Int[] uvSeamPairs)
+		public static void FixUVSeam(this Mesh mesh, Vector2Int[] uvSeamPairs)
         {
             Vector3[] normals = mesh.normals;
 

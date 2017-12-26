@@ -32,7 +32,7 @@ public class HeightAdjustable : MonoBehaviour {
 		_meshGenerator = GetComponent<MeshGenerator> ();
 
 		if (_meshGenerator != null) {
-			_height = _meshGenerator.Height;
+//			_height = _meshGenerator.Height;
 		}
 
 		_originalVertices = _meshFilter.mesh.vertices;

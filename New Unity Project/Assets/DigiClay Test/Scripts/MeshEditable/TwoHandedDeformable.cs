@@ -5,6 +5,7 @@ using HTC.UnityPlugin.ColliderEvent;
 using HTC.UnityPlugin.Vive;
 using System;
 using UnityEngine.Events;
+using DigiClay;
 
 
 public class TwoHandedDeformable : DeformableBase
@@ -21,6 +22,7 @@ public class TwoHandedDeformable : DeformableBase
 	public Vector3 m_averageDir;
 	public float m_originDist;
 	public float m_currentDist;
+
 
 	#region IColliderEventHandler implementation
 	public override void OnColliderEventDragStart (ColliderButtonEventData eventData)
@@ -137,7 +139,11 @@ public class TwoHandedDeformable : DeformableBase
 		}
 
 		m_meshFilter.mesh.vertices = newVerts;
-		m_meshFilter.mesh.RecalculateNormals();
+
+		if (m_clayMeshContext != null)
+			m_clayMeshContext.clayMesh.RecalculateNormals ();
+		else
+			m_meshFilter.mesh.RecalculateNormals();
 
 		//Haptic
 //		HapticManager.Instance.Strength = Mathf.InverseLerp(0, maxDist, offsetDistance);

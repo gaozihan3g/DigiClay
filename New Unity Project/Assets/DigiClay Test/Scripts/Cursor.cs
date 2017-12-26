@@ -15,7 +15,6 @@ namespace DigiClay
 		[SerializeField]
 		private float innerRadius;
 
-
 		public Transform outerSphere;
 		public Transform innerSphere;
 
@@ -76,7 +75,7 @@ namespace DigiClay
 		public void UpdateInnerRadius(float v)
 		{
 			innerRadius = v;
-			innerSphere.localScale = Vector3.one * innerRadius * 2f;
+			innerSphere.localScale = Vector3.one * Mathf.Max(innerRadius * 2f, DigiClayConstant.MIN_RADIUS);
 		}
 
 		public void DeformParameterChangedHandler(DeformManager.DeformArgs args)

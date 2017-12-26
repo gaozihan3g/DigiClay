@@ -48,7 +48,7 @@ public class MeshVisualizer : MonoBehaviour {
             _meshFilter = GetComponent<MeshFilter>();
     }
 
-    private void Start()
+    void Start()
     {
         if (Application.isPlaying)
             _mesh = _meshFilter.mesh;
@@ -114,16 +114,18 @@ public class MeshVisualizer : MonoBehaviour {
         {
             Gizmos.color = Color.Lerp(ColorA, ColorB, _mesh.uv[i].x);
 
-            Vector3 from = _mesh.vertices[i] * transform.localScale.x + transform.position;
+			Matrix4x4 worldMatrix = transform.localToWorldMatrix;
 
-            Vector3 direction = _mesh.normals[i] * length;
+			Vector3 from = worldMatrix.MultiplyPoint (_mesh.vertices [i]);
+			Vector3 direction = worldMatrix.MultiplyVector(_mesh.normals[i]) * length;
+
             Gizmos.DrawRay(from, direction);
         }
         //Debug.Log(string.Format("from {0} to {1}", _mesh.vertices[0] * transform.localScale.x + transform.position, _mesh.vertices[0] * transform.localScale.x + transform.position + _mesh.normals[0] * length));
     }
 
-	public void DeformCallBack(DeformableBase bd)
+	public void DeformCallBack(DeformableBase db)
     {
-        weights = bd.WeightList.ToArray();
+        weights = db.WeightList.ToArray();
     }
 }

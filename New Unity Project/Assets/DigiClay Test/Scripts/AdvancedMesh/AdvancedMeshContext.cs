@@ -5,7 +5,8 @@ using DigiClay;
 
 public class AdvancedMeshContext : MonoBehaviour {
 
-	AdvancedMesh _advMesh;
+	[SerializeField]
+	private AdvancedMesh _advMesh;
 
 	public AdvancedMesh AdvMesh {
 		get {

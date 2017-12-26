@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: 88f06b702537344b6bb762a84c614707
-timeCreated: 1513866611
+guid: b25dbdd7a04be7e45ac954260c57c57d
+timeCreated: 1514278919
 licenseType: Free
 ModelImporter:
   serializedVersion: 22
@@ -8,23 +8,17 @@ ModelImporter:
     100000: //RootNode
     100002: Generated_Mesh_Instance_0
     100004: Generated_Mesh_Instance_1
-    100006: Generated_Mesh_Instance_2
     400000: //RootNode
     400002: Generated_Mesh_Instance_0
     400004: Generated_Mesh_Instance_1
-    400006: Generated_Mesh_Instance_2
     2100000: Generated_Mesh_Instance_0Mat
     2100002: Generated_Mesh_Instance_1Mat
-    2100004: Generated_Mesh_Instance_2Mat
     2300000: Generated_Mesh_Instance_0
     2300002: Generated_Mesh_Instance_1
-    2300004: Generated_Mesh_Instance_2
     3300000: Generated_Mesh_Instance_0
     3300002: Generated_Mesh_Instance_1
-    3300004: Generated_Mesh_Instance_2
     4300000: Generated_Mesh_Instance_0
     4300002: Generated_Mesh_Instance_1
-    4300004: Generated_Mesh_Instance_2
   externalObjects: {}
   materials:
     importMaterials: 1

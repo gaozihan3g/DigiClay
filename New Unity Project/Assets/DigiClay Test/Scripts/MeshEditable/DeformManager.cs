@@ -62,6 +62,10 @@ public class DeformManager : MonoBehaviour {
 	[SerializeField]
 	private float _innerRadius = 0.1f;
 
+	[Range(0.01f, 1f)]
+	[SerializeField]
+	private float m_ratio = 0.5f;
+
 	[Range(0.01f, 5f)]
 	[SerializeField]
 	private float _outerRadius = 0.5f;
@@ -82,18 +86,26 @@ public class DeformManager : MonoBehaviour {
 		}
 	}
 
+	public float Ratio {
+		get {
+			return m_ratio;
+		}
+		set {
+			if (value < 0f)
+				value = 0f;
+			
+			if (value > 1f)
+				value = 1f;
+			
+			m_ratio = value;
+		}
+	}
+
 	public float InnerRadius {
 		get {
 			return _innerRadius;
 		}
 		set {
-
-			if (value < DigiClayConstant.MIN_RADIUS)
-				value = DigiClayConstant.MIN_RADIUS;
-
-			if (value > _outerRadius)
-				value = _outerRadius;
-
 			_innerRadius = value;
 
 			ValueChanged.Invoke (new DeformArgs(_innerRadius, _outerRadius, _strength));
@@ -109,8 +121,8 @@ public class DeformManager : MonoBehaviour {
 			if (value > DigiClayConstant.MAX_RADIUS)
 				value = DigiClayConstant.MAX_RADIUS;
 			
-			if (value < _innerRadius)
-				value = _innerRadius;
+			if (value < DigiClayConstant.MIN_RADIUS)
+				value = DigiClayConstant.MIN_RADIUS;
 
 			_outerRadius = value;
 			ValueChanged.Invoke (new DeformArgs(_innerRadius, _outerRadius, _strength));
@@ -158,29 +170,33 @@ public class DeformManager : MonoBehaviour {
 			{
 				//right
 				//+ inner
-				InnerRadius += deltaAmount;
+				Ratio += deltaAmount;
+				InnerRadius = OuterRadius * Ratio;
 			}
 			else if (Mathf.Abs(angle) > 135f)
 			{
 				//left
 				//- inner
-				InnerRadius -= deltaAmount;
+				Ratio -= deltaAmount;
+				InnerRadius = OuterRadius * Ratio;
 			}
 			else if (angle > 45f && angle < 135f)
 			{
 				//up
 				//+ outer
 				OuterRadius += deltaAmount;
+				InnerRadius = OuterRadius * Ratio;
 			}
 			else if (angle > -135f && angle < -45f)
 			{
 				//down
 				//- outer
 				OuterRadius -= deltaAmount;
+				InnerRadius = OuterRadius * Ratio;
 			}
 		});
 
-		ViveInput.AddPress (HandRole.LeftHand, ControllerButton.Pad, () => {
+		ViveInput.AddPressUp (HandRole.LeftHand, ControllerButton.Pad, () => {
 
 			float x = ViveInput.GetAxis(HandRole.LeftHand, ControllerAxis.PadX);
 			float y = ViveInput.GetAxis(HandRole.LeftHand, ControllerAxis.PadY);
