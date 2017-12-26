@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[ExecuteInEditMode]
 public class MeshVisualizer : MonoBehaviour {
 
     public enum DisplayType
     {
         All,
         Weights,
-        Individuals
+        Individuals,
+        Normals
     }
 
     public DisplayType displayType = DisplayType.All;
@@ -19,6 +21,10 @@ public class MeshVisualizer : MonoBehaviour {
     public List<int> _vertexIndices;
 	public List<Color> _vertexColors;
 	public float size = 0.01f;
+<<<<<<< Updated upstream
+=======
+    public float length = 0.1f;
+>>>>>>> Stashed changes
 
 	public MeshFilter _meshFilter;
 	Mesh _mesh;
@@ -47,7 +53,14 @@ public class MeshVisualizer : MonoBehaviour {
 
     private void Start()
     {
+<<<<<<< Updated upstream
 		_mesh = _meshFilter.mesh;
+=======
+        if (Application.isPlaying)
+            _mesh = _meshFilter.mesh;
+        else
+            _mesh = _meshFilter.sharedMesh;
+>>>>>>> Stashed changes
 
         weights = new float[_mesh.vertexCount];
 	}
@@ -67,6 +80,9 @@ public class MeshVisualizer : MonoBehaviour {
                 break;
             case DisplayType.Individuals:
                 DisplayIndividuals();
+                break;
+            case DisplayType.Normals:
+                DisplayNormals();
                 break;
         }
     }
@@ -94,9 +110,23 @@ public class MeshVisualizer : MonoBehaviour {
     {
         for (int i = 0; i < _vertexIndices.Count; i++)
         {
-            Gizmos.color = ColorA;
-			Gizmos.DrawSphere(_mesh.vertices[i] * transform.localScale.x + transform.position, size * transform.localScale.x);
+            Gizmos.color = _vertexColors[i];
+            Gizmos.DrawSphere(_mesh.vertices[_vertexIndices[i]] * transform.localScale.x + transform.position, size * transform.localScale.x);
         }
+    }
+
+    void DisplayNormals()
+    {
+        for (int i = 0; i < _mesh.vertexCount; i++)
+        {
+            Gizmos.color = Color.Lerp(ColorA, ColorB, _mesh.uv[i].x);
+
+            Vector3 from = _mesh.vertices[i] * transform.localScale.x + transform.position;
+
+            Vector3 direction = _mesh.normals[i] * length;
+            Gizmos.DrawRay(from, direction);
+        }
+        //Debug.Log(string.Format("from {0} to {1}", _mesh.vertices[0] * transform.localScale.x + transform.position, _mesh.vertices[0] * transform.localScale.x + transform.position + _mesh.normals[0] * length));
     }
 
 	public void DeformCallBack(DeformableBase bd)

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DigiClay;
 
 [ExecuteInEditMode]
 public class MeshGenerator : MonoBehaviour {
@@ -26,6 +27,10 @@ public class MeshGenerator : MonoBehaviour {
     [SerializeField]
     [Range(1, 100)]
     int _verticalSegment = 10;
+
+    [SerializeField]
+    [Range(1, 10)]
+    int _edgeSegment = 5;
 
     [SerializeField]
     [Range(0.001f, 0.2f)]
@@ -61,6 +66,9 @@ public class MeshGenerator : MonoBehaviour {
 	bool Edge = true;
 
     Perlin _perlin = new Perlin();
+
+    Vector3 _innerOrigin;
+    float _innerRadius;
 
 	void Awake()
 	{
@@ -107,28 +115,28 @@ public class MeshGenerator : MonoBehaviour {
 		List<int> innerTriangles = new List<int>();
 		List<int> edgeTriangles = new List<int>();
 		List<Vector2> finalUVs = new List<Vector2> ();
+        List<Vector2Int> uvSeams = new List<Vector2Int>();
 		int offset = 0;
 
 		_delta = 2f * Mathf.PI / (float)_segment;
 		_heightDelta = (float)_height / (float)_verticalSegment;
 
+        _innerOrigin = new Vector3(0f, Mathf.Min(_thickness, 0.5f * _heightDelta), 0f);
+        _innerRadius = Mathf.Max(0, _radius - _thickness);
 
 		if (OuterBottom)
 			GenerateOuterBottom (finalVertices, outerTriangles, finalUVs, ref offset);
 		if (InnerBottom)
 			GenerateInnerBottom (finalVertices, innerTriangles, finalUVs, ref offset);
 		if (OuterSide)
-			GenerateOuterSide (finalVertices, outerTriangles, finalUVs, ref offset);
+            GenerateOuterSide (finalVertices, outerTriangles, finalUVs, ref offset, ref uvSeams);
 		if (InnerSide)
-			GenerateInnerSide (finalVertices, innerTriangles, finalUVs, ref offset);
+            GenerateInnerSide (finalVertices, innerTriangles, finalUVs, ref offset, ref uvSeams);
 		if (Edge)
-			GenerateEdge (finalVertices, edgeTriangles, finalUVs, ref offset);
+            GenerateEdge (finalVertices, outerTriangles, finalUVs, ref offset);
 
 		mesh.vertices = finalVertices.ToArray();
 		mesh.uv = finalUVs.ToArray ();
-
-//		Debug.Log ("vertices : " + mesh.vertices.Length);
-//		Debug.Log ("UVs : " + mesh.uv.Length);
 
 		int meshCount = 0;
 
@@ -152,6 +160,7 @@ public class MeshGenerator : MonoBehaviour {
 			mesh.SetTriangles(edgeTriangles.ToArray(), subMeshIndex++);
 
 		mesh.RecalculateNormals();
+        mesh.FixUVSeam(uvSeams.ToArray());
 	}
 
 	void GenerateOuterBottom(List<Vector3> finalVertices, List<int> finalTriangles, List<Vector2> finalUVs, ref int offset)
@@ -165,9 +174,20 @@ public class MeshGenerator : MonoBehaviour {
 		newVertices.Add(Vector3.zero);
 		newUVs.Add (Vector2.zero);
 
+
 		for (int i = 0; i < _segment; ++i)
 		{
-			newVertices.Add(new Vector3(_radius * Mathf.Cos(theta), 0, _radius * Mathf.Sin(theta)));
+            var pos = new Vector3(_radius * Mathf.Cos(theta), 0, _radius * Mathf.Sin(theta));
+
+            var noiseCoordinate = new Vector3(Mathf.Cos(theta), 0, Mathf.Sin(theta)) * noiseSpan;
+
+            var noise = new Vector3(Mathf.Cos(theta), 0f, Mathf.Sin(theta)).normalized
+                                                     * _perlin.Noise(noiseCoordinate.x, noiseCoordinate.y, noiseCoordinate.z)
+                                                     * noiseScale;
+
+            var finalPos = pos + noise;
+
+            newVertices.Add(finalPos);
 			newUVs.Add (Vector2.zero);
 			theta += _delta;
 		}
@@ -195,18 +215,27 @@ public class MeshGenerator : MonoBehaviour {
 		float theta = 0f;
 		float heightTheta = 0f;
 
-
-		// inner origin
-		Vector3 innerOrigin = new Vector3(0f, Mathf.Min(_thickness, 0.5f * _heightDelta), 0f);
-		newVertices.Add(innerOrigin);
+		newVertices.Add(_innerOrigin);
 		newUVs.Add (Vector2.zero);
-
-		float innerRadius = Mathf.Max(0, _radius - _thickness);
 
 		theta = 0;
 		for (int i = 0; i < _segment; ++i)
 		{
-			newVertices.Add(new Vector3(innerRadius * Mathf.Cos(theta), heightTheta + innerOrigin.y, innerRadius * Mathf.Sin(theta)));
+
+            var pos = new Vector3(_innerRadius * Mathf.Cos(theta), heightTheta + _innerOrigin.y, _innerRadius * Mathf.Sin(theta));
+
+            var noiseCoordinate = new Vector3(Mathf.Cos(theta), 0, Mathf.Sin(theta)) * noiseSpan;
+
+            var noise = new Vector3(Mathf.Cos(theta), 0f, Mathf.Sin(theta)).normalized
+                                                     * _perlin.Noise(noiseCoordinate.x, noiseCoordinate.y, noiseCoordinate.z)
+                                                     * noiseScale;
+
+            var finalPos = pos + noise;
+
+            newVertices.Add(finalPos);
+
+			//newVertices.Add(new Vector3(innerRadius * Mathf.Cos(theta), heightTheta + innerOrigin.y, innerRadius * Mathf.Sin(theta)));
+
 			newUVs.Add (Vector2.zero);
 			theta += _delta;
 		}
@@ -226,7 +255,7 @@ public class MeshGenerator : MonoBehaviour {
 		offset = finalVertices.Count;
 	}
 
-	void GenerateOuterSide(List<Vector3> finalVertices, List<int> finalTriangles, List<Vector2> finalUVs, ref int offset)
+    void GenerateOuterSide(List<Vector3> finalVertices, List<int> finalTriangles, List<Vector2> finalUVs, ref int offset, ref List<Vector2Int> uvSeams)
 	{
 		List<Vector3> newVertices = new List<Vector3>();
 		List<int> newTriangles = new List<int>();
@@ -234,30 +263,39 @@ public class MeshGenerator : MonoBehaviour {
 		float theta = 0f;
 		float heightTheta = 0f;
 
+        //Mesh Grid
+        // (_segment + 1) * (_verticalSegment + 1)
 		for (int j = 0; j < _verticalSegment + 1; ++j)
 		{
 			theta = 0f;
 
-//			_segment + 1
 			for (int i = 0; i < _segment + 1; ++i)
 			{
                 var pos = new Vector3(_radius * Mathf.Cos(theta), heightTheta, _radius * Mathf.Sin(theta));
 
-                var finalPos = pos + new Vector3(pos.x, 0f, pos.z).normalized * _perlin.Noise(pos.x * noiseSpan, pos.y * noiseSpan, pos.z * noiseSpan) * noiseScale;
+                var noiseCoordinate = new Vector3(Mathf.Cos(theta), heightTheta, Mathf.Sin(theta)) * noiseSpan;
+
+                var noise = new Vector3(Mathf.Cos(theta), 0f, Mathf.Sin(theta)).normalized
+                                                         * _perlin.Noise(noiseCoordinate.x, noiseCoordinate.y, noiseCoordinate.z)
+                                                         * noiseScale;
+
+                var finalPos = pos + noise;
 
                 newVertices.Add(finalPos);
+
 				newUVs.Add (new Vector2 ( 1f / (float)_segment * i, 1f / (float)_verticalSegment * j));
 
 				theta += _delta;
 			}
 
+            // store vertex pairs for normal fix
+            int x = 0 + j * (_segment + 1) + offset;
+            int y = _segment + j * (_segment + 1) + offset;
+
+            uvSeams.Add(new Vector2Int(x, y));
+
 			heightTheta += _heightDelta;
 		}
-
-//		for (int i = 0; i < newVertices.Count; ++i) {
-//			Debug.Log ("i = " + i + " vertices : " + newVertices[i] + " uv: " + newUVs[i]);
-//		}
-
 
 		finalVertices.AddRange (newVertices);
 
@@ -279,7 +317,7 @@ public class MeshGenerator : MonoBehaviour {
 
 	}
 
-	void GenerateInnerSide(List<Vector3> finalVertices, List<int> finalTriangles, List<Vector2> finalUVs, ref int offset)
+    void GenerateInnerSide(List<Vector3> finalVertices, List<int> finalTriangles, List<Vector2> finalUVs, ref int offset, ref List<Vector2Int> uvSeams)
 	{
 		List<Vector3> newVertices = new List<Vector3>();
 		List<int> newTriangles = new List<int>();
@@ -287,31 +325,66 @@ public class MeshGenerator : MonoBehaviour {
 		float theta = 0f;
 		float heightTheta = 0f;
 
-		Vector3 innerOrigin = new Vector3(0f, Mathf.Min(_thickness, 0.5f * _heightDelta), 0f);
-		float innerRadius = Mathf.Max(0, _radius - _thickness);
-
 		for (int j = 0; j < _verticalSegment + 1; ++j)
 		{
 			theta = 0f;
 
-			for (int i = 0; i < _segment; ++i)
+			for (int i = 0; i < _segment + 1; ++i)
 			{
-				newVertices.Add(new Vector3(innerRadius * Mathf.Cos(theta), heightTheta + (j == 0 ? innerOrigin.y : 0), innerRadius * Mathf.Sin(theta)));
-				newUVs.Add (Vector2.zero);
+
+                ///
+                var pos = new Vector3(_innerRadius * Mathf.Cos(theta), heightTheta + (j == 0 ? _innerOrigin.y : 0), _innerRadius * Mathf.Sin(theta));
+
+                var noiseCoordinate = new Vector3(Mathf.Cos(theta), heightTheta, Mathf.Sin(theta)) * noiseSpan;
+
+                var noise = new Vector3(Mathf.Cos(theta), 0f, Mathf.Sin(theta)).normalized
+                                                         * _perlin.Noise(noiseCoordinate.x, noiseCoordinate.y, noiseCoordinate.z)
+                                                         * noiseScale;
+
+                var finalPos = pos + noise;
+
+                newVertices.Add(finalPos);
+
+				//newVertices.Add(new Vector3(innerRadius * Mathf.Cos(theta), heightTheta + (j == 0 ? innerOrigin.y : 0), innerRadius * Mathf.Sin(theta)));
+                newUVs.Add(new Vector2(1f / (float)_segment * i, 1f / (float)_verticalSegment * j));
+				//newUVs.Add (Vector2.zero);
 				theta += _delta;
 			}
+
+            // store vertex pairs for normal fix
+            int x = 0 + j * (_segment + 1) + offset;
+            int y = _segment + j * (_segment + 1) + offset;
+
+            uvSeams.Add(new Vector2Int(x, y));
+
 			heightTheta += _heightDelta;
 		}
 
 		finalVertices.AddRange (newVertices);
 
-		for (int j = 0; j < _verticalSegment; ++j)
-		{
-			for (int i = 0; i < _segment; ++i)
-			{
-				CreateTriangle (newTriangles, (i + 1) % _segment + _segment * j, i + _segment * j, (i + 1) % _segment + _segment * (j + 1), i + _segment * (j + 1), offset);
-			}
-		}
+		//for (int j = 0; j < _verticalSegment; ++j)
+		//{
+		//	for (int i = 0; i < _segment; ++i)
+		//	{
+		//		CreateTriangle (newTriangles, (i + 1) % _segment + _segment * j, i + _segment * j, (i + 1) % _segment + _segment * (j + 1), i + _segment * (j + 1), offset);
+		//	}
+		//}
+
+
+        ///
+        int newSeg = _segment + 1;
+
+        for (int j = 0; j < _verticalSegment; ++j)
+        {
+            for (int i = 0; i < _segment; ++i)
+            {
+                CreateTriangle(newTriangles, i + 1 + newSeg * j, i + newSeg * j, i + 1 + newSeg * (j + 1), i + newSeg * (j + 1), offset);
+            }
+        }
+        ///
+
+
+
 
 		finalTriangles.AddRange (newTriangles);
 
@@ -327,24 +400,55 @@ public class MeshGenerator : MonoBehaviour {
 		List<int> newTriangles = new List<int>();
 		List<Vector2> newUVs = new List<Vector2> ();
 		float theta = 0f;
+        float edgeTheta = 0f;
 
-		float innerRadius = Mathf.Max(0, _radius - _thickness);
+        float edgeDelta = (_radius - _innerRadius) / _edgeSegment;
+        float radius;
 
-		for (int i = 0; i < _segment; ++i)
-		{
-			newVertices.Add(new Vector3(_radius * Mathf.Cos(theta), _height, _radius * Mathf.Sin(theta)));
-			newVertices.Add(new Vector3(innerRadius * Mathf.Cos(theta), _height, innerRadius * Mathf.Sin(theta)));
-			newUVs.Add (Vector2.zero);
-			newUVs.Add (Vector2.zero);
-			theta += _delta;
-		}
+
+        // height curve:
+        // y = 2 * Mathf.Sqrt(x * (1 - x));
+
+        for (int j = 0; j < _edgeSegment + 1; ++j)
+        {
+            theta = 0f;
+            radius = _innerRadius + edgeTheta;
+
+            float x = (float)j / (float)_edgeSegment;
+
+            Debug.Log("x " + x);
+
+            float y = 2 * Mathf.Sqrt(x * (1 - x));
+
+            float edgeSegHeight = y * _heightDelta;
+
+
+            for (int i = 0; i < _segment + 1; ++i)
+            {
+                var pos = new Vector3(radius * Mathf.Cos(theta), _height + edgeSegHeight, radius * Mathf.Sin(theta));
+                var noiseCoordinate = new Vector3(Mathf.Cos(theta), _height, Mathf.Sin(theta)) * noiseSpan;
+                var noise = new Vector3(Mathf.Cos(theta), 0f, Mathf.Sin(theta)).normalized
+                                                         * _perlin.Noise(noiseCoordinate.x, noiseCoordinate.y, noiseCoordinate.z)
+                                                         * noiseScale;
+                var finalPos = pos + noise;
+                newVertices.Add(finalPos);
+                newUVs.Add(Vector2.zero);
+                theta += _delta;
+            }
+            edgeTheta += edgeDelta;
+        }
 
 		finalVertices.AddRange (newVertices);
 
-		for (int i = 0; i < _segment; ++i)
-		{
-			CreateTriangle(newTriangles, 2 * i, 2 * ((i + 1) % _segment) , 2 * i + 1, 2 * ((i + 1) % _segment) + 1, offset);
-		}
+        int newSeg = _segment + 1;
+
+        for (int j = 0; j < _edgeSegment; ++j)
+        {
+            for (int i = 0; i < _segment; ++i)
+            {
+                CreateTriangle(newTriangles, i + 1 + newSeg * j, i + newSeg * j, i + 1 + newSeg * (j + 1), i + newSeg * (j + 1), offset);
+            }
+        }
 
 		finalTriangles.AddRange (newTriangles);
 
@@ -379,7 +483,11 @@ public class MeshGenerator : MonoBehaviour {
         list.Add(c + offset);
     }
 	
-	// Update is called once per frame
+
+    //The functions are not called constantly like they are in play mode.
+    //- Update is only called when something in the scene changed.
+    //- OnGUI is called when the Game View recieves an Event.
+    //- OnRenderObject and the other rendering callback functions are called on every repaint of the Scene View or Game View.
 	void Update () {
 
 		//only in editor mode

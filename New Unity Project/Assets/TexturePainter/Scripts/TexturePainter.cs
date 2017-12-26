@@ -20,8 +20,21 @@ public class TexturePainter : MonoBehaviour {
 	Painter_BrushMode mode; //Our painter mode (Paint brushes or decals)
 	float brushSize=1.0f; //The size of our brush
 	Color brushColor; //The selected color
-	int brushCounter=0,MAX_BRUSH_COUNT=1000; //To avoid having millions of brushes
+	int brushCounter=0,MAX_BRUSH_COUNT=100; //To avoid having millions of brushes
 	bool saving=false; //Flag to check if we are saving the texture
+
+
+	void Start()
+	{
+		OnScreenUIManager.Instance.AddCommand ("DECAL", () => {
+			SetBrushMode(Painter_BrushMode.DECAL);
+		});
+
+		OnScreenUIManager.Instance.AddCommand ("PAINT", () => {
+			SetBrushMode(Painter_BrushMode.PAINT);
+		});
+	}
+
 
 	
 	void Update () {
@@ -37,21 +50,38 @@ public class TexturePainter : MonoBehaviour {
 		if (saving)
 			return;
 		Vector3 uvWorldPosition=Vector3.zero;		
+
+
+
 		if(HitTestUVPosition(ref uvWorldPosition)){
 			GameObject brushObj;
-			if(mode==Painter_BrushMode.PAINT){
 
-				brushObj=(GameObject)Instantiate(Resources.Load("TexturePainter-Instances/BrushEntity")); //Paint a brush
-				brushObj.GetComponent<SpriteRenderer>().color=brushColor; //Set the brush color
+			int cursorCount = brushCursor.transform.childCount + 1;
+
+			for (int i = 0; i < cursorCount; ++i) {
+
+				if (mode == Painter_BrushMode.PAINT) {
+
+					brushObj = (GameObject)Instantiate (Resources.Load ("TexturePainter-Instances/BrushEntity")); //Paint a brush
+					brushObj.GetComponent<SpriteRenderer> ().color = brushColor; //Set the brush color
+				} else {
+					brushObj = (GameObject)Instantiate (Resources.Load ("TexturePainter-Instances/DecalEntity")); //Paint a decal
+				}
+				brushColor.a = brushSize * 2.0f; // Brushes have alpha to have a merging effect when painted over.
+				brushObj.transform.parent = brushContainer.transform; //Add the brush to our container to be wiped later
+				brushObj.name += " #" + brushContainer.transform.childCount;
+
+				Vector3 offset = new Vector3 (-1f + 2f / (cursorCount - 1) * i, 0f, 0f);
+
+				brushObj.transform.localPosition = uvWorldPosition + offset; //The position of the brush (in the UVMap)
+				brushObj.transform.localScale = Vector3.one * brushSize;//The size of the brush
+
 			}
-			else{
-				brushObj=(GameObject)Instantiate(Resources.Load("TexturePainter-Instances/DecalEntity")); //Paint a decal
-			}
-			brushColor.a=brushSize*2.0f; // Brushes have alpha to have a merging effect when painted over.
-			brushObj.transform.parent=brushContainer.transform; //Add the brush to our container to be wiped later
-			brushObj.transform.localPosition=uvWorldPosition; //The position of the brush (in the UVMap)
-			brushObj.transform.localScale=Vector3.one*brushSize;//The size of the brush
+
 		}
+
+
+
 		brushCounter++; //Add to the max brushes
 		if (brushCounter >= MAX_BRUSH_COUNT) { //If we reach the max brushes available, flatten the texture and clear the brushes
 			brushCursor.SetActive (false);
@@ -95,14 +125,17 @@ public class TexturePainter : MonoBehaviour {
 		brushCounter=0;
 		System.DateTime date = System.DateTime.Now;
 		RenderTexture.active = canvasTexture;
-		Texture2D tex = new Texture2D(canvasTexture.width, canvasTexture.height, TextureFormat.RGB24, false);		
+		Texture2D tex = new Texture2D(canvasTexture.width, canvasTexture.height, TextureFormat.ARGB32, false);		
 		tex.ReadPixels (new Rect (0, 0, canvasTexture.width, canvasTexture.height), 0, 0);
 		tex.Apply ();
 		RenderTexture.active = null;
 		baseMaterial.mainTexture =tex;	//Put the painted texture as the base
+
 		foreach (Transform child in brushContainer.transform) {//Clear brushes
 			Destroy(child.gameObject);
 		}
+
+		Debug.Log ("child count after cleanup:" + brushContainer.transform.childCount);
 		//StartCoroutine ("SaveTextureToFile"); //Do you want to save the texture? This is your method!
 		Invoke ("ShowCursor", 0.1f);
 	}
@@ -116,7 +149,10 @@ public class TexturePainter : MonoBehaviour {
 	public void SetBrushMode(Painter_BrushMode brushMode){ //Sets if we are painting or placing decals
 		mode = brushMode;
         //TODO change to children
-		brushCursor.GetComponent<SpriteRenderer> ().sprite = brushMode == Painter_BrushMode.PAINT ? cursorPaint : cursorDecal;
+		var srs = brushCursor.GetComponentsInChildren<SpriteRenderer>();
+
+		for (int i = 0; i < srs.Length; ++i)
+			srs[i].sprite = brushMode == Painter_BrushMode.PAINT ? cursorPaint : cursorDecal;
 	}
 	public void SetBrushSize(float newBrushSize){ //Sets the size of the cursor brush or decal
 		brushSize = newBrushSize;
