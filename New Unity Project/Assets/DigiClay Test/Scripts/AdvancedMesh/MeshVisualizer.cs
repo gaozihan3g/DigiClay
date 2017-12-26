@@ -50,7 +50,11 @@ public class MeshVisualizer : MonoBehaviour {
 
     private void Start()
     {
-		_mesh = _meshFilter.mesh;
+        if (Application.isPlaying)
+            _mesh = _meshFilter.mesh;
+        else
+            _mesh = _meshFilter.sharedMesh;
+        
         weights = new float[_mesh.vertexCount];
 	}
 
