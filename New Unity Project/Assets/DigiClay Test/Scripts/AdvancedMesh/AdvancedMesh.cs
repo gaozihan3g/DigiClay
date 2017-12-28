@@ -6,7 +6,8 @@ using System.Linq;
 
 namespace DigiClay
 {
-	[System.Serializable]
+	[Serializable]
+    [ExecuteInEditMode]
 	public class AdvancedMesh
 	{
 		#region HalfEdge
@@ -97,6 +98,7 @@ namespace DigiClay
 		Mesh _mesh;
 
 		//all Half Edges
+        [SerializeField]
 		List<HalfEdge> _allHalfEdges;
 
 		//Half Edge Refs for each Vertex
@@ -291,7 +293,7 @@ namespace DigiClay
 
 			Vector3[] vertices = _mesh.vertices;
 
-			Vector3 average = new Vector3 ();
+            Vector3 average = Vector3.zero;
 
 			foreach (var vertex in oneRingVertices)
 				average += vertex;

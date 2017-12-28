@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DigiClay;
 
+[ExecuteInEditMode]
 public class AdvancedMeshContext : MonoBehaviour {
 
 	[SerializeField]
@@ -18,12 +19,8 @@ public class AdvancedMeshContext : MonoBehaviour {
 	}
 
 	// Use this for initialization
-	void Start () {
-		_advMesh = new AdvancedMesh(GetComponentInChildren<MeshFilter> ().mesh);
+	public void CreateAdvMesh () {
+        _advMesh = new AdvancedMesh(GetComponentInChildren<MeshFilter> ().sharedMesh);
 	}
 	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 }

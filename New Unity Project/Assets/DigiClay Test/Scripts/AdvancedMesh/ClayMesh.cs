@@ -14,6 +14,12 @@ namespace DigiClay
 		[SerializeField]
 		List<Vector2Int> m_uvSeams = new List<Vector2Int> ();
 
+        [SerializeField]
+        List<float> m_featurePoints = new List<float>();
+
+        [SerializeField]
+        Dictionary<string, IList> m_properties = new Dictionary<string, IList>();
+
 		public Mesh mesh {
 			get {
 				return m_mesh;
@@ -32,7 +38,33 @@ namespace DigiClay
 			}
 		}
 
-		public ClayMesh()
+        public List<float> FeaturePoints
+        {
+            get
+            {
+                return m_featurePoints;
+            }
+
+            set
+            {
+                m_featurePoints = value;
+            }
+        }
+
+        public Dictionary<string, IList> Properties
+        {
+            get
+            {
+                return m_properties;
+            }
+
+            set
+            {
+                m_properties = value;
+            }
+        }
+
+        public ClayMesh()
 		{
 		}
 

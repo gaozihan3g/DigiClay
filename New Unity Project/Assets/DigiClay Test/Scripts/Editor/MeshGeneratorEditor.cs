@@ -16,6 +16,6 @@ public class MeshGeneratorEditor : Editor {
 		}
 
 
-		EditorGUILayout.HelpBox ("haha", MessageType.Info);
+        EditorGUILayout.HelpBox ("MeshGenerator", MessageType.Info);
 	}
 }
