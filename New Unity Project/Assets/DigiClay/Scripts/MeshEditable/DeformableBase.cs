@@ -69,7 +69,7 @@ public abstract class DeformableBase : MonoBehaviour
 	}
 	#endregion
 
-	protected void Awake()
+	protected virtual void Awake()
 	{
 		m_meshFilter = GetComponentInChildren<MeshFilter>();
 		m_meshCollider = GetComponentInChildren<MeshCollider>();
@@ -78,13 +78,13 @@ public abstract class DeformableBase : MonoBehaviour
 		m_clayMeshContext = GetComponent<ClayMeshContext>();
 	}
 
-	protected void OnEnable()
+	protected virtual void OnEnable()
 	{
 		if (DeformManager.Instance != null)
 			DeformManager.Instance.ValueChanged.AddListener (DeformParameterChangedHandler);
 	}
 
-	protected void OnDisable()
+	protected virtual void OnDisable()
 	{
 		if (DeformManager.Instance != null)
 			DeformManager.Instance.ValueChanged.RemoveListener (DeformParameterChangedHandler);
@@ -110,7 +110,7 @@ public abstract class DeformableBase : MonoBehaviour
 	}
 
 	// Use this for initialization
-	void Start () {
+	protected virtual void Start () {
 		Init ();
 	}
 
@@ -123,7 +123,6 @@ public abstract class DeformableBase : MonoBehaviour
 	
 	// Update is called once per frame
 	void Update () {
-		
 	}
 
 	protected float Falloff(float inner, float outer, float value)

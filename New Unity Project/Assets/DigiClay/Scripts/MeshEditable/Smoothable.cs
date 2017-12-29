@@ -2,47 +2,42 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using DigiClay;
 using HTC.UnityPlugin.Vive;
 using HTC.UnityPlugin.Utility;
+using HTC.UnityPlugin.ColliderEvent;
+using DigiClay;
 using mattatz.MeshSmoothingSystem;
 
-public class Smoothable : MonoBehaviour
+public class Smoothable : DeformableBase
 {
-	[Range(0.01f, 1f)]
-	public float _radius = 0.5f;
-
 	public int m_iterations = 1;
 
-	public Transform cursor;
-
-	MeshFilter _meshFilter;
-	MeshCollider _meshCollider;
-
-	ClayMeshContext m_cmc;
-
-	bool[] _isFeaturePoints;
-
-	void Awake()
+	#region IColliderEventHandler implementation
+	public override void OnColliderEventDragStart (ColliderButtonEventData eventData)
 	{
-		_meshFilter = GetComponentInChildren<MeshFilter>();
-		_meshCollider = GetComponentInChildren<MeshCollider>();
-		m_cmc = GetComponent<ClayMeshContext>();
+		if (eventData.button != m_deformButton)
+			return;
+		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
+		HapticManager.Instance.StartHaptic (role);
 	}
 
-	// Use this for initialization
-	void Start () {
-		_isFeaturePoints = m_cmc.clayMesh.IsFeaturePoints.ToArray ();
-	}
-
-	void Update()
+	public override void OnColliderEventDragUpdate (ColliderButtonEventData eventData)
 	{
-		if (ViveInput.GetPress (HandRole.RightHand, ControllerButton.Grip)) {
-			Debug.Log ("right hand is gripping!");
+		if (eventData.button != m_deformButton)
+			return;
 
-			var localPos = transform.worldToLocalMatrix.MultiplyPoint (cursor.position);
-
-			_meshFilter.mesh = MeshSmoothing.LaplacianFilter(_meshFilter.mesh, m_iterations, _isFeaturePoints, localPos, _radius);
-		}
+		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
+		var casterWorldPosition = eventData.eventCaster.transform.position;
+		var localPos = transform.worldToLocalMatrix.MultiplyPoint(casterWorldPosition);
+		m_meshFilter.mesh = MeshSmoothing.LaplacianFilter(m_meshFilter.mesh, m_iterations, m_clayMeshContext.clayMesh.IsFeaturePoints.ToArray (), localPos, m_outerRadius);
 	}
+
+	public override void OnColliderEventDragEnd (ColliderButtonEventData eventData)
+	{
+		if (eventData.button != m_deformButton)
+			return;
+		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
+		HapticManager.Instance.EndHaptic (role);
+	}
+	#endregion
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Rotable : MonoBehaviour {
 
-
+	[Range(10f, 1000f)]
     public float speed = 100f;
 
 

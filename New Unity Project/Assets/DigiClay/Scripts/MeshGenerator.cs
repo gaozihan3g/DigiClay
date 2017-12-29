@@ -30,12 +30,37 @@ public class MeshGenerator : MonoBehaviour {
     [Range(0.001f, 0.2f)]
 	float m_thickness = 0.01f;
 
-	[SerializeField]
-	[Range(0.001f, 0.2f)]
-    float m_noiseScale = 0.02f;
-	[SerializeField]
-	[Range(0.001f, 30f)]
-    float m_noiseSpan = 10f;
+	//
+	//noise parameters
+	//
+
+	[SerializeField, Range(0.01f, 0.1f)]
+	float m_centerOffsetDistNoiseScale = 0.02f;
+
+	[SerializeField, Range(0.1f, 20f)]
+	float m_centerOffsetDistNoiseSpan = 0.02f;
+
+	// angle scale is fixed: 0 - 2 * Pi
+	[SerializeField, Range(0.1f, 20f)]
+	float m_centerOffsetAngleNoiseSpan = 0.02f;
+
+
+	[SerializeField, Range(0.01f, 0.2f)]
+	float m_radiusNoiseScale = 0.02f;
+
+	[SerializeField, Range(0.01f, 10f)]
+	float m_radiusNoiseSpan = 0.02f;
+
+
+	[SerializeField, Range(0.01f, 0.2f)]
+	float m_individualNoiseScale = 0.02f;
+
+	[SerializeField, Range(0.01f, 20f)]
+	float m_individualNoiseSpan = 10f;
+
+	//
+	//
+	//
 
 	[SerializeField]
 	bool OuterBottom = true;
@@ -266,30 +291,63 @@ public class MeshGenerator : MonoBehaviour {
 		float theta = 0f;
 		float heightTheta = 0f;
 
+		Vector3 origin = Vector3.zero;
+
         //Mesh Grid
         // (_segment + 1) * (_verticalSegment + 1)
 		for (int j = 0; j < m_verticalSegment + 1; ++j)
 		{
 			theta = 0f;
 
+			//random the center
+			// 1. direction
+			float offsetAngle = Mathf.Lerp (0f, 2 * Mathf.PI, m_perlin.Noise (heightTheta * m_centerOffsetAngleNoiseSpan));
+			Vector3 offsetDir = new Vector3 (Mathf.Cos (offsetAngle), 0f, Mathf.Sin (offsetAngle)).normalized;
+
+			// 2. length
+			float offsetLength = m_perlin.Noise (heightTheta * m_centerOffsetDistNoiseSpan) * m_centerOffsetDistNoiseScale;
+			Vector3 noiseCenter = offsetDir * offsetLength;
+
+			// store the origin, in order to fix the total offset
+			if (j == 0)
+				origin = noiseCenter;
+
+			float baseRadius = Mathf.Max( 0.5f * m_radius, Mathf.Sqrt ( Mathf.Max(0f, m_height * m_height - heightTheta * heightTheta) ) * m_radius / m_height);
+
+			//random the radius
+			// 1. length
+			float noiseRadius = baseRadius + m_perlin.Noise (heightTheta * m_radiusNoiseSpan) * m_radiusNoiseScale;
+
 			for (int i = 0; i < m_segment; ++i)
 			{
-                var pos = new Vector3(m_radius * Mathf.Cos(theta), heightTheta, m_radius * Mathf.Sin(theta));
 
-                Vector3 noise = Vector3.zero;
+				float individualRadius = noiseRadius + m_perlin.Noise (
+					Mathf.Cos (theta) * m_individualNoiseSpan,
+					heightTheta * m_individualNoiseSpan,
+					Mathf.Sin (theta) * m_individualNoiseSpan) * m_individualNoiseScale;
 
-                if (!(j == 0 || j == m_verticalSegment))
-                {
-                    var noiseCoordinate = new Vector3(Mathf.Cos(theta), heightTheta, Mathf.Sin(theta)) * m_noiseSpan;
 
-                    noise = new Vector3(Mathf.Cos(theta), 0f, Mathf.Sin(theta)).normalized
-                                                             * m_perlin.Noise(noiseCoordinate.x, noiseCoordinate.y, noiseCoordinate.z)
-                                                             * m_noiseScale;
-                }
+				var pos = new Vector3(individualRadius * Mathf.Cos(theta), heightTheta, individualRadius * Mathf.Sin(theta));
 
-                var finalPos = pos + noise;
+
+//				var pos = new Vector3(noiseRadius * Mathf.Cos(theta), heightTheta, noiseRadius * Mathf.Sin(theta));
+//
+//				// random individual vertex
+//				Vector3 noiseIndividual = Vector3.zero;
+//
+//				// j == 0 / m_verticalSegment ?
+//
+//				var noiseCoordinate = new Vector3(Mathf.Cos(theta), heightTheta, Mathf.Sin(theta)) * m_individualNoiseSpan;
+//
+//				noiseIndividual = new Vector3(Mathf.Cos(theta), 0f, Mathf.Sin(theta)).normalized
+//					* m_perlin.Noise(noiseCoordinate.x, noiseCoordinate.y, noiseCoordinate.z)
+//					* m_individualNoiseScale;
+
+				var finalPos = pos + noiseCenter - origin;
+
                 newVertices.Add(finalPos);
-				m_isFeaturePointList.Add ((j == 0 || j == m_verticalSegment) ? true : false);
+
+				m_isFeaturePointList.Add ((j == 0 || j == 1 || j == m_verticalSegment - 1 || j == m_verticalSegment) ? true : false);
 
 				float u;
 
@@ -366,11 +424,11 @@ public class MeshGenerator : MonoBehaviour {
 
                 if (!(j == 0 || j == m_verticalSegment))
                 {
-                    var noiseCoordinate = new Vector3(Mathf.Cos(theta), heightTheta, Mathf.Sin(theta)) * m_noiseSpan;
+                    var noiseCoordinate = new Vector3(Mathf.Cos(theta), heightTheta, Mathf.Sin(theta)) * m_individualNoiseSpan;
 
                     noise = new Vector3(Mathf.Cos(theta), 0f, Mathf.Sin(theta)).normalized
                                                              * m_perlin.Noise(noiseCoordinate.x, noiseCoordinate.y, noiseCoordinate.z)
-                                                             * m_noiseScale;
+                                                             * m_individualNoiseScale;
                 }
 
                 var finalPos = pos + noise;
