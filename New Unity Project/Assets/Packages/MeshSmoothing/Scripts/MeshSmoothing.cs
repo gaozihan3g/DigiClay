@@ -39,12 +39,12 @@ namespace mattatz.MeshSmoothingSystem {
 
 			for(int i = 0, n = origin.Length; i < n; i++) {
 
-				if (isFeaturePoint != null && isFeaturePoint [i]) {
+                if ((isFeaturePoint != null) && isFeaturePoint [i]) {
 					vertices [i] = origin [i];
 					continue;
 				}
 
-				if (center != null && Vector3.Distance (origin [i], center) > radius) {
+                if (Vector3.Distance (origin [i], center) > radius) {
 					vertices [i] = origin [i];
 					continue;
 				}

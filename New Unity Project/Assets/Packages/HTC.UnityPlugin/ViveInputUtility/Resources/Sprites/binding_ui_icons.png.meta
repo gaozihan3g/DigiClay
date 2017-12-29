@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 3a23c65532a98fa409e94bf90a84543e
+guid: 499e6214d25a040169a87c52d062344c
 timeCreated: 1502879007
 licenseType: Store
 TextureImporter:
@@ -60,14 +60,17 @@ TextureImporter:
     21300106: binding_ui_icons_chain
     21300108: binding_ui_icons_edit
     21300110: binding_ui_icons_arrow
-  serializedVersion: 2
+  externalObjects: {}
+  serializedVersion: 4
   mipmaps:
     mipMapMode: 0
     enableMipMap: 1
+    sRGBTexture: 1
     linearTexture: 0
-    correctGamma: 0
     fadeOut: 0
     borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
     mipMapFadeDistanceStart: 1
     mipMapFadeDistanceEnd: 3
   bumpmap:
@@ -77,23 +80,22 @@ TextureImporter:
     normalMapFilter: 0
   isReadable: 0
   grayScaleToAlpha: 0
-  generateCubemap: 0
+  generateCubemap: 6
   cubemapConvolution: 0
-  cubemapConvolutionSteps: 7
-  cubemapConvolutionExponent: 1.5
   seamlessCubemap: 0
   textureFormat: -1
   maxTextureSize: 2048
   textureSettings:
+    serializedVersion: 2
     filterMode: -1
     aniso: 16
     mipBias: -1
-    wrapMode: 1
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
   nPOTScale: 0
   lightmap: 0
-  rGBM: 0
   compressionQuality: 50
-  allowsAlphaSplitting: 0
   spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
@@ -101,9 +103,25 @@ TextureImporter:
   spritePivot: {x: 0.5, y: 0.5}
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spritePixelsToUnits: 100
+  alphaUsage: 1
   alphaIsTransparency: 1
+  spriteTessellationDetail: -1
   textureType: 8
-  buildTargetSettings: []
+  textureShape: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  platformSettings:
+  - buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
@@ -119,6 +137,8 @@ TextureImporter:
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     - serializedVersion: 2
       name: binding_ui_icons_OculusHMD
       rect:
@@ -131,6 +151,8 @@ TextureImporter:
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     - serializedVersion: 2
       name: binding_ui_icons_ViveController
       rect:
@@ -143,6 +165,8 @@ TextureImporter:
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     - serializedVersion: 2
       name: binding_ui_icons_ViveTracker
       rect:
@@ -155,6 +179,8 @@ TextureImporter:
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     - serializedVersion: 2
       name: binding_ui_icons_ViveBaseStation
       rect:
@@ -167,6 +193,8 @@ TextureImporter:
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     - serializedVersion: 2
       name: binding_ui_icons_KnucklesRight
       rect:
@@ -179,6 +207,8 @@ TextureImporter:
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     - serializedVersion: 2
       name: binding_ui_icons_OculusTouchRight
       rect:
@@ -191,6 +221,8 @@ TextureImporter:
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     - serializedVersion: 2
       name: binding_ui_icons_OculusSensor
       rect:
@@ -203,6 +235,8 @@ TextureImporter:
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     - serializedVersion: 2
       name: binding_ui_project_HMD
       rect:
@@ -215,6 +249,8 @@ TextureImporter:
       pivot: {x: 0.5, y: 0.7328}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     - serializedVersion: 2
       name: binding_ui_project_KnucklesRight
       rect:
@@ -227,6 +263,8 @@ TextureImporter:
       pivot: {x: 0.3846, y: 1.0571}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     - serializedVersion: 2
       name: binding_ui_icons_Unknown
       rect:
@@ -239,6 +277,8 @@ TextureImporter:
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     - serializedVersion: 2
       name: binding_ui_icons_check
       rect:
@@ -251,6 +291,8 @@ TextureImporter:
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     - serializedVersion: 2
       name: binding_ui_icons_minus
       rect:
@@ -263,6 +305,8 @@ TextureImporter:
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     - serializedVersion: 2
       name: binding_ui_project_OculusTouchRight
       rect:
@@ -275,6 +319,8 @@ TextureImporter:
       pivot: {x: 0.4222, y: 1.125}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     - serializedVersion: 2
       name: binding_ui_icons_warn
       rect:
@@ -287,6 +333,8 @@ TextureImporter:
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     - serializedVersion: 2
       name: binding_ui_icons_cross
       rect:
@@ -299,6 +347,8 @@ TextureImporter:
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     - serializedVersion: 2
       name: binding_ui_icons_plus
       rect:
@@ -311,6 +361,8 @@ TextureImporter:
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     - serializedVersion: 2
       name: binding_ui_project_ViveController
       rect:
@@ -323,6 +375,8 @@ TextureImporter:
       pivot: {x: 0.5, y: 0.7751}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     - serializedVersion: 2
       name: binding_ui_project_ViveTracker
       rect:
@@ -335,6 +389,8 @@ TextureImporter:
       pivot: {x: 0.5, y: 0.3333}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     - serializedVersion: 2
       name: binding_ui_icons_chain
       rect:
@@ -347,6 +403,8 @@ TextureImporter:
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     - serializedVersion: 2
       name: binding_ui_icons_edit
       rect:
@@ -359,6 +417,8 @@ TextureImporter:
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     - serializedVersion: 2
       name: binding_ui_icons_arrow
       rect:
@@ -371,7 +431,10 @@ TextureImporter:
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
+      tessellationDetail: -1
     outline: []
+    physicsShape: []
   spritePackingTag: 
   userData: 
   assetBundleName: 
