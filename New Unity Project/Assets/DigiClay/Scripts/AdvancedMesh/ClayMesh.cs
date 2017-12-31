@@ -11,6 +11,9 @@ namespace DigiClay
 		[SerializeField]
 		Mesh m_mesh;
 
+        [SerializeField]
+        int[,] meshGrid;
+
 //		[SerializeField]
 //		List<Vector2Int> m_uvSeams = new List<Vector2Int> ();
 //
@@ -63,6 +66,20 @@ namespace DigiClay
                 m_properties = value;
             }
         }
+
+        public int[,] MeshGrid
+        {
+            get
+            {
+                return meshGrid;
+            }
+
+            set
+            {
+                meshGrid = value;
+            }
+        }
+
 
         public ClayMesh()
 		{
