@@ -6,7 +6,6 @@ using HTC.UnityPlugin.Vive;
 using HTC.UnityPlugin.Utility;
 using HTC.UnityPlugin.ColliderEvent;
 using DigiClay;
-using mattatz.MeshSmoothingSystem;
 
 public class Smoothable : DeformableBase
 {
@@ -29,7 +28,8 @@ public class Smoothable : DeformableBase
 		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
 		var casterWorldPosition = eventData.eventCaster.transform.position;
 		var localPos = transform.worldToLocalMatrix.MultiplyPoint(casterWorldPosition);
-		m_meshFilter.mesh = MeshSmoothing.LaplacianFilter(m_meshFilter.mesh, m_iterations, m_clayMeshContext.clayMesh.IsFeaturePoints.ToArray (), localPos, m_outerRadius);
+        //m_meshFilter.mesh = MeshSmoothing.LaplacianFilter(m_meshFilter.mesh, m_iterations, m_clayMeshContext.clayMesh.IsFeaturePoints.ToArray (), localPos, m_outerRadius);
+        m_meshFilter.mesh = MeshSmoothing.HCFilter(m_meshFilter.mesh, m_iterations, 0.5f, 0.75f, m_clayMeshContext.clayMesh.IsFeaturePoints.ToArray(), localPos, m_outerRadius);
 	}
 
 	public override void OnColliderEventDragEnd (ColliderButtonEventData eventData)

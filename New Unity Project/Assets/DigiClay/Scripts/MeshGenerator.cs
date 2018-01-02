@@ -95,7 +95,7 @@ public class MeshGenerator : MonoBehaviour {
 		cmc.gameObject.name = "Clay Mesh " + System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
 		cmc.clayMesh = clayMesh;
 
-		Debug.Log ("ClayMesh Created.");
+        Debug.Log (string.Format("ClayMesh Created. {0} vertices, {1} feature points", clayMesh.mesh.vertices.Length, clayMesh.IsFeaturePoints.Count));
 	}
 
 
@@ -292,6 +292,7 @@ public class MeshGenerator : MonoBehaviour {
             Vector3 innerVertex = m_finalVertices[i] - m_normals[i] * m_thickness;
             newVertices.Add(innerVertex);
             newUVs.Add(m_finalUVs[i]);
+            newFeaturePoints.Add(m_featurePoints[i]);
         }
 
         //create triangles

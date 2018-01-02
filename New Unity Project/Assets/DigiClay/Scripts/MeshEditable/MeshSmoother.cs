@@ -1,15 +1,18 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using mattatz.MeshSmoothingSystem;
+using DigiClay;
 
 [ExecuteInEditMode]
 public class MeshSmoother : MonoBehaviour {
 
     public int m_iterations = 1;
-    public int start = 0;
-    public int end = 1;
+    public float alpha = 0.5f;
+    public float beta = 0.75f;
 
+    public bool isHC = false;
+
+    [SerializeField]
 	ClayMeshContext m_cmc;
 
 
@@ -20,21 +23,19 @@ public class MeshSmoother : MonoBehaviour {
 
     public void SmoothMesh()
     {
-//        if (m_amc == null)
-//            m_amc = GetComponent<AdvancedMeshContext>();
-
-        //m_amc.AdvMesh.Smooth(m_iterations);
-
-//        for (int i = start; i < end; ++i)
-//            m_amc.AdvMesh.SmoothVertex(i);
-
 		Mesh mesh = GetComponent<MeshFilter> ().mesh;
 
-		Debug.Log ("m_cmc.clayMesh.IsFeaturePoints " + m_cmc.clayMesh.IsFeaturePoints.Count);
-		Debug.Log ("mesh count" + mesh.vertexCount);
-
-		mesh = MeshSmoothing.LaplacianFilter(mesh, m_iterations, m_cmc.clayMesh.IsFeaturePoints.ToArray());
+        if (isHC)
+        {
+            mesh = MeshSmoothing.HCFilter(mesh, m_iterations, alpha, beta, m_cmc.clayMesh.IsFeaturePoints.ToArray());
+            Debug.Log("HC Smoothing " + m_iterations);
+        }
+        else
+        {
+            mesh = MeshSmoothing.LaplacianFilter(mesh, m_iterations, m_cmc.clayMesh.IsFeaturePoints.ToArray());
+            Debug.Log("LaplacianSmoothing " + m_iterations);
+        }
         
-        Debug.Log("LaplacianSmoothing " + m_iterations);
+
     }
 }
