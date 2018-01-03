@@ -24,7 +24,7 @@ public class MeshVisualizer : MonoBehaviour {
     public float length = 0.05f;
 
 	public MeshFilter _meshFilter;
-	Mesh _mesh;
+	public Mesh _mesh;
 
     float[] weights;
 
@@ -60,6 +60,11 @@ public class MeshVisualizer : MonoBehaviour {
 
     void OnDrawGizmos()
 	{
+		if (Application.isPlaying)
+			_mesh = _meshFilter.mesh;
+		else
+			_mesh = _meshFilter.sharedMesh;
+		
 		if (_mesh == null)
 			return;
 

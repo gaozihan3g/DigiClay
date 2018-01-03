@@ -77,6 +77,9 @@ public class DeformManager : MonoBehaviour {
 	[SerializeField]
 	private bool _symmetric = false;
 
+	[SerializeField]
+	private bool m_isHCSmoothing = false;
+
 	public bool Symmetric {
 		get {
 			return _symmetric;
@@ -135,6 +138,15 @@ public class DeformManager : MonoBehaviour {
 		}
 		set {
 			_strength = value;
+		}
+	}
+
+	public bool IsHCSmoothing {
+		get {
+			return m_isHCSmoothing;
+		}
+		set {
+			m_isHCSmoothing = value;
 		}
 	}
 

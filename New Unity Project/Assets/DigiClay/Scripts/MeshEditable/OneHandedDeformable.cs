@@ -32,10 +32,14 @@ public class OneHandedDeformable : DeformableBase
 
         m_weightList = new List<float>();
 
-        _originalLocalPos = transform.worldToLocalMatrix.MultiplyPoint(casterWorldPosition);
+//        _originalLocalPos = transform.worldToLocalMatrix.MultiplyPoint(casterWorldPosition);
+
+		// this will remove rotation
+		_originalLocalPos = casterWorldPosition - transform.position;
 
 		_isSymmetric = DeformManager.Instance.Symmetric;
 
+		// calculate weights
         for (int i = 0; i < vertices.Length; ++i)
         {
             float dist = 0f;
@@ -51,8 +55,6 @@ public class OneHandedDeformable : DeformableBase
 
 			float weight = Falloff( m_innerRadius, m_outerRadius, dist);
 			m_weightList.Add(weight);
-
-            //TODO symmetric deform
         }
 
         if (OnDeformStart != null)
@@ -63,7 +65,6 @@ public class OneHandedDeformable : DeformableBase
 		_role = eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue;
 
 		HapticManager.Instance.StartHaptic ((HandRole)_role);
-//		HapticManager.Instance.StartRightHaptic ();
     }
 
 	public override void OnColliderEventDragUpdate(ColliderButtonEventData eventData)
@@ -71,25 +72,27 @@ public class OneHandedDeformable : DeformableBase
 		if (eventData.button != m_deformButton) { return; }
 
         var currentWorldPosition = eventData.eventCaster.transform.position;
-        var originalWorldPosition = transform.localToWorldMatrix.MultiplyPoint(_originalLocalPos);
 
-		Transform currentTransform = eventData.eventCaster.transform;
+//        var originalWorldPosition = transform.localToWorldMatrix.MultiplyPoint(_originalLocalPos);
+		var originalWorldPosition = _originalLocalPos + transform.position;
 
         Debug.DrawLine(originalWorldPosition, currentWorldPosition, Color.red);
 
         Vector3 offsetVector = currentWorldPosition - originalWorldPosition;
 
-		float offsetDistance = Vector3.Distance(originalWorldPosition, currentWorldPosition);
+//		float offsetDistance = Vector3.Distance(originalWorldPosition, currentWorldPosition);
 		// 0m - 0.1m
 
 		//Haptic
-		HapticManager.Instance.Strength = Mathf.InverseLerp(0, maxDist, offsetDistance);
+		//HapticManager.Instance.Strength = Mathf.InverseLerp(0, maxDist, offsetDistance);
 
 
         //Debug.Log(string.Format("origin {0} | current {1} | offset {2}", originalWorldPosition.ToString("F3"), currentWorldPosition.ToString("F3"), offsetVector.ToString("F3")));
 
         Vector3[] vertices = m_meshFilter.mesh.vertices;
 
+		var currentLocPos = currentWorldPosition - transform.position;
+		float radius = Vector3.ProjectOnPlane (currentLocPos, Vector3.up).magnitude;
 
         for (int i = 0; i < vertices.Length; ++i)
         {
@@ -97,15 +100,15 @@ public class OneHandedDeformable : DeformableBase
             if (m_weightList[i] == 0f)
                 continue;
 
-
-			Vector3 finalOffset;
-
-
 			if(_isSymmetric)
 			{
-
-
 				Vector3 vertNormalDir = new Vector3 (vertices [i].x, 0f, vertices [i].z).normalized;
+
+				// target: 
+				Vector3 targetPos = new Vector3 (
+					radius * vertNormalDir.x * m_weightList[i],
+					m_originalVertices[i].y,
+					radius * vertNormalDir.z * m_weightList[i]);
 
 				float length = Vector3.ProjectOnPlane (offsetVector, Vector3.up).magnitude;
 
@@ -113,27 +116,18 @@ public class OneHandedDeformable : DeformableBase
 
 				float sign = (currentLocalPos.sqrMagnitude > _originalLocalPos.sqrMagnitude) ? 1f : -1f;
 
-				finalOffset = vertNormalDir * length * sign * m_strength * m_weightList[i];
+				Vector3 finalOffset = vertNormalDir * length * sign * m_strength * m_weightList[i];
+
+				vertices[i] = m_originalVertices[i] + finalOffset;
+
+				// origin = lerp(origin, target, t);
+
 			}
 			else
 			{
-				finalOffset = offsetVector * m_strength * m_weightList[i];
-
-				// TODO rotation
-//				Matrix4x4 mx = Matrix4x4.identity;
-//
-//				finalOffset = offsetVector * _strength * weightList[i];
-//
-//				Quaternion q = Quaternion.FromToRotation (_originalTransform.forward, currentTransform.forward);
-//
-//				mx.SetTRS (finalOffset,
-//					Quaternion.Lerp (Quaternion.identity, q, weightList [i]),
-//					Vector3.one);
-//
-//				vertices [i] = mx.MultiplyPoint (_originalVertices [i]);
+				Vector3 finalOffset = offsetVector * m_strength * m_weightList[i];
+				vertices[i] = m_originalVertices[i] + finalOffset;
 			}
-
-			vertices[i] = m_originalVertices[i] + finalOffset;
 
             //Debug.Log(string.Format("origin pos: {0}, weight: {1}, offsetVector: {2}, finalOffset: {3}, finalPos: {4}", _originalVertices[i].ToString("F3"), weightList[i], offsetVector.ToString("F3"), finalOffset.ToString("F3"), vertices[i].ToString("F3")));
         }

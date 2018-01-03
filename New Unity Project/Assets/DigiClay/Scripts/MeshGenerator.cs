@@ -25,7 +25,7 @@ public class MeshGenerator : MonoBehaviour {
     [SerializeField, Range(0.01f, 1f)]
     float m_topRadiusRatio = 0.5f;
 
-	[SerializeField, Range(0.01f, 0.1f)]
+	[SerializeField, Range(0f, 0.1f)]
     float m_centerDistNoiseScale = 0.02f;
 
 	[SerializeField, Range(0.1f, 20f)]
@@ -35,13 +35,13 @@ public class MeshGenerator : MonoBehaviour {
 	[SerializeField, Range(0.1f, 20f)]
     float m_centerAngleNoiseSpan = 0.02f;
 
-	[SerializeField, Range(0.01f, 0.2f)]
+	[SerializeField, Range(0f, 0.2f)]
 	float m_radiusNoiseScale = 0.02f;
 
 	[SerializeField, Range(0.01f, 10f)]
 	float m_radiusNoiseSpan = 0.02f;
 
-	[SerializeField, Range(0.01f, 0.2f)]
+	[SerializeField, Range(0f, 0.2f)]
 	float m_individualNoiseScale = 0.02f;
 
 	[SerializeField, Range(0.01f, 20f)]
@@ -233,7 +233,7 @@ public class MeshGenerator : MonoBehaviour {
 
 
                 // add feature points for smoothing
-                newFeaturePoints.Add ((j == 0 || j == 1 || j == m_verticalSegment - 1 || j == m_verticalSegment) ? true : false);
+                newFeaturePoints.Add ((j == 0 || j == m_verticalSegment) ? true : false);
 
                 // create normal, just for inner points
                 Vector3 normal = new Vector3(finalPos.x, 0f, finalPos.z).normalized; 
