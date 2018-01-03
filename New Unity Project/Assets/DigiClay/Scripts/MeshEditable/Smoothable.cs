@@ -16,6 +16,11 @@ public class Smoothable : DeformableBase
 	{
 		if (eventData.button != m_deformButton)
 			return;
+		
+		m_originalVertices = m_meshFilter.mesh.vertices;
+		//register undo
+		DeformManager.Instance.RegisterUndo(this, m_originalVertices);
+
 		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
 		HapticManager.Instance.StartHaptic (role);
 	}

@@ -100,11 +100,12 @@ public abstract class DeformableBase : MonoBehaviour
 	public void UndoDeform(Vector3[] vertices)
 	{
 		m_meshFilter.mesh.vertices = vertices;
+		m_meshFilter.mesh.RecalculateNormals();
 
-		if (m_clayMeshContext != null)
-			m_clayMeshContext.clayMesh.RecalculateNormals ();
-		else
-			m_meshFilter.mesh.RecalculateNormals();
+//		if (m_clayMeshContext != null)
+//			m_clayMeshContext.clayMesh.RecalculateNormals ();
+//		else
+//			m_meshFilter.mesh.RecalculateNormals();
 			
 		m_meshCollider.sharedMesh = m_meshFilter.mesh;
 	}

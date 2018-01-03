@@ -206,7 +206,7 @@ public class MeshGenerator : MonoBehaviour {
 
             // model the shape as a ellipse, get radius based on height
             // x^2 / a^2 + y^2 / b^2 = 1
-            float baseRadius = Mathf.Max( m_topRadiusRatio * m_radius, Mathf.Sqrt ( Mathf.Max(0f, m_height * m_height - heightTheta * heightTheta) ) * m_radius / m_height);
+			float baseRadius = Mathf.Sqrt ( Mathf.Max(0f, m_height * m_height - m_topRadiusRatio * m_topRadiusRatio * heightTheta * heightTheta) ) * m_radius / m_height;
 
 			//random the radius
 			// 1. length
