@@ -5,6 +5,7 @@ using HTC.UnityPlugin.ColliderEvent;
 using System;
 using UnityEngine.Events;
 using DigiClay;
+using HTC.UnityPlugin.Vive;
 
 public abstract class DeformableBase : MonoBehaviour
 , IColliderEventDragStartHandler
@@ -141,5 +142,18 @@ public abstract class DeformableBase : MonoBehaviour
 //		return (1f - Mathf.InverseLerp(inner, outer, value));
 
 		return (outer - value) / (outer - inner);
+	}
+
+	protected void TriggerHaptic(HandRole role, Vector3 previous, Vector3 current)
+	{
+		float dist = Vector3.Distance (previous, current);
+
+		Debug.Log (string.Format ("{0} {1:F3} {2}", role, dist, Time.frameCount));
+
+		float t = dist / DeformManager.Instance.MaxDist;
+
+		float duration = Mathf.Lerp (DeformManager.Instance.MinDuration, DeformManager.Instance.MaxDuration, t);
+
+		ViveInput.TriggerHapticPulse(role, (ushort)duration);
 	}
 }

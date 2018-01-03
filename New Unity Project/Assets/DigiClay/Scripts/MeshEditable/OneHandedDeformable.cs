@@ -10,16 +10,19 @@ using HTC.UnityPlugin.Vive;
 
 public class OneHandedDeformable : DeformableBase
 {
-    Vector3 _originalLocalPos;
-	public float maxDist = 0.1f;
+	Vector3 m_originalLocalPos;
+	Vector3 m_previousWorldPosition;
 	bool _isSymmetric;
-	int _role;
+	HandRole m_role;
+
 
 	public override void OnColliderEventDragStart(ColliderButtonEventData eventData)
     {
         if (eventData.button != m_deformButton) { return; }
 
         var casterWorldPosition = eventData.eventCaster.transform.position;
+
+		m_previousWorldPosition = casterWorldPosition;
 
         m_originalVertices = m_meshFilter.mesh.vertices;
 
@@ -35,7 +38,7 @@ public class OneHandedDeformable : DeformableBase
 //        _originalLocalPos = transform.worldToLocalMatrix.MultiplyPoint(casterWorldPosition);
 
 		// this will remove rotation
-		_originalLocalPos = casterWorldPosition - transform.position;
+		m_originalLocalPos = casterWorldPosition - transform.position;
 
 		_isSymmetric = DeformManager.Instance.Symmetric;
 
@@ -46,11 +49,11 @@ public class OneHandedDeformable : DeformableBase
 
 			if(_isSymmetric)
 			{
-				dist = Mathf.Abs(vertices[i].y - _originalLocalPos.y);
+				dist = Mathf.Abs(vertices[i].y - m_originalLocalPos.y);
 			}
 			else
 			{
-				dist = Vector3.Distance(vertices[i], _originalLocalPos);
+				dist = Vector3.Distance(vertices[i], m_originalLocalPos);
 			}
 
 			float weight = Falloff( m_innerRadius, m_outerRadius, dist);
@@ -62,9 +65,7 @@ public class OneHandedDeformable : DeformableBase
             OnDeformStart.Invoke(this);
         }
 
-		_role = eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue;
-
-		HapticManager.Instance.StartHaptic ((HandRole)_role);
+		m_role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
     }
 
 	public override void OnColliderEventDragUpdate(ColliderButtonEventData eventData)
@@ -74,7 +75,7 @@ public class OneHandedDeformable : DeformableBase
         var currentWorldPosition = eventData.eventCaster.transform.position;
 
 //        var originalWorldPosition = transform.localToWorldMatrix.MultiplyPoint(_originalLocalPos);
-		var originalWorldPosition = _originalLocalPos + transform.position;
+		var originalWorldPosition = m_originalLocalPos + transform.position;
 
         Debug.DrawLine(originalWorldPosition, currentWorldPosition, Color.red);
 
@@ -82,10 +83,6 @@ public class OneHandedDeformable : DeformableBase
 
 //		float offsetDistance = Vector3.Distance(originalWorldPosition, currentWorldPosition);
 		// 0m - 0.1m
-
-		//Haptic
-		//HapticManager.Instance.Strength = Mathf.InverseLerp(0, maxDist, offsetDistance);
-
 
         //Debug.Log(string.Format("origin {0} | current {1} | offset {2}", originalWorldPosition.ToString("F3"), currentWorldPosition.ToString("F3"), offsetVector.ToString("F3")));
 
@@ -114,7 +111,7 @@ public class OneHandedDeformable : DeformableBase
 
 				var currentLocalPos = transform.worldToLocalMatrix.MultiplyPoint (currentWorldPosition);
 
-				float sign = (currentLocalPos.sqrMagnitude > _originalLocalPos.sqrMagnitude) ? 1f : -1f;
+				float sign = (currentLocalPos.sqrMagnitude > m_originalLocalPos.sqrMagnitude) ? 1f : -1f;
 
 				Vector3 finalOffset = vertNormalDir * length * sign * m_strength * m_weightList[i];
 
@@ -134,6 +131,10 @@ public class OneHandedDeformable : DeformableBase
 
         m_meshFilter.mesh.vertices = vertices;
         m_meshFilter.mesh.RecalculateNormals();
+
+		TriggerHaptic (m_role, m_previousWorldPosition, currentWorldPosition);
+
+		m_previousWorldPosition = currentWorldPosition;
     }
 
 	public override void OnColliderEventDragEnd(ColliderButtonEventData eventData)
@@ -148,7 +149,5 @@ public class OneHandedDeformable : DeformableBase
         {
             OnDeformEnd.Invoke(this);
         }
-			
-		HapticManager.Instance.EndHaptic ((HandRole)_role);
     }
 }

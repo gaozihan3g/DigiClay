@@ -58,21 +58,53 @@ public class DeformManager : MonoBehaviour {
 		m_ready [(int)role] = value;
 	}
 
-	[Range(0.01f, 5f)]
-	[SerializeField]
+	[Range(0.01f, 5f), SerializeField]
 	private float _innerRadius = 0.1f;
 
-	[Range(0.01f, 1f)]
-	[SerializeField]
+	[Range(0.01f, 1f), SerializeField]
 	private float m_ratio = 0.5f;
 
-	[Range(0.01f, 5f)]
-	[SerializeField]
+	[Range(0.01f, 5f), SerializeField]
 	private float _outerRadius = 0.5f;
 
-	[Range(0f, 1f)]
-	[SerializeField]
+	[Range(0f, 1f), SerializeField]
 	private float _strength = 1f;
+
+	[Range(0f, 1f), SerializeField]
+	private float m_maxDist = 0.01f;
+
+	public float MaxDist {
+		get {
+			return m_maxDist;
+		}
+		set {
+			m_maxDist = value;
+		}
+	}
+
+	[Range(0, 3000), SerializeField]
+	private ushort m_minDuration = 200;
+
+	public ushort MinDuration {
+		get {
+			return m_minDuration;
+		}
+		set {
+			m_minDuration = value;
+		}
+	}
+
+	[Range(0, 3000), SerializeField]
+	private ushort m_maxDuration = 1000;
+
+	public ushort MaxDuration {
+		get {
+			return m_maxDuration;
+		}
+		set {
+			m_maxDuration = value;
+		}
+	}
 
 	[SerializeField]
 	private bool _symmetric = false;
@@ -150,7 +182,8 @@ public class DeformManager : MonoBehaviour {
 		}
 	}
 
-	public float deltaAmount = 0.05f;
+	public float deltaAmount = 0.01f;
+	public float ratioDeltaAmount = 0.05f;
 
     void Awake()
     {
@@ -171,7 +204,7 @@ public class DeformManager : MonoBehaviour {
 		//initialization
 		Debug.Log("DefromManager Start");
 
-		ViveInput.AddPress (HandRole.RightHand, ControllerButton.Pad, () => {
+		ViveInput.AddPressUp (HandRole.RightHand, ControllerButton.Pad, () => {
 
 			float x = ViveInput.GetAxis(HandRole.RightHand, ControllerAxis.PadX);
 			float y = ViveInput.GetAxis(HandRole.RightHand, ControllerAxis.PadY);
@@ -182,14 +215,14 @@ public class DeformManager : MonoBehaviour {
 			{
 				//right
 				//+ inner
-				Ratio += deltaAmount;
+				Ratio += ratioDeltaAmount;
 				InnerRadius = OuterRadius * Ratio;
 			}
 			else if (Mathf.Abs(angle) > 135f)
 			{
 				//left
 				//- inner
-				Ratio -= deltaAmount;
+				Ratio -= ratioDeltaAmount;
 				InnerRadius = OuterRadius * Ratio;
 			}
 			else if (angle > 45f && angle < 135f)

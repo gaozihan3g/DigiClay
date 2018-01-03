@@ -77,10 +77,8 @@ public class MeshGenerator : MonoBehaviour {
     List<Vector2Int> m_uvSeams;
     int m_offset;
     List<bool> m_featurePoints;
-    int[,] m_meshGrid;
+    float[,] m_meshGrid;
     List<Vector3> m_normals;
-    //
-
 
 	public void CreateMesh()
 	{
@@ -96,6 +94,21 @@ public class MeshGenerator : MonoBehaviour {
 		cmc.clayMesh = clayMesh;
 
         Debug.Log (string.Format("ClayMesh Created. {0} vertices, {1} feature points", clayMesh.mesh.vertices.Length, clayMesh.IsFeaturePoints.Count));
+
+		string str = "";
+		float avgRadius = 0f;
+		for (int i = 0; i < cmc.clayMesh.Row; ++i) {
+			avgRadius = 0f;
+			for (int j = 0; j < cmc.clayMesh.Column; ++j) {
+				str += string.Format ("[{0},{1}]:{2:F3} \t", i, j, cmc.clayMesh.MeshGrid [i, j]);
+				avgRadius += cmc.clayMesh.MeshGrid [i, j];
+			}
+			avgRadius /= cmc.clayMesh.Column;
+			str += "avg: " + avgRadius + "\n";
+		}
+
+		Debug.Log (str);
+
 	}
 
 
@@ -164,7 +177,8 @@ public class MeshGenerator : MonoBehaviour {
 
 		cMesh.mesh = mesh;
         cMesh.MeshGrid = m_meshGrid;
-//		cMesh.uvSeams = m_uvSeams;
+		cMesh.Row = m_verticalSegment + 1;
+		cMesh.Column = m_segment;
 		cMesh.IsFeaturePoints = m_featurePoints;
 		cMesh.RecalculateNormals();
 		return cMesh;
@@ -185,7 +199,7 @@ public class MeshGenerator : MonoBehaviour {
 
         //Mesh Grid
         // _segment * (_verticalSegment + 1)
-        m_meshGrid = new int[m_verticalSegment + 1, m_segment];
+        m_meshGrid = new float[m_verticalSegment + 1, m_segment];
 
 		for (int j = 0; j < m_verticalSegment + 1; ++j)
 		{
@@ -214,12 +228,12 @@ public class MeshGenerator : MonoBehaviour {
 
 			for (int i = 0; i < m_segment; ++i)
 			{
-
-				float individualRadius = noiseRadius + m_perlin.Noise (
+				float individualNoise = m_perlin.Noise (
 					Mathf.Cos (theta) * m_individualNoiseSpan,
 					heightTheta * m_individualNoiseSpan,
 					Mathf.Sin (theta) * m_individualNoiseSpan) * m_individualNoiseScale;
-
+				
+				float individualRadius = noiseRadius + individualNoise;
 
 				var pos = new Vector3(individualRadius * Mathf.Cos(theta), heightTheta, individualRadius * Mathf.Sin(theta));
 
@@ -229,7 +243,7 @@ public class MeshGenerator : MonoBehaviour {
 
                 // create index for grid
                 // TODO can it be simplified ?
-                m_meshGrid[j, i] = index++;
+				m_meshGrid[j, i] = Vector3.ProjectOnPlane(finalPos, Vector3.up).magnitude;
 
 
                 // add feature points for smoothing
@@ -361,7 +375,6 @@ public class MeshGenerator : MonoBehaviour {
         newUVs.Add(Vector2.zero);
         newFeaturePoints.Add(true);
 
-
         for (int i = 0; i < m_segment; ++i)
         {
             newVertices.Add(m_finalVertices[i]);
@@ -394,7 +407,6 @@ public class MeshGenerator : MonoBehaviour {
         newVertices.Add(Vector3.zero);
         newUVs.Add(Vector2.zero);
         newFeaturePoints.Add(true);
-
 
         for (int i = 0; i < m_segment; ++i)
         {
@@ -442,212 +454,3 @@ public class MeshGenerator : MonoBehaviour {
         list.Add(c + offset);
     }
 }
-
-
-
-// store vertex pairs for normal fix
-//            int x = 0 + j * (m_segment + 1) + m_offset;
-//            int y = m_segment + j * (m_segment + 1) + m_offset;
-
-//            m_uvSeams.Add(new Vector2Int(x, y));
-
-
-//      int newSeg = m_segment + 1;
-//
-//      for (int j = 0; j < m_verticalSegment; ++j)
-//      {
-//          for (int i = 0; i < m_segment; ++i)
-//          {
-//              CreateTriangle (newTriangles, i + newSeg * j, i + 1 + newSeg * j, i + newSeg * (j + 1), i + 1 + newSeg * (j + 1), m_offset);
-//          }
-//      }
-
-//void GenerateInnerSide()
-//{
-//    List<Vector3> newVertices = new List<Vector3>();
-//    List<int> newTriangles = new List<int>();
-//    List<Vector2> newUVs = new List<Vector2>();
-//    float theta = 0f;
-//    float heightTheta = 0f;
-
-//    for (int j = 0; j < m_verticalSegment + 1; ++j)
-//    {
-//        theta = 0f;
-
-//        for (int i = 0; i < m_segment; ++i)
-//        {
-
-//            ///
-//            var pos = new Vector3(m_innerRadius * Mathf.Cos(theta), heightTheta + (j == 0 ? m_innerOrigin.y : 0), m_innerRadius * Mathf.Sin(theta));
-
-//            Vector3 noise = Vector3.zero;
-
-//            if (!(j == 0 || j == m_verticalSegment))
-//            {
-//                var noiseCoordinate = new Vector3(Mathf.Cos(theta), heightTheta, Mathf.Sin(theta)) * m_individualNoiseSpan;
-
-//                noise = new Vector3(Mathf.Cos(theta), 0f, Mathf.Sin(theta)).normalized
-//                                                         * m_perlin.Noise(noiseCoordinate.x, noiseCoordinate.y, noiseCoordinate.z)
-//                                                         * m_individualNoiseScale;
-//            }
-
-//            var finalPos = pos + noise;
-
-//            newVertices.Add(finalPos);
-//            m_isFeaturePointList.Add((j == 0 || j == m_verticalSegment) ? true : false);
-
-//            //newVertices.Add(new Vector3(innerRadius * Mathf.Cos(theta), heightTheta + (j == 0 ? innerOrigin.y : 0), innerRadius * Mathf.Sin(theta)));
-//            newUVs.Add(new Vector2(1f / (float)m_segment * i, 1f / (float)m_verticalSegment * j));
-//            //newUVs.Add (Vector2.zero);
-//            theta += m_delta;
-//        }
-
-//        // store vertex pairs for normal fix
-//        //            int x = 0 + j * (m_segment + 1) + m_offset;
-//        //            int y = m_segment + j * (m_segment + 1) + m_offset;
-//        //
-//        //            m_uvSeams.Add(new Vector2Int(x, y));
-
-//        heightTheta += m_heightDelta;
-//    }
-
-//    m_finalVertices.AddRange(newVertices);
-
-//    //seamless
-//    for (int j = 0; j < m_verticalSegment; ++j)
-//    {
-//        for (int i = 0; i < m_segment; ++i)
-//        {
-//            CreateTriangle(newTriangles, (i + 1) % m_segment + m_segment * j, i + m_segment * j, (i + 1) % m_segment + m_segment * (j + 1), i + m_segment * (j + 1), m_offset);
-//        }
-//    }
-
-
-//    //        int newSeg = m_segment + 1;
-//    //
-//    //        for (int j = 0; j < m_verticalSegment; ++j)
-//    //        {
-//    //            for (int i = 0; i < m_segment; ++i)
-//    //            {
-//    //                CreateTriangle(newTriangles, i + 1 + newSeg * j, i + newSeg * j, i + 1 + newSeg * (j + 1), i + newSeg * (j + 1), m_offset);
-//    //            }
-//    //        }
-
-//    m_innerTriangles.AddRange(newTriangles);
-
-//    m_finalUVs.AddRange(newUVs);
-
-//    m_offset = m_finalVertices.Count;
-//}
-
-// a list of inner edge vertices
-//      for (int j = 0; j < m_edgeSegment + 1; ++j)
-//      {
-//          theta = 0f;
-//          radius = m_innerRadius + edgeTheta;
-
-//          float x = (float)j / (float)m_edgeSegment;
-
-//  // height curve:
-//  // y = 2 * Mathf.Sqrt(x * (1 - x));
-//          float y = 2 * Mathf.Sqrt(x * (1 - x));
-
-//          float edgeSegHeight = y * m_heightDelta;
-
-
-//          for (int i = 0; i < m_segment + 1; ++i)
-//          {
-//              var pos = new Vector3(radius * Mathf.Cos(theta), m_height + edgeSegHeight, radius * Mathf.Sin(theta));
-
-//              //var noiseCoordinate = new Vector3(Mathf.Cos(theta), m_height, Mathf.Sin(theta)) * m_noiseSpan;
-//              //var noise = new Vector3(Mathf.Cos(theta), 0f, Mathf.Sin(theta)).normalized
-//                                                       //* _perlin.Noise(noiseCoordinate.x, noiseCoordinate.y, noiseCoordinate.z)
-//                                                       //* m_noiseScale;
-
-//              var finalPos = pos;
-//              newVertices.Add(finalPos);
-//              m_isFeaturePointList.Add (true);
-//              newUVs.Add(Vector2.zero);
-//              theta += m_delta;
-//          }
-//          edgeTheta += edgeDelta;
-//      }
-//m_finalVertices.AddRange (newVertices);
-// a list of inner edge vertices
-        //      for (int j = 0; j < m_edgeSegment + 1; ++j)
-        //      {
-        //          theta = 0f;
-        //          radius = m_innerRadius + edgeTheta;
-
-        //          float x = (float)j / (float)m_edgeSegment;
-
-        //  // height curve:
-        //  // y = 2 * Mathf.Sqrt(x * (1 - x));
-        //          float y = 2 * Mathf.Sqrt(x * (1 - x));
-
-        //          float edgeSegHeight = y * m_heightDelta;
-
-
-
-        //string output = "";
-        //foreach(var a in outerEdgeIndex)
-        //{
-        //    output += a + " ";
-        //}
-        //Debug.Log(output);
-        //output = "";
-        //foreach (var a in innerEdgeIndex)
-        //{
-        //    output += a + " ";
-        //}
-        //Debug.Log(output);
-
-// a list of inner edge vertices
-//      for (int j = 0; j < m_edgeSegment + 1; ++j)
-//      {
-//          theta = 0f;
-//          radius = m_innerRadius + edgeTheta;
-
-//          float x = (float)j / (float)m_edgeSegment;
-
-//  // height curve:
-//  // y = 2 * Mathf.Sqrt(x * (1 - x));
-//          float y = 2 * Mathf.Sqrt(x * (1 - x));
-
-//          float edgeSegHeight = y * m_heightDelta;
-
-
-
-//string output = "";
-//foreach(var a in outerEdgeIndex)
-//{
-//    output += a + " ";
-//}
-//Debug.Log(output);
-//output = "";
-//foreach (var a in innerEdgeIndex)
-//{
-//    output += a + " ";
-//}
-//Debug.Log(output);
-
-//   [SerializeField]
-//   [Range(1, 10)]
-//int m_edgeSegment = 5;
-
-
-//      int newSeg = m_segment + 1;
-
-//      for (int j = 0; j < m_edgeSegment; ++j)
-//      {
-//          for (int i = 0; i < m_segment; ++i)
-//          {
-//              CreateTriangle(newTriangles, i + 1 + newSeg * j, i + newSeg * j, i + 1 + newSeg * (j + 1), i + newSeg * (j + 1), m_offset);
-//          }
-//      }
-
-//      m_outerTriangles.AddRange (newTriangles);
-
-//m_finalUVs.AddRange (newUVs);
-
-//m_offset = m_finalVertices.Count;

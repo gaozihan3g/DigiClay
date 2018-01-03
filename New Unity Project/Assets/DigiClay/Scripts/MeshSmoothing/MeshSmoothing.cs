@@ -42,12 +42,17 @@ namespace DigiClay
                     continue;
                 }
 
-                if (center != default(Vector3) && Vector3.Distance(origin[i], center) > radius)
-                {
-                    vertices[i] = origin[i];
-                    continue;
-                }
+//                if (center != default(Vector3) && Vector3.Distance(origin[i], center) > radius)
+//                {
+//                    vertices[i] = origin[i];
+//                    continue;
+//                }
 
+				if (center != default(Vector3) && Mathf.Abs(origin[i].y - center.y) > radius)
+				{
+					vertices[i] = origin[i];
+					continue;
+				}
 
                 var connection = network[i].Connection;
 

@@ -23,6 +23,7 @@ public class TwoHandedDeformable : DeformableBase
 	public float m_originDist;
 	public float m_currentDist;
 
+	Vector3[] m_previousWorldPosition = new Vector3[2];
 
 	#region IColliderEventHandler implementation
 	public override void OnColliderEventDragStart (ColliderButtonEventData eventData)
@@ -35,9 +36,10 @@ public class TwoHandedDeformable : DeformableBase
 
 		//record original positions
 		var casterWorldPosition = eventData.eventCaster.transform.position;
-		m_originalLocalPos[(int)role] = transform.worldToLocalMatrix.MultiplyPoint(casterWorldPosition);
 
-		HapticManager.Instance.StartHaptic (role);
+		m_previousWorldPosition[(int)role] = casterWorldPosition;
+
+		m_originalLocalPos[(int)role] = transform.worldToLocalMatrix.MultiplyPoint(casterWorldPosition);
 
 		//early out if both hands not ready
 		if (!DeformManager.Instance.IsBothHandReady)
@@ -117,10 +119,6 @@ public class TwoHandedDeformable : DeformableBase
 		m_radialDeltaPercentage = distDelta / m_radialBase;
 		///
 
-//		var vec0 = m_currentLocalPos [0] - m_originalLocalPos [0];
-//		var vec1 = m_currentLocalPos [1] - m_originalLocalPos [1];
-
-
 		Vector3[] newVerts = m_meshFilter.mesh.vertices;
 
 		for (int i = 0; i < newVerts.Length; ++i)
@@ -145,9 +143,9 @@ public class TwoHandedDeformable : DeformableBase
 		else
 			m_meshFilter.mesh.RecalculateNormals();
 
-		//Haptic
-//		HapticManager.Instance.Strength = Mathf.InverseLerp(0, maxDist, offsetDistance);
+		TriggerHaptic (role, m_previousWorldPosition [(int)role], casterWorldPosition);
 
+		m_previousWorldPosition[(int)role] = casterWorldPosition;
 	}
 
 	public override void OnColliderEventDragEnd (ColliderButtonEventData eventData)
@@ -164,8 +162,6 @@ public class TwoHandedDeformable : DeformableBase
 		//reset position
 		m_originalLocalPos[(int)role] = Vector3.zero;
 		m_currentLocalPos[(int)role] = Vector3.zero;
-
-		HapticManager.Instance.EndHaptic (role);
 
 		if (OnDeformEnd != null)
 		{
