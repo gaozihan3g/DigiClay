@@ -12,40 +12,35 @@ namespace DigiClay
 		Mesh m_mesh;
 
         [SerializeField]
-		float[,] m_meshGrid;
+        List<float> m_radiusList = new List<float>();
 
 		[SerializeField]
 		int m_row;
 
-		public int Row {
+        [SerializeField]
+        int m_column;
+
+        [SerializeField, HideInInspector]
+        List<bool> m_isFeaturePoints = new List<bool>();
+
+        [SerializeField]
+        float[] m_rowAvgRadius;
+
+//		[SerializeField]
+//		List<Vector2Int> m_uvSeams = new List<Vector2Int> ();
+
+        public int Row {
 			get {
 				return m_row;
 			}
-			set {
-				m_row = value;
-			}
 		}
-
-		[SerializeField]
-		int m_column;
 
 		public int Column {
 			get {
 				return m_column;
 			}
-			set {
-				m_column = value;
-			}
 		}
 
-//		[SerializeField]
-//		List<Vector2Int> m_uvSeams = new List<Vector2Int> ();
-//
-		[SerializeField]
-		List<bool> m_isFeaturePoints = new List<bool>();
-
-        [SerializeField]
-        Dictionary<string, IList> m_properties = new Dictionary<string, IList>();
 
 		public Mesh mesh {
 			get {
@@ -56,15 +51,7 @@ namespace DigiClay
 			}
 		}
 
-//		public List<Vector2Int> uvSeams {
-//			get {
-//				return m_uvSeams;
-//			}
-//			set {
-//				m_uvSeams = value;
-//			}
-//		}
-//
+
         public List<bool> IsFeaturePoints
         {
             get
@@ -78,41 +65,61 @@ namespace DigiClay
             }
         }
 
-        public Dictionary<string, IList> Properties
+        public List<float> RadiusList
         {
             get
             {
-                return m_properties;
+                return m_radiusList;
             }
 
             set
             {
-                m_properties = value;
+                m_radiusList = value;
             }
         }
 
-        public float[,] MeshGrid
+        public float[] RowAvgRadius
         {
             get
             {
-                return m_meshGrid;
-            }
-
-            set
-            {
-                m_meshGrid = value;
+                return m_rowAvgRadius;
             }
         }
 
-
-        public ClayMesh()
+        public ClayMesh(int row, int column)
 		{
-		}
+            m_row = row;
+            m_column = column;
+            m_rowAvgRadius = new float[row];
+        }
 
 		public void RecalculateNormals()
 		{
 			m_mesh.RecalculateNormals ();
 //			m_mesh.FixUVSeam (m_uvSeams.ToArray ());
 		}
-	}
+
+        public void RecalculateAvgRadius()
+        {
+            float avgRadius = 0f;
+
+            for (int i = 0; i < Row; ++i)
+            {
+                avgRadius = 0f;
+                for (int j = 0; j < Column; ++j)
+                {
+                    avgRadius += m_radiusList[i * Column + j];
+                }
+                avgRadius /= m_column;
+                m_rowAvgRadius[i] = avgRadius;
+            }
+        }
+
+        public float GetRowAvgRadiusForVertex(int i)
+        {
+            if (i > m_radiusList.Count)
+                throw new IndexOutOfRangeException();
+            return m_rowAvgRadius[i / m_column];
+        }
+    }
 }

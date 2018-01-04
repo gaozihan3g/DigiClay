@@ -65,8 +65,8 @@ public class MeshGenerator : MonoBehaviour {
 
     // helpers
     Perlin m_perlin = new Perlin();
-    Vector3 m_innerOrigin;
-    float m_innerRadius;
+    //Vector3 m_innerOrigin;
+    //float m_innerRadius;
     float m_delta;
     float m_heightDelta;
     List<Vector3> m_finalVertices;
@@ -74,10 +74,10 @@ public class MeshGenerator : MonoBehaviour {
     List<int> m_innerTriangles;
     List<int> m_edgeTriangles;
     List<Vector2> m_finalUVs;
-    List<Vector2Int> m_uvSeams;
+    //List<Vector2Int> m_uvSeams;
     int m_offset;
     List<bool> m_featurePoints;
-    float[,] m_meshGrid;
+    List<float> m_radiusList;
     List<Vector3> m_normals;
 
 	public void CreateMesh()
@@ -95,19 +95,21 @@ public class MeshGenerator : MonoBehaviour {
 
         Debug.Log (string.Format("ClayMesh Created. {0} vertices, {1} feature points", clayMesh.mesh.vertices.Length, clayMesh.IsFeaturePoints.Count));
 
-		string str = "";
-		float avgRadius = 0f;
-		for (int i = 0; i < cmc.clayMesh.Row; ++i) {
-			avgRadius = 0f;
-			for (int j = 0; j < cmc.clayMesh.Column; ++j) {
-				str += string.Format ("[{0},{1}]:{2:F3} \t", i, j, cmc.clayMesh.MeshGrid [i, j]);
-				avgRadius += cmc.clayMesh.MeshGrid [i, j];
-			}
-			avgRadius /= cmc.clayMesh.Column;
-			str += "avg: " + avgRadius + "\n";
-		}
+		//string str = "";
+		//float avgRadius = 0f;
+		//for (int i = 0; i < cmc.clayMesh.Row; ++i) {
+		//	avgRadius = 0f;
+		//	for (int j = 0; j < cmc.clayMesh.Column; ++j) {
+		//		str += string.Format ("[{0},{1}]:{2:F3} \t", i, j, cmc.clayMesh.MeshGrid [i, j]);
+		//		avgRadius += cmc.clayMesh.MeshGrid [i, j];
+		//	}
+		//	avgRadius /= cmc.clayMesh.Column;
+		//	str += "avg: " + avgRadius + "\n";
+		//}
 
-		Debug.Log (str);
+		//Debug.Log (str);
+
+        cmc.clayMesh.RecalculateAvgRadius();
 
 	}
 
@@ -119,13 +121,14 @@ public class MeshGenerator : MonoBehaviour {
         m_innerTriangles = new List<int>();
         m_edgeTriangles = new List<int>();
         m_finalUVs = new List<Vector2>();
-        m_uvSeams = new List<Vector2Int>();
+        //m_uvSeams = new List<Vector2Int>();
         m_offset = 0;
 		m_featurePoints = new List<bool> ();
         m_normals = new List<Vector3>();
 
-		ClayMesh cMesh = new ClayMesh ();
+		ClayMesh cMesh = new ClayMesh (m_verticalSegment + 1, m_segment);
 
+        //mesh
         Mesh mesh = new Mesh
         {
             name = "Generated Mesh"
@@ -136,8 +139,8 @@ public class MeshGenerator : MonoBehaviour {
         m_delta = 2f * Mathf.PI / (float)m_segment;
         m_heightDelta = (float)m_height / (float)m_verticalSegment;
 
-        m_innerOrigin = new Vector3(0f, Mathf.Min(m_thickness, 0.5f * m_heightDelta), 0f);
-        m_innerRadius = Mathf.Max(0, m_radius - m_thickness);
+        //m_innerOrigin = new Vector3(0f, Mathf.Min(m_thickness, 0.5f * m_heightDelta), 0f);
+        //m_innerRadius = Mathf.Max(0, m_radius - m_thickness);
 
         if (m_outerSide)
             GenerateOuterSide();
@@ -174,11 +177,10 @@ public class MeshGenerator : MonoBehaviour {
 			mesh.SetTriangles(m_innerTriangles.ToArray(), subMeshIndex++);
 		if (m_edgeTriangles.Count != 0)
 			mesh.SetTriangles(m_edgeTriangles.ToArray(), subMeshIndex++);
+        //end mesh
 
 		cMesh.mesh = mesh;
-        cMesh.MeshGrid = m_meshGrid;
-		cMesh.Row = m_verticalSegment + 1;
-		cMesh.Column = m_segment;
+        cMesh.RadiusList = m_radiusList;
 		cMesh.IsFeaturePoints = m_featurePoints;
 		cMesh.RecalculateNormals();
 		return cMesh;
@@ -195,11 +197,11 @@ public class MeshGenerator : MonoBehaviour {
 		float theta = 0f;
 		float heightTheta = 0f;
         Vector3 origin = Vector3.zero;
-        int index = 0;
+        //int index = 0;
 
-        //Mesh Grid
+        //Mesh Radius Grid
         // _segment * (_verticalSegment + 1)
-        m_meshGrid = new float[m_verticalSegment + 1, m_segment];
+        m_radiusList = new List<float>();
 
 		for (int j = 0; j < m_verticalSegment + 1; ++j)
 		{
@@ -243,7 +245,7 @@ public class MeshGenerator : MonoBehaviour {
 
                 // create index for grid
                 // TODO can it be simplified ?
-				m_meshGrid[j, i] = Vector3.ProjectOnPlane(finalPos, Vector3.up).magnitude;
+				m_radiusList.Add(Vector3.ProjectOnPlane(finalPos, Vector3.up).magnitude);
 
 
                 // add feature points for smoothing
@@ -320,7 +322,7 @@ public class MeshGenerator : MonoBehaviour {
                                 i + m_segment * j,
                                (i + 1) % m_segment + m_segment * (j + 1),
                                 i + m_segment * (j + 1),
-                               m_meshGrid.Length);
+                               m_radiusList.Count);
             }
         }
 
@@ -410,7 +412,7 @@ public class MeshGenerator : MonoBehaviour {
 
         for (int i = 0; i < m_segment; ++i)
         {
-            newVertices.Add(m_finalVertices[i + m_meshGrid.Length]);
+            newVertices.Add(m_finalVertices[i + m_radiusList.Count]);
             newUVs.Add(Vector2.one);
             newFeaturePoints.Add(true);
         }

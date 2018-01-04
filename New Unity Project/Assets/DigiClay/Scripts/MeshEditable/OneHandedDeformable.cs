@@ -15,6 +15,7 @@ public class OneHandedDeformable : DeformableBase
 	bool _isSymmetric;
 	HandRole m_role;
 
+    public float m_radiusOffsetFactor = 0.5f;
 
 	public override void OnColliderEventDragStart(ColliderButtonEventData eventData)
     {
@@ -91,6 +92,13 @@ public class OneHandedDeformable : DeformableBase
 		var currentLocPos = currentWorldPosition - transform.position;
 		float radius = Vector3.ProjectOnPlane (currentLocPos, Vector3.up).magnitude;
 
+        if (_isSymmetric)
+        {
+            // calculate avgRadius for each row in grid
+            m_clayMeshContext.clayMesh.RecalculateAvgRadius();
+        }
+
+
         for (int i = 0; i < vertices.Length; ++i)
         {
             //early out if weight is 0
@@ -101,24 +109,53 @@ public class OneHandedDeformable : DeformableBase
 			{
 				Vector3 vertNormalDir = new Vector3 (vertices [i].x, 0f, vertices [i].z).normalized;
 
-				// target: 
-				Vector3 targetPos = new Vector3 (
-					radius * vertNormalDir.x * m_weightList[i],
-					m_originalVertices[i].y,
-					radius * vertNormalDir.z * m_weightList[i]);
-
 				float length = Vector3.ProjectOnPlane (offsetVector, Vector3.up).magnitude;
 
 				var currentLocalPos = transform.worldToLocalMatrix.MultiplyPoint (currentWorldPosition);
 
 				float sign = (currentLocalPos.sqrMagnitude > m_originalLocalPos.sqrMagnitude) ? 1f : -1f;
 
-				Vector3 finalOffset = vertNormalDir * length * sign * m_strength * m_weightList[i];
 
-				vertices[i] = m_originalVertices[i] + finalOffset;
+                // smooth radius diffs
+                // main affect: 0 - seg * (vSeg + 1)
+                // based on weights
+                // final += deltaR[i] * weight[i]
+                // deltaR = targetR - currentR
+                // targetR = sum / seg -> calculate elsewhere
+                // currentR = grid[i]
+                // cases:
+                // 1. outer side
+                // 2. inner side
+                // 3. outer bottom
+                // 4. inner bottom
 
-				// origin = lerp(origin, target, t);
+                float deltaR = 0f;
+                Vector3 radiusOffset = Vector3.zero;
 
+                if (i < m_clayMeshContext.clayMesh.RadiusList.Count)
+                {
+                    // outer side
+                    float oldR = m_clayMeshContext.clayMesh.RadiusList[i];
+                    float targetR = m_clayMeshContext.clayMesh.GetRowAvgRadiusForVertex(i);
+                    deltaR = targetR - oldR;
+                    float newR = oldR + deltaR * m_weightList[i] * m_radiusOffsetFactor;
+
+                    // grid[i] = currentR based on vertices[i]
+                    m_clayMeshContext.clayMesh.RadiusList[i] = newR;
+                    radiusOffset = vertNormalDir * deltaR * m_weightList[i];
+                }
+                else if (i < m_clayMeshContext.clayMesh.RadiusList.Count * 2)
+                {
+                    // inner side
+                }
+
+
+
+                Vector3 finalOffset = vertNormalDir * length * sign * m_strength * m_weightList[i];
+
+                m_originalVertices[i] += radiusOffset * m_radiusOffsetFactor;
+
+                vertices[i] = m_originalVertices[i] + finalOffset;
 			}
 			else
 			{
