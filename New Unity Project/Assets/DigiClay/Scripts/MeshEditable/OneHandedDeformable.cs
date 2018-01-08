@@ -92,12 +92,13 @@ public class OneHandedDeformable : DeformableBase
 		var currentLocPos = currentWorldPosition - transform.position;
 		float radius = Vector3.ProjectOnPlane (currentLocPos, Vector3.up).magnitude;
 
+        Vector3 finalOffset = Vector3.zero;
+
         if (_isSymmetric)
         {
             // calculate avgRadius for each row in grid
             m_clayMeshContext.clayMesh.RecalculateAvgRadius();
         }
-
 
         for (int i = 0; i < vertices.Length; ++i)
         {
@@ -140,28 +141,44 @@ public class OneHandedDeformable : DeformableBase
                     deltaR = targetR - oldR;
                     float newR = oldR + deltaR * m_weightList[i] * m_radiusOffsetFactor;
 
-                    // grid[i] = currentR based on vertices[i]
+                    // update Radius List, only for outer side
                     m_clayMeshContext.clayMesh.RadiusList[i] = newR;
+
                     radiusOffset = vertNormalDir * deltaR * m_weightList[i];
+
+                    m_originalVertices[i] += radiusOffset * m_radiusOffsetFactor;
                 }
                 else if (i < m_clayMeshContext.clayMesh.RadiusList.Count * 2)
                 {
                     // inner side
+                    m_originalVertices[i] = m_originalVertices[i - m_clayMeshContext.clayMesh.RadiusList.Count] - vertNormalDir * m_clayMeshContext.clayMesh.Thickness;
+                }
+                else if (i < m_clayMeshContext.clayMesh.RadiusList.Count * 2 + 1 + m_clayMeshContext.clayMesh.Column)
+                {
+                    if (i == m_clayMeshContext.clayMesh.RadiusList.Count * 2)
+                        continue;
+                    // outer bottom
+                    m_originalVertices[i] = m_originalVertices[i - m_clayMeshContext.clayMesh.RadiusList.Count * 2];
+
+                }
+                else
+                {
+                    if (i == m_clayMeshContext.clayMesh.RadiusList.Count * 2 + 1 + m_clayMeshContext.clayMesh.Column)
+                        continue;
+                    // inner bottom
+                    m_originalVertices[i] =
+                        m_originalVertices[i -
+                                           (m_clayMeshContext.clayMesh.RadiusList.Count * 2 + 1 + m_clayMeshContext.clayMesh.Column)];
                 }
 
-
-
-                Vector3 finalOffset = vertNormalDir * length * sign * m_strength * m_weightList[i];
-
-                m_originalVertices[i] += radiusOffset * m_radiusOffsetFactor;
-
-                vertices[i] = m_originalVertices[i] + finalOffset;
+                finalOffset = vertNormalDir * length * sign * m_strength * m_weightList[i];
 			}
-			else
+            else // not symmetric
 			{
-				Vector3 finalOffset = offsetVector * m_strength * m_weightList[i];
-				vertices[i] = m_originalVertices[i] + finalOffset;
+				finalOffset = offsetVector * m_strength * m_weightList[i];
 			}
+
+            vertices[i] = m_originalVertices[i] + finalOffset;
 
             //Debug.Log(string.Format("origin pos: {0}, weight: {1}, offsetVector: {2}, finalOffset: {3}, finalPos: {4}", _originalVertices[i].ToString("F3"), weightList[i], offsetVector.ToString("F3"), finalOffset.ToString("F3"), vertices[i].ToString("F3")));
         }

@@ -28,8 +28,8 @@ public class ClayMeshContext : MonoBehaviour {
 	}
 		
 	void Start () {
-		m_meshFilter.mesh = clayMesh.mesh;
-		m_meshCollider.sharedMesh = clayMesh.mesh;
+		m_meshFilter.mesh = clayMesh.Mesh;
+		m_meshCollider.sharedMesh = clayMesh.Mesh;
 	}
 
 	void Update () {

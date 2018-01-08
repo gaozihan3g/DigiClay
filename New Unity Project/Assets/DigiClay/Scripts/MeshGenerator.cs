@@ -93,21 +93,7 @@ public class MeshGenerator : MonoBehaviour {
 		cmc.gameObject.name = "Clay Mesh " + System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
 		cmc.clayMesh = clayMesh;
 
-        Debug.Log (string.Format("ClayMesh Created. {0} vertices, {1} feature points", clayMesh.mesh.vertices.Length, clayMesh.IsFeaturePoints.Count));
-
-		//string str = "";
-		//float avgRadius = 0f;
-		//for (int i = 0; i < cmc.clayMesh.Row; ++i) {
-		//	avgRadius = 0f;
-		//	for (int j = 0; j < cmc.clayMesh.Column; ++j) {
-		//		str += string.Format ("[{0},{1}]:{2:F3} \t", i, j, cmc.clayMesh.MeshGrid [i, j]);
-		//		avgRadius += cmc.clayMesh.MeshGrid [i, j];
-		//	}
-		//	avgRadius /= cmc.clayMesh.Column;
-		//	str += "avg: " + avgRadius + "\n";
-		//}
-
-		//Debug.Log (str);
+        Debug.Log (string.Format("ClayMesh Created. {0} vertices, {1} feature points", clayMesh.Mesh.vertices.Length, clayMesh.IsFeaturePoints.Count));
 
         cmc.clayMesh.RecalculateAvgRadius();
 
@@ -179,14 +165,17 @@ public class MeshGenerator : MonoBehaviour {
 			mesh.SetTriangles(m_edgeTriangles.ToArray(), subMeshIndex++);
         //end mesh
 
-		cMesh.mesh = mesh;
+		cMesh.Mesh = mesh;
+        cMesh.Thickness = m_thickness;
         cMesh.RadiusList = m_radiusList;
 		cMesh.IsFeaturePoints = m_featurePoints;
 		cMesh.RecalculateNormals();
 		return cMesh;
 	}
 
-
+    /// <summary>
+    /// seg * vSeg
+    /// </summary>
     void GenerateOuterSide()
 	{
 		List<Vector3> newVertices = new List<Vector3>();
@@ -295,6 +284,9 @@ public class MeshGenerator : MonoBehaviour {
 
 	}
 
+    /// <summary>
+    /// seg * vSeg
+    /// </summary>
     void GenerateInnerSide()
 	{
         List<Vector3> newVertices = new List<Vector3>();
@@ -365,6 +357,9 @@ public class MeshGenerator : MonoBehaviour {
 
 	}
 
+    /// <summary>
+    /// 1 + segment
+    /// </summary>
     void GenerateOuterBottom()
     {
         List<Vector3> newVertices = new List<Vector3>();
@@ -397,6 +392,9 @@ public class MeshGenerator : MonoBehaviour {
         m_offset = m_finalVertices.Count;
     }
 
+    /// <summary>
+    /// 1 + segment
+    /// </summary>
     void GenerateInnerBottom()
     {
         List<Vector3> newVertices = new List<Vector3>();

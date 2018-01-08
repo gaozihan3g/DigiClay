@@ -5,6 +5,12 @@ using UnityEngine;
 
 namespace DigiClay
 {
+    //ClayMesh:
+    //[0 , Row * Column - 1] - Outer
+    //[Row * Column, 2 * Row * Column - 1] - Inner
+    //[2 * Row * Column] - Outer Bottom Center
+    //[2 * Row * Column + 1, 2 * Row * Column + Column] - Outer Bottom Edge
+
 	[Serializable]
 	public class ClayMesh {
 
@@ -19,6 +25,9 @@ namespace DigiClay
 
         [SerializeField]
         int m_column;
+
+        [SerializeField]
+        float m_thickness;
 
         [SerializeField, HideInInspector]
         List<bool> m_isFeaturePoints = new List<bool>();
@@ -42,7 +51,7 @@ namespace DigiClay
 		}
 
 
-		public Mesh mesh {
+		public Mesh Mesh {
 			get {
 				return m_mesh;
 			}
@@ -83,6 +92,19 @@ namespace DigiClay
             get
             {
                 return m_rowAvgRadius;
+            }
+        }
+
+        public float Thickness
+        {
+            get
+            {
+                return m_thickness;
+            }
+
+            set
+            {
+                m_thickness = value;
             }
         }
 
