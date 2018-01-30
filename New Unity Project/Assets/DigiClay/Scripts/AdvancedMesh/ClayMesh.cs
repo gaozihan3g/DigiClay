@@ -14,6 +14,16 @@ namespace DigiClay
 	[Serializable]
 	public class ClayMesh {
 
+        public enum VertexType
+        {
+            OuterSide,
+            InnerSide,
+            OuterBottomCenter,
+            OuterBottomEdge,
+            InnerBottomCenter,
+            InnerBottomEdge
+        }
+
 		[SerializeField]
 		Mesh m_mesh;
 
@@ -26,8 +36,11 @@ namespace DigiClay
         [SerializeField]
         int m_column;
 
+        //[SerializeField]
+        //float m_thickness;
+
         [SerializeField]
-        float m_thickness;
+        float m_thicknessRatio;
 
         [SerializeField, HideInInspector]
         List<bool> m_isFeaturePoints = new List<bool>();
@@ -95,16 +108,29 @@ namespace DigiClay
             }
         }
 
-        public float Thickness
+        //public float Thickness
+        //{
+        //    get
+        //    {
+        //        return m_thickness;
+        //    }
+
+        //    set
+        //    {
+        //        m_thickness = value;
+        //    }
+        //}
+
+        public float ThicknessRatio
         {
             get
             {
-                return m_thickness;
+                return m_thicknessRatio;
             }
 
             set
             {
-                m_thickness = value;
+                m_thicknessRatio = value;
             }
         }
 
@@ -143,5 +169,25 @@ namespace DigiClay
                 throw new IndexOutOfRangeException();
             return m_rowAvgRadius[i / m_column];
         }
+
+        public VertexType GetVertexTypeFromIndex(int i)
+        {
+            if (i < 0 || i >= Mesh.vertexCount)
+                throw new ArgumentException();
+
+            if (i < Row * Column)
+                return VertexType.OuterSide;
+            else if (i < 2 * Row * Column)
+                return VertexType.InnerSide;
+            else if (i == 2 * Row * Column)
+                return VertexType.OuterBottomCenter;
+            else if (i < 2 * Row * Column + Column + 1)
+                return VertexType.OuterBottomEdge;
+            else if (i == 2 * Row * Column + Column + 1)
+                return VertexType.InnerBottomCenter;
+            else
+                return VertexType.InnerBottomEdge;
+        }
+
     }
 }

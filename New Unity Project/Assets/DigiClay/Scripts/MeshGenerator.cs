@@ -21,6 +21,9 @@ public class MeshGenerator : MonoBehaviour {
     [SerializeField, Range(0.001f, 0.2f)]
 	float m_thickness = 0.01f;
 
+    [SerializeField, Range(0f, 1f)]
+    float m_thicknessRatio = 0.5f;
+
     // noise parameters
     [SerializeField, Range(0.01f, 1f)]
     float m_topRadiusRatio = 0.5f;
@@ -166,7 +169,8 @@ public class MeshGenerator : MonoBehaviour {
         //end mesh
 
 		cMesh.Mesh = mesh;
-        cMesh.Thickness = m_thickness;
+        //cMesh.Thickness = m_thickness;
+        cMesh.ThicknessRatio = m_thicknessRatio;
         cMesh.RadiusList = m_radiusList;
 		cMesh.IsFeaturePoints = m_featurePoints;
 		cMesh.RecalculateNormals();
@@ -212,6 +216,7 @@ public class MeshGenerator : MonoBehaviour {
             // model the shape as a ellipse, get radius based on height
             // x^2 / a^2 + y^2 / b^2 = 1
 			float baseRadius = Mathf.Sqrt ( Mathf.Max(0f, m_height * m_height - m_topRadiusRatio * m_topRadiusRatio * heightTheta * heightTheta) ) * m_radius / m_height;
+            //float baseRadius = Mathf.Lerp(m_radius, m_radius * m_topRadiusRatio, heightTheta / m_height);
 
 			//random the radius
 			// 1. length
@@ -297,7 +302,13 @@ public class MeshGenerator : MonoBehaviour {
         // based on outer side
         for (int i = 0; i < m_finalVertices.Count; i++)
         {
-            Vector3 innerVertex = m_finalVertices[i] - m_normals[i] * m_thickness;
+            // this makes sure that the inner side do not overlap
+            Vector3 innerVertex = new Vector3(m_finalVertices[i].x * (1 - m_thicknessRatio),
+                                              m_finalVertices[i].y,
+                                              m_finalVertices[i].z * (1 - m_thicknessRatio));
+            //if (m_finalVertices[i].sqrMagnitude > m_thickness * m_thickness)
+                //innerVertex = m_finalVertices[i] - m_normals[i] * m_thickness;
+            
             newVertices.Add(innerVertex);
             newUVs.Add(m_finalUVs[i]);
             newFeaturePoints.Add(m_featurePoints[i]);

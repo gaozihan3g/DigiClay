@@ -141,8 +141,16 @@ public abstract class DeformableBase : MonoBehaviour
 		//linear
 //		return (1f - Mathf.InverseLerp(inner, outer, value));
 
-		return (outer - value) / (outer - inner);
+		//return (outer - value) / (outer - inner);
+
+        //non-linear
+        return NonLinear((value - inner) / (outer - inner));
 	}
+
+    protected float NonLinear(float x)
+    {
+        return 2f * x * x * x - 3f * x * x + 1f;
+    }
 
 	protected void TriggerHaptic(HandRole role, Vector3 previous, Vector3 current)
 	{

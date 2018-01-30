@@ -7,6 +7,7 @@ using UnityEngine.Events;
 using Pose = HTC.UnityPlugin.PoseTracker.Pose;
 using System.Collections;
 using HTC.UnityPlugin.Vive;
+using DigiClay;
 
 public class OneHandedDeformable : DeformableBase
 {
@@ -116,7 +117,6 @@ public class OneHandedDeformable : DeformableBase
 
 				float sign = (currentLocalPos.sqrMagnitude > m_originalLocalPos.sqrMagnitude) ? 1f : -1f;
 
-
                 // smooth radius diffs
                 // main affect: 0 - seg * (vSeg + 1)
                 // based on weights
@@ -133,7 +133,8 @@ public class OneHandedDeformable : DeformableBase
                 float deltaR = 0f;
                 Vector3 radiusOffset = Vector3.zero;
 
-                if (i < m_clayMeshContext.clayMesh.RadiusList.Count)
+                //if (i < m_clayMeshContext.clayMesh.RadiusList.Count)
+                if (m_clayMeshContext.clayMesh.GetVertexTypeFromIndex(i) == ClayMesh.VertexType.OuterSide)
                 {
                     // outer side
                     float oldR = m_clayMeshContext.clayMesh.RadiusList[i];
@@ -148,23 +149,19 @@ public class OneHandedDeformable : DeformableBase
 
                     m_originalVertices[i] += radiusOffset * m_radiusOffsetFactor;
                 }
-                else if (i < m_clayMeshContext.clayMesh.RadiusList.Count * 2)
+                else if (m_clayMeshContext.clayMesh.GetVertexTypeFromIndex(i) == ClayMesh.VertexType.InnerSide)
                 {
                     // inner side
-                    m_originalVertices[i] = m_originalVertices[i - m_clayMeshContext.clayMesh.RadiusList.Count] - vertNormalDir * m_clayMeshContext.clayMesh.Thickness;
+                    //m_originalVertices[i] = m_originalVertices[i - m_clayMeshContext.clayMesh.RadiusList.Count] - vertNormalDir * m_clayMeshContext.clayMesh.Thickness;
+                    m_originalVertices[i] = m_originalVertices[i - m_clayMeshContext.clayMesh.RadiusList.Count] * m_clayMeshContext.clayMesh.ThicknessRatio;
                 }
-                else if (i < m_clayMeshContext.clayMesh.RadiusList.Count * 2 + 1 + m_clayMeshContext.clayMesh.Column)
+                else if (m_clayMeshContext.clayMesh.GetVertexTypeFromIndex(i) == ClayMesh.VertexType.OuterBottomEdge)
                 {
-                    if (i == m_clayMeshContext.clayMesh.RadiusList.Count * 2)
-                        continue;
                     // outer bottom
                     m_originalVertices[i] = m_originalVertices[i - m_clayMeshContext.clayMesh.RadiusList.Count * 2];
-
                 }
-                else
+                else if (m_clayMeshContext.clayMesh.GetVertexTypeFromIndex(i) == ClayMesh.VertexType.InnerBottomEdge)
                 {
-                    if (i == m_clayMeshContext.clayMesh.RadiusList.Count * 2 + 1 + m_clayMeshContext.clayMesh.Column)
-                        continue;
                     // inner bottom
                     m_originalVertices[i] =
                         m_originalVertices[i -
