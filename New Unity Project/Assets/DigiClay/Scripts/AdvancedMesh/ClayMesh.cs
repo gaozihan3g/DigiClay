@@ -42,6 +42,9 @@ namespace DigiClay
         [SerializeField]
         float m_thicknessRatio;
 
+        [SerializeField]
+        float m_height;
+
         [SerializeField, HideInInspector]
         List<bool> m_isFeaturePoints = new List<bool>();
 
@@ -131,6 +134,19 @@ namespace DigiClay
             set
             {
                 m_thicknessRatio = value;
+            }
+        }
+
+        public float Height
+        {
+            get
+            {
+                return m_height;
+            }
+
+            set
+            {
+                m_height = value;
             }
         }
 

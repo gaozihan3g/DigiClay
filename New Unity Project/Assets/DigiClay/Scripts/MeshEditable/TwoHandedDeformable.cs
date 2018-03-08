@@ -7,7 +7,7 @@ using System;
 using UnityEngine.Events;
 using DigiClay;
 
-
+//TODO make this only change height
 public class TwoHandedDeformable : DeformableBase
 {
 	public bool VisualDebug = true;

@@ -19,7 +19,7 @@ public class MeshGenerator : MonoBehaviour {
 	int m_verticalSegment = 10;
 
     [SerializeField, Range(0.001f, 0.2f)]
-	float m_thickness = 0.01f;
+	float m_bottomThickness = 0.01f;
 
     [SerializeField, Range(0f, 1f)]
     float m_thicknessRatio = 0.5f;
@@ -171,6 +171,7 @@ public class MeshGenerator : MonoBehaviour {
 		cMesh.Mesh = mesh;
         //cMesh.Thickness = m_thickness;
         cMesh.ThicknessRatio = m_thicknessRatio;
+        cMesh.Height = m_height;
         cMesh.RadiusList = m_radiusList;
 		cMesh.IsFeaturePoints = m_featurePoints;
 		cMesh.RecalculateNormals();
@@ -304,7 +305,7 @@ public class MeshGenerator : MonoBehaviour {
         {
             // this makes sure that the inner side do not overlap
             Vector3 innerVertex = new Vector3(m_finalVertices[i].x * (1 - m_thicknessRatio),
-                                              m_finalVertices[i].y,
+                                              m_finalVertices[i].y + (i < m_segment ? m_bottomThickness : 0f),
                                               m_finalVertices[i].z * (1 - m_thicknessRatio));
             //if (m_finalVertices[i].sqrMagnitude > m_thickness * m_thickness)
                 //innerVertex = m_finalVertices[i] - m_normals[i] * m_thickness;
@@ -414,8 +415,8 @@ public class MeshGenerator : MonoBehaviour {
         List<bool> newFeaturePoints = new List<bool>();
 
         // origin
-        //newVertices.Add(new Vector3(0f, m_thickness, 0f));
-        newVertices.Add(Vector3.zero);
+        newVertices.Add(new Vector3(0f, m_bottomThickness, 0f));
+        //newVertices.Add(Vector3.zero);
         newUVs.Add(Vector2.zero);
         newFeaturePoints.Add(true);
 
