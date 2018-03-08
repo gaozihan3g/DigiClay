@@ -16,6 +16,7 @@ public class OneHandedDeformable : DeformableBase
 	bool _isSymmetric;
 	HandRole m_role;
 
+    // 
     public float m_radiusOffsetFactor = 0.5f;
 
 	public override void OnColliderEventDragStart(ColliderButtonEventData eventData)
@@ -137,11 +138,11 @@ public class OneHandedDeformable : DeformableBase
                 if (m_clayMeshContext.clayMesh.GetVertexTypeFromIndex(i) == ClayMesh.VertexType.OuterSide)
                 {
                     // outer side
+                    // 1. make the radius closer to avg radius
                     float oldR = m_clayMeshContext.clayMesh.RadiusList[i];
                     float targetR = m_clayMeshContext.clayMesh.GetRowAvgRadiusForVertex(i);
                     deltaR = targetR - oldR;
                     float newR = oldR + deltaR * m_weightList[i] * m_radiusOffsetFactor;
-
                     // update Radius List, only for outer side
                     m_clayMeshContext.clayMesh.RadiusList[i] = newR;
 
@@ -168,6 +169,7 @@ public class OneHandedDeformable : DeformableBase
                                            (m_clayMeshContext.clayMesh.RadiusList.Count * 2 + 1 + m_clayMeshContext.clayMesh.Column)];
                 }
 
+                //2.
                 finalOffset = vertNormalDir * length * sign * m_strength * m_weightList[i];
 			}
             else // not symmetric

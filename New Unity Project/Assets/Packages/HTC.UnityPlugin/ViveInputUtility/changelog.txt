@@ -1,5 +1,97 @@
-﻿# Vive Input Utility for Unity - v1.7.3
-Copyright (c) 2016-2017, HTC Corporation. All rights reserved.
+﻿# Vive Input Utility for Unity - v1.8.0
+Copyright (c) 2016-2018, HTC Corporation. All rights reserved.
+
+## Changes for v1.8.0:
+
+* New features
+  - Daydream Support
+  - Simulator
+  - New VIU Settings to easy setup project supporting device
+    - Open from Editor -> Preferences -> VIU Settings
+![VIUSettings in Preference window](https://github.com/ViveSoftware/ViveInputUtility-Unity/blob/gh-pages/assets/img/viusettings_preview_01.png)
+
+* Improvement
+  - Now compatible with SteamVR v1.1.1~v1.2.3
+  - Move some properties into VIU Settings
+    - Removed:
+      - ViveRoleBindingHelper.OverrideConfigPath
+      - ViveRoleBindingHelper.BindingConfig.apply_bindings_on_load
+      - ViveRoleBindingHelper.BindingConfig.toggle_interface_key_code
+      - ViveRoleBindingHelper.BindingConfig.toggle_interface_modifier
+      - ViveRoleBindingHelper.BindingConfig.interface_prefab
+    - Replaced with:
+      - VIUSettings.bindingConfigFilePath
+      - VIUSettings.autoLoadBindingConfigOnStart
+      - VIUSettings.bindingInterfaceSwitchKey
+      - VIUSettings.bindingInterfaceSwitchKeyModifier
+      - VIUSettings.bindingInterfaceObject
+
+* Bug fix
+  - Fix compiler error caused by wrong define symbols.
+
+* VIU Settings
+  - Setting changes is saved in project resource folder named VIUSettings.asset.
+  - VIU Settings will load default setting automatically if VIUSettings.asset resource not found.
+
+* Daydream Support
+  - Requires Android platform support, Unity 5.6 or later and GoogleVR plugin.
+  - Requires checking the Daydream support toggle in Edit -> Preferences -> VIUSettings
+  - Beware of Daydream controller have less buttons.
+  - Remember to define and give the VR origin a headset height for Daydream device user.
+
+* Simulator
+  - Simulator is a fake VRModule that spawn/remove fake devices, create fake tracking and fake input events.
+  - Requires checking the Simulator support toggle in Edit -> Preferences -> VIUSettings
+  - Simulator only enabled when no VR device detected.
+  - There are 2 ways to manipulate the fake devices
+      - Handle events by script manually
+        - HTC.UnityPlugin.VRModuleManagement.VRModule.Simulator.onUpdateDeviceState
+          - Invoked each frame when VRModule performs a device state update
+          - Write device state into currState argument to manipulate devices
+          - Read-only argument prefState preserved device state in last frame
+      - Use Keyboard-Mouse control (can be disabled in VIUSettings)
+        - Add/Remove/Select devices
+          - [0~9] Add and select device N if device N is not selected, otherwise, deselect it
+          - [` + 0~5] Add and select device 10+N if device 10+N is not selected, otherwise, deselect it
+          - [Shift + 0~9] Remove and deselect device N
+          - [Shift + ` + 0~5] Remove and deselect device 10+N
+        - Control selected device
+          - [W] Move selected device forward
+          - [S] Move selected device backward
+          - [D] Move selected device right
+          - [A] Move selected device left
+          - [E] Move selected device up
+          - [Q] Move selected device down
+          - [C] Roll+ selected device
+          - [Z] Roll- selected device
+          - [X ] Reset selected device roll
+          - [ArrowUp] Pitch+ selected device
+          - [ArrowDown] Pitch- selected device
+          - [ArrowRight] Yaw+ selected device
+          - [ArrowLeft] Yaw- selected device
+          - [MouseMove] Pitch/Yaw selected device
+          - [MouseLeft] Press Trigger on selected device
+          - [MouseRight] Press Trackpad on selected device
+          - [MouseMiddle] Press Grip on selected device
+          - [Hold Shift + MouseMove] Touch Trackpad on selected device
+        - Control HMD
+          - [T] Move hmd forward
+          - [G] Move hmd backward
+          - [H] Move hmd right
+          - [F] Move hmd left
+          - [Y] Move hmd up
+          - [R] Move hmd down
+          - [N] Roll+ hmd
+          - [V] Roll- hmd
+          - [B] Reset hmd roll
+          - [I] Pitch+ hmd
+          - [K] Pitch- hmd
+          - [L] Yaw+ hmd
+          - [J] Yaw- hmd
+  - Notice that when the simulator is enabled, it is started with 3 fake device
+    - [0] HMD (selected)
+    - [1] Right Controller
+    - [2] Left Controller
 
 
 ## Changes for v1.7.3:
