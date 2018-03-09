@@ -25,34 +25,30 @@ namespace DigiClay
         }
 
 		[SerializeField]
-		Mesh m_mesh;
-
-        [SerializeField]
-        List<float> m_radiusList = new List<float>();
-
-		[SerializeField]
 		int m_row;
-
         [SerializeField]
         int m_column;
-
-        //[SerializeField]
-        //float m_thickness;
-
         [SerializeField]
         float m_thicknessRatio;
-
         [SerializeField]
         float m_height;
+        [SerializeField]
+        List<float> m_baseRadiusList = new List<float>();
+        [SerializeField]
+        List<float> m_radiusMatrix = new List<float>();
 
         [SerializeField, HideInInspector]
         List<bool> m_isFeaturePoints = new List<bool>();
 
+        //deprecated
         [SerializeField]
         float[] m_rowAvgRadius;
 
-//		[SerializeField]
-//		List<Vector2Int> m_uvSeams = new List<Vector2Int> ();
+        [SerializeField]
+        Mesh m_mesh;
+
+        //		[SerializeField]
+        //		List<Vector2Int> m_uvSeams = new List<Vector2Int> ();
 
         public int Row {
 			get {
@@ -90,16 +86,16 @@ namespace DigiClay
             }
         }
 
-        public List<float> RadiusList
+        public List<float> RadiusMatrix
         {
             get
             {
-                return m_radiusList;
+                return m_radiusMatrix;
             }
 
             set
             {
-                m_radiusList = value;
+                m_radiusMatrix = value;
             }
         }
 
@@ -110,19 +106,6 @@ namespace DigiClay
                 return m_rowAvgRadius;
             }
         }
-
-        //public float Thickness
-        //{
-        //    get
-        //    {
-        //        return m_thickness;
-        //    }
-
-        //    set
-        //    {
-        //        m_thickness = value;
-        //    }
-        //}
 
         public float ThicknessRatio
         {
@@ -150,10 +133,26 @@ namespace DigiClay
             }
         }
 
-        public ClayMesh(int row, int column)
+        public List<float> BaseRadiusList
+        {
+            get
+            {
+                return m_baseRadiusList;
+            }
+
+            set
+            {
+                m_baseRadiusList = value;
+            }
+        }
+
+        public ClayMesh(int row, int column, float height, float thickness)
 		{
             m_row = row;
             m_column = column;
+            m_height = height;
+            m_thicknessRatio = thickness;
+
             m_rowAvgRadius = new float[row];
         }
 
@@ -172,7 +171,7 @@ namespace DigiClay
                 avgRadius = 0f;
                 for (int j = 0; j < Column; ++j)
                 {
-                    avgRadius += m_radiusList[i * Column + j];
+                    avgRadius += m_radiusMatrix[i * Column + j];
                 }
                 avgRadius /= m_column;
                 m_rowAvgRadius[i] = avgRadius;
@@ -181,7 +180,7 @@ namespace DigiClay
 
         public float GetRowAvgRadiusForVertex(int i)
         {
-            if (i > m_radiusList.Count)
+            if (i > m_radiusMatrix.Count)
                 throw new IndexOutOfRangeException();
             return m_rowAvgRadius[i / m_column];
         }
@@ -204,6 +203,12 @@ namespace DigiClay
             else
                 return VertexType.InnerBottomEdge;
         }
+
+        public void CreateMesh()
+        { }
+
+        public void UpdateMesh()
+        { }
 
     }
 }

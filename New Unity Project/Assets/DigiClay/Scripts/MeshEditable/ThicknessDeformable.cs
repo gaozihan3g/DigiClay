@@ -69,14 +69,21 @@ public class ThicknessDeformable : DeformableBase
             {
                 // inner side
                 //m_originalVertices[i] = m_originalVertices[i - m_clayMeshContext.clayMesh.RadiusList.Count] - vertNormalDir * m_clayMeshContext.clayMesh.Thickness;
-                newVerts[i] = newVerts[i - m_clayMeshContext.clayMesh.RadiusList.Count] * (1f - m_clayMeshContext.clayMesh.ThicknessRatio);
+
+                Vector3 v = newVerts[i - m_clayMeshContext.clayMesh.RadiusMatrix.Count];
+
+                newVerts[i] = new Vector3(
+                    v.x * (1 - m_clayMeshContext.clayMesh.ThicknessRatio),
+                    v.y,
+                    v.z * (1 - m_clayMeshContext.clayMesh.ThicknessRatio));
+
             }
             else if (m_clayMeshContext.clayMesh.GetVertexTypeFromIndex(i) == ClayMesh.VertexType.InnerBottomEdge)
             {
                 // inner bottom
                 newVerts[i] =
                     newVerts[i -
-                                       (m_clayMeshContext.clayMesh.RadiusList.Count * 2 + 1 + m_clayMeshContext.clayMesh.Column)];
+                                       (m_clayMeshContext.clayMesh.RadiusMatrix.Count * 2 + 1 + m_clayMeshContext.clayMesh.Column)];
             }
         }
 
