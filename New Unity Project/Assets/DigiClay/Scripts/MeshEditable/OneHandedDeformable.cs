@@ -139,12 +139,12 @@ public class OneHandedDeformable : DeformableBase
                 {
                     // outer side
                     // 1. make the radius closer to avg radius
-                    float oldR = m_clayMeshContext.clayMesh.RadiusMatrix[i];
+                    float oldR = m_clayMeshContext.clayMesh.NoiseRadiusMatrix[i];
                     float targetR = m_clayMeshContext.clayMesh.GetRowAvgRadiusForVertex(i);
                     deltaR = targetR - oldR;
                     float newR = oldR + deltaR * m_weightList[i] * m_radiusOffsetFactor;
                     // update Radius List, only for outer side
-                    m_clayMeshContext.clayMesh.RadiusMatrix[i] = newR;
+                    m_clayMeshContext.clayMesh.NoiseRadiusMatrix[i] = newR;
 
                     radiusOffset = vertNormalDir * deltaR * m_weightList[i];
 
@@ -154,19 +154,19 @@ public class OneHandedDeformable : DeformableBase
                 {
                     // inner side
                     //m_originalVertices[i] = m_originalVertices[i - m_clayMeshContext.clayMesh.RadiusList.Count] - vertNormalDir * m_clayMeshContext.clayMesh.Thickness;
-                    m_originalVertices[i] = m_originalVertices[i - m_clayMeshContext.clayMesh.RadiusMatrix.Count] * m_clayMeshContext.clayMesh.ThicknessRatio;
+                    m_originalVertices[i] = m_originalVertices[i - m_clayMeshContext.clayMesh.NoiseRadiusMatrix.Count] * m_clayMeshContext.clayMesh.ThicknessRatio;
                 }
                 else if (m_clayMeshContext.clayMesh.GetVertexTypeFromIndex(i) == ClayMesh.VertexType.OuterBottomEdge)
                 {
                     // outer bottom
-                    m_originalVertices[i] = m_originalVertices[i - m_clayMeshContext.clayMesh.RadiusMatrix.Count * 2];
+                    m_originalVertices[i] = m_originalVertices[i - m_clayMeshContext.clayMesh.NoiseRadiusMatrix.Count * 2];
                 }
                 else if (m_clayMeshContext.clayMesh.GetVertexTypeFromIndex(i) == ClayMesh.VertexType.InnerBottomEdge)
                 {
                     // inner bottom
                     m_originalVertices[i] =
                         m_originalVertices[i -
-                                           (m_clayMeshContext.clayMesh.RadiusMatrix.Count * 2 + 1 + m_clayMeshContext.clayMesh.Column)];
+                                           (m_clayMeshContext.clayMesh.NoiseRadiusMatrix.Count * 2 + 1 + m_clayMeshContext.clayMesh.Column)];
                 }
 
                 //2.

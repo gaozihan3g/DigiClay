@@ -59,7 +59,7 @@ public class ThicknessDeformable : DeformableBase
 
         m_heightDeltaPercentage = verticalDelta / m_clayMeshContext.clayMesh.Height + 1f;
 
-        m_clayMeshContext.clayMesh.ThicknessRatio = m_heightDeltaPercentage;
+        m_clayMeshContext.clayMesh.ThicknessRatio *= m_heightDeltaPercentage;
 
         Vector3[] newVerts = m_meshFilter.mesh.vertices;
 
@@ -70,7 +70,7 @@ public class ThicknessDeformable : DeformableBase
                 // inner side
                 //m_originalVertices[i] = m_originalVertices[i - m_clayMeshContext.clayMesh.RadiusList.Count] - vertNormalDir * m_clayMeshContext.clayMesh.Thickness;
 
-                Vector3 v = newVerts[i - m_clayMeshContext.clayMesh.RadiusMatrix.Count];
+                Vector3 v = newVerts[i - m_clayMeshContext.clayMesh.NoiseRadiusMatrix.Count];
 
                 newVerts[i] = new Vector3(
                     v.x * (1 - m_clayMeshContext.clayMesh.ThicknessRatio),
@@ -83,7 +83,7 @@ public class ThicknessDeformable : DeformableBase
                 // inner bottom
                 newVerts[i] =
                     newVerts[i -
-                                       (m_clayMeshContext.clayMesh.RadiusMatrix.Count * 2 + 1 + m_clayMeshContext.clayMesh.Column)];
+                                       (m_clayMeshContext.clayMesh.NoiseRadiusMatrix.Count * 2 + 1 + m_clayMeshContext.clayMesh.Column)];
             }
         }
 
