@@ -1,19 +1,7 @@
 .DS_Store
-New Unity Project/Assets/HTC.UnityPlugin/
-New Unity Project/Assets/SteamVR/
-New Unity Project/Library/
-New Unity Project/ProjectSettings/
-New Unity Project/Temp/
-New Unity Project/obj/
-New Unity Project/.vs/
+DigiClay Unity Project/.vs/
+DigiClay Unity Project/Library/
+DigiClay Unity Project/ProjectSettings/
 *.csproj
-
 *.sln
-
-New Unity Project/New Unity Project.userprefs
-
-New Unity Project/obj/Debug/Assembly-CSharp.csproj.FilesWrittenAbsolute.txt
-
-New Unity Project/UnityPackageManager/manifest.json
-
-New Unity Project/Assembly-UnityScript.unityproj
+DigiClay Unity Project/UnityPackageManager/manifest.json
