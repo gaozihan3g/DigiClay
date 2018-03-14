@@ -33,8 +33,10 @@ public abstract class DeformableBase : MonoBehaviour
 	protected MeshFilter m_meshFilter;
 	protected MeshCollider m_meshCollider;
 
-	protected Vector3[] m_originalVertices;
+	protected Vector3[] m_orgVertices;
 	protected List<float> m_weightList;
+
+
 
 	public List<float> WeightList
 	{
@@ -152,9 +154,9 @@ public abstract class DeformableBase : MonoBehaviour
         return 2f * x * x * x - 3f * x * x + 1f;
     }
 
-	protected void TriggerHaptic(HandRole role, Vector3 previous, Vector3 current)
+    protected void TriggerHaptic(HandRole role, Vector3 oldP, Vector3 newP)
 	{
-		float dist = Vector3.Distance (previous, current);
+		float dist = Vector3.Distance (oldP, newP);
 
 		Debug.Log (string.Format ("{0} {1:F3} {2}", role, dist, Time.frameCount));
 

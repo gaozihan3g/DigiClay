@@ -77,19 +77,19 @@ public class MeshGenerator : MonoBehaviour
             // x^2 / a^2 + y^2 / b^2 = 1
             float ellipsoidRadius = Mathf.Sqrt(Mathf.Max(0f, m_height * m_height - heightTheta * heightTheta)) * m_radius / m_height;
             float baseRadius = m_topBaseRatio * m_radius + (1f - m_topBaseRatio) * ellipsoidRadius;
-            // fill base radius list
-            cMesh.BaseRadiusList.Add(baseRadius);
 
             // get noise center
             float noiseParameter = (float)j / (float)m_verticalSegment;
             // 1. direction
             // 1D
-            float offsetAngle = Mathf.Lerp(0f, 2 * Mathf.PI, perlin.Noise(noiseParameter * m_angleNoiseSpan));
+            float noise0 = perlin.Noise(noiseParameter * m_angleNoiseSpan);
+            float offsetAngle = Mathf.Lerp(0f, 2 * Mathf.PI, noise0);
             Vector3 offsetDir = new Vector3(Mathf.Cos(offsetAngle), 0f, Mathf.Sin(offsetAngle)).normalized;
 
             // 2. length
             // 1D
-            float offsetLength = perlin.Noise(noiseParameter * m_centerNoiseSpan) * m_centerNoiseScale * m_radius;
+            float noise1 = perlin.Noise(noiseParameter * m_centerNoiseSpan);
+            float offsetLength = noise1 * m_centerNoiseScale * baseRadius;
 
             // the noise center
             Vector3 noiseCenter = offsetDir * offsetLength;
@@ -97,16 +97,20 @@ public class MeshGenerator : MonoBehaviour
             // get collective noise radius
             // 1D
             // 1. length
-            float rowNoiseRadius = NoiseMapping( perlin.Noise(noiseParameter * m_rowNoiseSpan) ) * m_rowNoiseScale * m_radius;
+            float noise2 = perlin.Noise(noiseParameter * m_rowNoiseSpan);
+            float rowNoiseRadius = noise2 * m_rowNoiseScale * baseRadius;
 
             for (int i = 0; i < m_segment; ++i)
             {
                 // get individual noise
                 // 3D
-                float individualNoiseRadius = NoiseMapping(perlin.Noise(
+
+                float noise3 = perlin.Noise(
                     Mathf.Cos(theta) * m_individualNoiseSpan,
                     noiseParameter * m_individualNoiseSpan,
-                    Mathf.Sin(theta) * m_individualNoiseSpan)) * m_individualNoiseScale * m_radius;
+                    Mathf.Sin(theta) * m_individualNoiseSpan);
+
+                float individualNoiseRadius = noise3 * m_individualNoiseScale * baseRadius;
 
                 float finalRadius = baseRadius + rowNoiseRadius + individualNoiseRadius;
 
@@ -114,8 +118,12 @@ public class MeshGenerator : MonoBehaviour
 
                 float result = noisePos.magnitude;
 
+                //Debug.Log(string.Format("noise {0:F3}\t finalRadius {1:F3}\t result {2:F3}",
+                          //noise,
+                          //finalRadius, result));
+
                 // fill noise radius matrix
-                cMesh.NoiseRadiusMatrix.Add(result);
+                cMesh.RadiusMatrix.Add(result);
 
                 // add feature points for smoothing
                 cMesh.IsFeaturePoints.Add((j == 0 || j == m_verticalSegment) ? true : false);
@@ -126,10 +134,4 @@ public class MeshGenerator : MonoBehaviour
         }
         return cMesh;
     }
-
-    float NoiseMapping(float x)
-    {
-        return 2f * x - 1f;
-    }
-
 }

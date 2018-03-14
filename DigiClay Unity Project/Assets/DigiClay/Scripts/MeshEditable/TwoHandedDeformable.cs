@@ -1,13 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 using HTC.UnityPlugin.ColliderEvent;
 using HTC.UnityPlugin.Vive;
-using System;
-using UnityEngine.Events;
-using DigiClay;
+using UnityEngine;
 
-//TODO make this only change height
 public class TwoHandedDeformable : DeformableBase
 {
 	public bool VisualDebug = true;
@@ -47,20 +42,20 @@ public class TwoHandedDeformable : DeformableBase
 
 		m_originAvgLocalPos = (m_originalLocalPos [0] + m_originalLocalPos [1]) / 2f;
 
-		m_originalVertices = m_meshFilter.mesh.vertices;
+		m_orgVertices = m_meshFilter.mesh.vertices;
 
 		//register undo
-		DeformManager.Instance.RegisterUndo(this, m_originalVertices);
+		DeformManager.Instance.RegisterUndo(this, m_orgVertices);
 
 		m_originDist = Vector3.Distance (m_originalLocalPos [0], m_originalLocalPos [1]);
 
 		m_weightList = new List<float>();
 
-		for (int i = 0; i < m_originalVertices.Length; ++i)
+		for (int i = 0; i < m_orgVertices.Length; ++i)
 		{
 			float dist = 0f;
 
-			dist = Mathf.Abs(m_originalVertices[i].y - m_originAvgLocalPos.y);
+			dist = Mathf.Abs(m_orgVertices[i].y - m_originAvgLocalPos.y);
 
 
 			float weight = Falloff( m_innerRadius, m_outerRadius, dist);
@@ -124,7 +119,7 @@ public class TwoHandedDeformable : DeformableBase
 		for (int i = 0; i < newVerts.Length; ++i)
 		{
 			//handle height change
-			newVerts[i].y = m_originalVertices[i].y + m_originalVertices[i].y * m_heightDeltaPercentage;
+			newVerts[i].y = m_orgVertices[i].y + m_orgVertices[i].y * m_heightDeltaPercentage;
 
 			//handle deform
 			//early out if weight is 0
@@ -132,8 +127,8 @@ public class TwoHandedDeformable : DeformableBase
 				continue;
 
 //				Vector3 vertRadialDir = new Vector3 (newVerts [i].x, 0f, newVerts [i].z);
-				newVerts[i].x = m_originalVertices[i].x + m_originalVertices[i].x * m_radialDeltaPercentage * m_strength * m_weightList [i];
-				newVerts[i].z = m_originalVertices[i].z + m_originalVertices[i].z * m_radialDeltaPercentage * m_strength * m_weightList [i];
+				newVerts[i].x = m_orgVertices[i].x + m_orgVertices[i].x * m_radialDeltaPercentage * m_strength * m_weightList [i];
+				newVerts[i].z = m_orgVertices[i].z + m_orgVertices[i].z * m_radialDeltaPercentage * m_strength * m_weightList [i];
 		}
 
 		m_meshFilter.mesh.vertices = newVerts;

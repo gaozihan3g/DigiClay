@@ -2,6 +2,7 @@
 DigiClay Unity Project/.vs/
 DigiClay Unity Project/Library/
 DigiClay Unity Project/ProjectSettings/
+DigiClay Unity Project/Temp/
+DigiClay Unity Project/UnityPackageManager/
 *.csproj
 *.sln
-DigiClay Unity Project/UnityPackageManager/manifest.json

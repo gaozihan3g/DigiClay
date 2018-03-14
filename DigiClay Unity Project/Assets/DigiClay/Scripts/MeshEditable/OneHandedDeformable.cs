@@ -1,106 +1,88 @@
-﻿using HTC.UnityPlugin.ColliderEvent;
-using HTC.UnityPlugin.Utility;
-using System;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Events;
-using Pose = HTC.UnityPlugin.PoseTracker.Pose;
-using System.Collections;
-using HTC.UnityPlugin.Vive;
+﻿using System.Collections.Generic;
 using DigiClay;
+using HTC.UnityPlugin.ColliderEvent;
+using HTC.UnityPlugin.Vive;
+using UnityEngine;
 
 public class OneHandedDeformable : DeformableBase
 {
-	Vector3 m_originalLocalPos;
-	Vector3 m_previousWorldPosition;
-	bool _isSymmetric;
+    Vector3 m_orgHandLocalPos;
+    Vector3 m_orgHandWorldPos;
+    Vector3 m_prevHandWorldPos;
+
+    bool m_isSymmetric;
 	HandRole m_role;
 
-    // 
-    public float m_radiusOffsetFactor = 0.5f;
+    public float m_radiusDampFactor = 0.5f;
 
 	public override void OnColliderEventDragStart(ColliderButtonEventData eventData)
     {
         if (eventData.button != m_deformButton) { return; }
 
-        var casterWorldPosition = eventData.eventCaster.transform.position;
+        m_orgHandWorldPos = eventData.eventCaster.transform.position;
+        // this will remove rotation
+        m_orgHandLocalPos = m_orgHandWorldPos - transform.position;
 
-		m_previousWorldPosition = casterWorldPosition;
-
-        m_originalVertices = m_meshFilter.mesh.vertices;
-
-		//register undo
-		DeformManager.Instance.RegisterUndo(this, m_originalVertices);
+        m_prevHandWorldPos = m_orgHandWorldPos;
 
         // get all influenced vertices list, with falloff weights
         // list <float>
-        Vector3[] vertices = m_meshFilter.mesh.vertices;
-
+        m_orgVertices = m_meshFilter.mesh.vertices;
         m_weightList = new List<float>();
-
-//        _originalLocalPos = transform.worldToLocalMatrix.MultiplyPoint(casterWorldPosition);
-
-		// this will remove rotation
-		m_originalLocalPos = casterWorldPosition - transform.position;
-
-		_isSymmetric = DeformManager.Instance.Symmetric;
+		m_isSymmetric = DeformManager.Instance.Symmetric;
 
 		// calculate weights
-        for (int i = 0; i < vertices.Length; ++i)
+        for (int i = 0; i < m_orgVertices.Length; ++i)
         {
             float dist = 0f;
 
-			if(_isSymmetric)
+			if(m_isSymmetric)
 			{
-				dist = Mathf.Abs(vertices[i].y - m_originalLocalPos.y);
+				dist = Mathf.Abs(m_orgVertices[i].y - m_orgHandLocalPos.y);
 			}
 			else
 			{
-				dist = Vector3.Distance(vertices[i], m_originalLocalPos);
+				dist = Vector3.Distance(m_orgVertices[i], m_orgHandLocalPos);
 			}
 
 			float weight = Falloff( m_innerRadius, m_outerRadius, dist);
 			m_weightList.Add(weight);
         }
 
+		m_role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
+
+        //register undo
+        DeformManager.Instance.RegisterUndo(this, m_orgVertices);
+
         if (OnDeformStart != null)
         {
             OnDeformStart.Invoke(this);
         }
-
-		m_role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
     }
 
 	public override void OnColliderEventDragUpdate(ColliderButtonEventData eventData)
     {
 		if (eventData.button != m_deformButton) { return; }
 
-        var currentWorldPosition = eventData.eventCaster.transform.position;
+        var curHandWorldPos = eventData.eventCaster.transform.position;
 
-//        var originalWorldPosition = transform.localToWorldMatrix.MultiplyPoint(_originalLocalPos);
-		var originalWorldPosition = m_originalLocalPos + transform.position;
+        Debug.DrawLine(m_orgHandWorldPos, curHandWorldPos, Color.red);
 
-        Debug.DrawLine(originalWorldPosition, currentWorldPosition, Color.red);
+        Vector3 offsetVector = curHandWorldPos - m_orgHandWorldPos;
 
-        Vector3 offsetVector = currentWorldPosition - originalWorldPosition;
+        var curHandLocalPos = curHandWorldPos - transform.position;
 
-//		float offsetDistance = Vector3.Distance(originalWorldPosition, currentWorldPosition);
-		// 0m - 0.1m
-
-        //Debug.Log(string.Format("origin {0} | current {1} | offset {2}", originalWorldPosition.ToString("F3"), currentWorldPosition.ToString("F3"), offsetVector.ToString("F3")));
-
-        Vector3[] vertices = m_meshFilter.mesh.vertices;
-
-		var currentLocPos = currentWorldPosition - transform.position;
-		float radius = Vector3.ProjectOnPlane (currentLocPos, Vector3.up).magnitude;
+		float radius = Vector3.ProjectOnPlane (curHandLocalPos, Vector3.up).magnitude;
 
         Vector3 finalOffset = Vector3.zero;
 
-        if (_isSymmetric)
+        if (m_isSymmetric)
         {
             // calculate avgRadius for each row in grid
             m_clayMeshContext.clayMesh.RecalculateAvgRadius();
         }
+
+        Vector3[] vertices = m_meshFilter.mesh.vertices;
 
         for (int i = 0; i < vertices.Length; ++i)
         {
@@ -108,15 +90,13 @@ public class OneHandedDeformable : DeformableBase
             if (m_weightList[i] == 0f)
                 continue;
 
-			if(_isSymmetric)
+			if(m_isSymmetric)
 			{
 				Vector3 vertNormalDir = new Vector3 (vertices [i].x, 0f, vertices [i].z).normalized;
 
 				float length = Vector3.ProjectOnPlane (offsetVector, Vector3.up).magnitude;
 
-				var currentLocalPos = transform.worldToLocalMatrix.MultiplyPoint (currentWorldPosition);
-
-				float sign = (currentLocalPos.sqrMagnitude > m_originalLocalPos.sqrMagnitude) ? 1f : -1f;
+				float sign = (curHandLocalPos.sqrMagnitude > m_orgHandLocalPos.sqrMagnitude) ? 1f : -1f;
 
                 // smooth radius diffs
                 // main affect: 0 - seg * (vSeg + 1)
@@ -139,34 +119,33 @@ public class OneHandedDeformable : DeformableBase
                 {
                     // outer side
                     // 1. make the radius closer to avg radius
-                    float oldR = m_clayMeshContext.clayMesh.NoiseRadiusMatrix[i];
+                    float oldR = m_clayMeshContext.clayMesh.RadiusMatrix[i];
                     float targetR = m_clayMeshContext.clayMesh.GetRowAvgRadiusForVertex(i);
                     deltaR = targetR - oldR;
-                    float newR = oldR + deltaR * m_weightList[i] * m_radiusOffsetFactor;
+                    float newR = oldR + deltaR * m_weightList[i] * m_radiusDampFactor;
                     // update Radius List, only for outer side
-                    m_clayMeshContext.clayMesh.NoiseRadiusMatrix[i] = newR;
+                    m_clayMeshContext.clayMesh.RadiusMatrix[i] = newR;
+
+
 
                     radiusOffset = vertNormalDir * deltaR * m_weightList[i];
-
-                    m_originalVertices[i] += radiusOffset * m_radiusOffsetFactor;
+                    m_orgVertices[i] += radiusOffset * m_radiusDampFactor;
                 }
                 else if (m_clayMeshContext.clayMesh.GetVertexTypeFromIndex(i) == ClayMesh.VertexType.InnerSide)
                 {
                     // inner side
                     //m_originalVertices[i] = m_originalVertices[i - m_clayMeshContext.clayMesh.RadiusList.Count] - vertNormalDir * m_clayMeshContext.clayMesh.Thickness;
-                    m_originalVertices[i] = m_originalVertices[i - m_clayMeshContext.clayMesh.NoiseRadiusMatrix.Count] * m_clayMeshContext.clayMesh.ThicknessRatio;
+                    m_orgVertices[i] = m_orgVertices[i - m_clayMeshContext.clayMesh.RadiusMatrix.Count] * m_clayMeshContext.clayMesh.ThicknessRatio;
                 }
                 else if (m_clayMeshContext.clayMesh.GetVertexTypeFromIndex(i) == ClayMesh.VertexType.OuterBottomEdge)
                 {
                     // outer bottom
-                    m_originalVertices[i] = m_originalVertices[i - m_clayMeshContext.clayMesh.NoiseRadiusMatrix.Count * 2];
+                    m_orgVertices[i] = m_orgVertices[i - m_clayMeshContext.clayMesh.RadiusMatrix.Count * 2];
                 }
                 else if (m_clayMeshContext.clayMesh.GetVertexTypeFromIndex(i) == ClayMesh.VertexType.InnerBottomEdge)
                 {
                     // inner bottom
-                    m_originalVertices[i] =
-                        m_originalVertices[i -
-                                           (m_clayMeshContext.clayMesh.NoiseRadiusMatrix.Count * 2 + 1 + m_clayMeshContext.clayMesh.Column)];
+                    m_orgVertices[i] = m_orgVertices[i - (m_clayMeshContext.clayMesh.RadiusMatrix.Count * 2 + 1 + m_clayMeshContext.clayMesh.Column)];
                 }
 
                 //2.
@@ -177,7 +156,7 @@ public class OneHandedDeformable : DeformableBase
 				finalOffset = offsetVector * m_strength * m_weightList[i];
 			}
 
-            vertices[i] = m_originalVertices[i] + finalOffset;
+            vertices[i] = m_orgVertices[i] + finalOffset;
 
             //Debug.Log(string.Format("origin pos: {0}, weight: {1}, offsetVector: {2}, finalOffset: {3}, finalPos: {4}", _originalVertices[i].ToString("F3"), weightList[i], offsetVector.ToString("F3"), finalOffset.ToString("F3"), vertices[i].ToString("F3")));
         }
@@ -185,9 +164,9 @@ public class OneHandedDeformable : DeformableBase
         m_meshFilter.mesh.vertices = vertices;
         m_meshFilter.mesh.RecalculateNormals();
 
-		TriggerHaptic (m_role, m_previousWorldPosition, currentWorldPosition);
+		TriggerHaptic (m_role, m_prevHandWorldPos, curHandWorldPos);
 
-		m_previousWorldPosition = currentWorldPosition;
+		m_prevHandWorldPos = curHandWorldPos;
     }
 
 	public override void OnColliderEventDragEnd(ColliderButtonEventData eventData)

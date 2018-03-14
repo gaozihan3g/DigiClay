@@ -17,9 +17,9 @@ public class Smoothable : DeformableBase
 		if (eventData.button != m_deformButton)
 			return;
 		
-		m_originalVertices = m_meshFilter.mesh.vertices;
+		m_orgVertices = m_meshFilter.mesh.vertices;
 		//register undo
-		DeformManager.Instance.RegisterUndo(this, m_originalVertices);
+		DeformManager.Instance.RegisterUndo(this, m_orgVertices);
 	}
 
 	public override void OnColliderEventDragUpdate (ColliderButtonEventData eventData)

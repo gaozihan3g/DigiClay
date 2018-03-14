@@ -33,22 +33,14 @@ namespace DigiClay
         [SerializeField]
         float m_height;
         [SerializeField]
-        List<float> m_baseRadiusList = new List<float>();
+        List<float> m_radiusMatrix = new List<float>();
         [SerializeField]
-        List<float> m_noiseRadiusMatrix = new List<float>();
-
+        float[] m_rowAvgRadiusList;
         [SerializeField, HideInInspector]
         List<bool> m_isFeaturePoints = new List<bool>();
 
-        //deprecated
-        [SerializeField]
-        float[] m_rowAvgRadius;
-
         [SerializeField]
         Mesh m_mesh;
-
-        //		[SerializeField]
-        //		List<Vector2Int> m_uvSeams = new List<Vector2Int> ();
 
         float m_delta;
         float m_heightDelta;
@@ -77,9 +69,6 @@ namespace DigiClay
 			get {
 				return m_mesh;
 			}
-			set {
-				m_mesh = value;
-			}
 		}
 
 
@@ -96,24 +85,24 @@ namespace DigiClay
             }
         }
 
-        public List<float> NoiseRadiusMatrix
+        public List<float> RadiusMatrix
         {
             get
             {
-                return m_noiseRadiusMatrix;
+                return m_radiusMatrix;
             }
 
             set
             {
-                m_noiseRadiusMatrix = value;
+                m_radiusMatrix = value;
             }
         }
 
-        public float[] RowAvgRadius
+        public float[] RowAvgRadiusList
         {
             get
             {
-                return m_rowAvgRadius;
+                return m_rowAvgRadiusList;
             }
         }
 
@@ -143,19 +132,6 @@ namespace DigiClay
             }
         }
 
-        public List<float> BaseRadiusList
-        {
-            get
-            {
-                return m_baseRadiusList;
-            }
-
-            set
-            {
-                m_baseRadiusList = value;
-            }
-        }
-
         public ClayMesh(int row, int column, float height, float thickness)
 		{
             m_row = row;
@@ -163,14 +139,8 @@ namespace DigiClay
             m_height = height;
             m_thicknessRatio = thickness;
 
-            m_rowAvgRadius = new float[row];
+            m_rowAvgRadiusList = new float[row];
         }
-
-		public void RecalculateNormals()
-		{
-			m_mesh.RecalculateNormals ();
-//			m_mesh.FixUVSeam (m_uvSeams.ToArray ());
-		}
 
         public void RecalculateAvgRadius()
         {
@@ -181,18 +151,18 @@ namespace DigiClay
                 avgRadius = 0f;
                 for (int j = 0; j < Column; ++j)
                 {
-                    avgRadius += m_noiseRadiusMatrix[i * Column + j];
+                    avgRadius += m_radiusMatrix[i * Column + j];
                 }
-                avgRadius /= m_column;
-                m_rowAvgRadius[i] = avgRadius;
+                avgRadius /= Column;
+                m_rowAvgRadiusList[i] = avgRadius;
             }
         }
 
         public float GetRowAvgRadiusForVertex(int i)
         {
-            if (i > m_noiseRadiusMatrix.Count)
+            if (i > m_radiusMatrix.Count)
                 throw new IndexOutOfRangeException();
-            return m_rowAvgRadius[i / m_column];
+            return m_rowAvgRadiusList[i / Column];
         }
 
         public VertexType GetVertexTypeFromIndex(int i)
@@ -232,8 +202,8 @@ namespace DigiClay
 
             m_mesh.MarkDynamic();
 
-            m_delta = 2f * Mathf.PI / (float)m_column;
-            m_heightDelta = (float)m_height / (float)(m_row - 1);
+            m_delta = 2f * Mathf.PI / (float)Column;
+            m_heightDelta = (float)m_height / (float)(Row - 1);
 
             GenerateOuterSide();
             GenerateInnerSide();
@@ -287,11 +257,12 @@ namespace DigiClay
             Vector3 origin = Vector3.zero;
             //int index = 0;
 
-            for (int j = 0; j < m_row; ++j)
+            for (int j = 0; j < Row; ++j)
             {
-                for (int i = 0; i < m_column; ++i)
+                for (int i = 0; i < Column; ++i)
                 {
-                    float r = m_baseRadiusList[j] + m_noiseRadiusMatrix[j * m_column + i];
+                    //float r = m_baseRadiusList[j] + m_noiseRadiusMatrix[j * m_column + i];
+                    float r = m_radiusMatrix[j * Column + i];
                     Vector3 p = new Vector3(r * Mathf.Cos(theta), heightTheta, r * Mathf.Sin(theta));
                     
                     newVertices.Add(p);
@@ -300,12 +271,12 @@ namespace DigiClay
                     // TODO seamless 0 - 1
                     float u;
 
-                    if (i < m_column / 2)
-                        u = 2f * (float)i / (float)m_column;
+                    if (i < Column / 2)
+                        u = 2f * (float)i / (float)Column;
                     else
-                        u = -2f * (float)i / (float)m_column + 2f;
+                        u = -2f * (float)i / (float)Column + 2f;
 
-                    newUVs.Add(new Vector2(u, 1f / (float)(m_row - 1) * j));
+                    newUVs.Add(new Vector2(u, 1f / (float)(Row - 1) * j));
 
                     theta += m_delta;
                 }
@@ -315,15 +286,15 @@ namespace DigiClay
 
             //create triangles
             //seamless
-            for (int j = 0; j < m_row - 1; ++j)
+            for (int j = 0; j < Row - 1; ++j)
             {
-                for (int i = 0; i < m_column; ++i)
+                for (int i = 0; i < Column; ++i)
                 {
                     CreateTriangle(newTriangles,
-                                    i + m_column * j,
-                                    (i + 1) % m_column + m_column * j,
-                                    i + m_column * (j + 1),
-                                    (i + 1) % m_column + m_column * (j + 1),
+                                   i + Column * j,
+                                   (i + 1) % Column + Column * j,
+                                   i + Column * (j + 1),
+                                   (i + 1) % Column + Column * (j + 1),
                                     m_offset);
                 }
             }
@@ -360,15 +331,15 @@ namespace DigiClay
 
             //create triangles
             //seamless
-            for (int j = 1; j < m_row - 1; ++j) //
+            for (int j = 1; j < Row - 1; ++j) //
             {
-                for (int i = 0; i < m_column; ++i)
+                for (int i = 0; i < Column; ++i)
                 {
                     CreateTriangle(newTriangles,
-                                   (i + 1) % m_column + m_column * j,
-                                    i + m_column * j,
-                                   (i + 1) % m_column + m_column * (j + 1),
-                                    i + m_column * (j + 1),
+                                   (i + 1) % Column + Column * j,
+                                   i + Column * j,
+                                   (i + 1) % Column + Column * (j + 1),
+                                   i + Column * (j + 1),
                                     m_offset);
                 }
             }
@@ -389,21 +360,21 @@ namespace DigiClay
             List<int> innerEdgeIndex = new List<int>();
 
             // outer & inner edge vertices
-            for (int i = (m_row - 1) * m_column; i < m_row * m_column; ++i)
+            for (int i = (Row - 1) * Column; i < Row * Column; ++i)
             {
                 outerEdgeIndex.Add(i);
-                innerEdgeIndex.Add(i + m_row * m_column);
+                innerEdgeIndex.Add(i + Row * Column);
             }
 
             //create triangles
             //seamless
-            for (int i = 0; i < m_column; ++i)
+            for (int i = 0; i < Column; ++i)
             {
                 CreateTriangle(newTriangles,
                                outerEdgeIndex[i],
-                               outerEdgeIndex[(i + 1) % m_column],
+                               outerEdgeIndex[(i + 1) % Column],
                                innerEdgeIndex[i],
-                               innerEdgeIndex[(i + 1) % m_column],
+                               innerEdgeIndex[(i + 1) % Column],
                                0);
             }
 
@@ -423,16 +394,16 @@ namespace DigiClay
             newVertices.Add(Vector3.zero);
             newUVs.Add(Vector2.zero);
 
-            for (int i = 0; i < m_column; ++i)
+            for (int i = 0; i < Column; ++i)
             {
                 newVertices.Add(m_finalVertices[i]);
                 newUVs.Add(Vector2.one);
             }
 
             //add triangles
-            for (int i = 1; i < m_column + 1; ++i)
+            for (int i = 1; i < Column + 1; ++i)
             {
-                CreateTriangle(newTriangles, 0, i, i % m_column + 1, m_offset);
+                CreateTriangle(newTriangles, 0, i, i % Column + 1, m_offset);
             }
 
             m_finalVertices.AddRange(newVertices);
@@ -451,19 +422,19 @@ namespace DigiClay
             List<Vector2> newUVs = new List<Vector2>();
 
             // origin
-            newVertices.Add(new Vector3(0f, m_height / (m_row - 1), 0f));
+            newVertices.Add(new Vector3(0f, m_height / (Row - 1), 0f));
             newUVs.Add(Vector2.zero);
 
-            for (int i = 0; i < m_column; ++i)
+            for (int i = 0; i < Column; ++i)
             {
-                newVertices.Add(m_finalVertices[i + m_noiseRadiusMatrix.Count + m_column]); // add second bottom row verts
+                newVertices.Add(m_finalVertices[i + m_radiusMatrix.Count + Column]); // add second bottom row verts
                 newUVs.Add(Vector2.one);
             }
 
             //add triangles
-            for (int i = 1; i < m_column + 1; ++i)
+            for (int i = 1; i < Column + 1; ++i)
             {
-                CreateTriangle(newTriangles, 0, i % m_column + 1, i, m_offset);
+                CreateTriangle(newTriangles, 0, i % Column + 1, i, m_offset);
             }
 
             m_finalVertices.AddRange(newVertices);
@@ -496,6 +467,12 @@ namespace DigiClay
             list.Add(a + offset);
             list.Add(b + offset);
             list.Add(c + offset);
+        }
+
+        public void RecalculateNormals()
+        {
+            m_mesh.RecalculateNormals();
+            //m_mesh.FixUVSeam (m_uvSeams.ToArray ());
         }
     }
 }

@@ -26,10 +26,10 @@ public class ThicknessDeformable : DeformableBase
 
         m_previousWorldPosition = casterWorldPosition;
 
-        m_originalVertices = m_meshFilter.mesh.vertices;
+        m_orgVertices = m_meshFilter.mesh.vertices;
 
         //register undo
-        DeformManager.Instance.RegisterUndo(this, m_originalVertices);
+        DeformManager.Instance.RegisterUndo(this, m_orgVertices);
 
         // this will remove rotation
         m_originalLocalPos = casterWorldPosition - transform.position;
@@ -70,7 +70,7 @@ public class ThicknessDeformable : DeformableBase
                 // inner side
                 //m_originalVertices[i] = m_originalVertices[i - m_clayMeshContext.clayMesh.RadiusList.Count] - vertNormalDir * m_clayMeshContext.clayMesh.Thickness;
 
-                Vector3 v = newVerts[i - m_clayMeshContext.clayMesh.NoiseRadiusMatrix.Count];
+                Vector3 v = newVerts[i - m_clayMeshContext.clayMesh.RadiusMatrix.Count];
 
                 newVerts[i] = new Vector3(
                     v.x * (1 - m_clayMeshContext.clayMesh.ThicknessRatio),
@@ -83,7 +83,7 @@ public class ThicknessDeformable : DeformableBase
                 // inner bottom
                 newVerts[i] =
                     newVerts[i -
-                                       (m_clayMeshContext.clayMesh.NoiseRadiusMatrix.Count * 2 + 1 + m_clayMeshContext.clayMesh.Column)];
+                                       (m_clayMeshContext.clayMesh.RadiusMatrix.Count * 2 + 1 + m_clayMeshContext.clayMesh.Column)];
             }
         }
 
