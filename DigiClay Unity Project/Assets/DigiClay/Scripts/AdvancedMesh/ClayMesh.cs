@@ -38,9 +38,10 @@ namespace DigiClay
         float[] m_rowAvgRadiusList;
         [SerializeField, HideInInspector]
         List<bool> m_isFeaturePoints = new List<bool>();
-
         [SerializeField]
         Mesh m_mesh;
+
+		public float m_radialSmoothingRatio = 0.5f;
 
         float m_delta;
         float m_heightDelta;
@@ -241,6 +242,22 @@ namespace DigiClay
 
         public void UpdateMesh()
         { }
+
+		public float GetNewHeightForVertex (int i)
+		{
+			return (float)i / (float)Column * Height;
+		}
+
+		public void RadiusRadialSmoothingForVertex(int i, float weight = 1f)
+		{
+			// old
+			float oldR = RadiusMatrix[i];
+			// target
+			float targetR = GetRowAvgRadiusForVertex(i);
+			// new
+			RadiusMatrix[i] = targetR * weight + oldR * (1f - weight);
+
+		}
 
         /// <summary>
         /// Mesh Radius Grid

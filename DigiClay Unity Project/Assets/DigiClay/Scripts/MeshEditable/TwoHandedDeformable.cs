@@ -21,6 +21,8 @@ public class TwoHandedDeformable : DeformableBase
     Vector3[] m_curHandLocalPos = new Vector3[2];
     Vector3[] m_curHandWorldPos = new Vector3[2];
 
+	float[] m_handPosDeltaLength = new float[2];
+
     Vector3 m_avgOrgHandLocalPos;
     Vector3 m_avgDir;
     float m_orgDist;
@@ -88,6 +90,10 @@ public class TwoHandedDeformable : DeformableBase
 		m_avgDir = (m_curHandLocalPos[0] - m_orgHandLocalPos[0] + m_curHandLocalPos[1] - m_orgHandLocalPos[1]) / 2f;
 		m_curDist = Vector3.Distance (m_curHandLocalPos[0], m_curHandLocalPos[1]);
 
+		for (int i = 0; i < 2; ++i)
+			m_handPosDeltaLength [i] = Vector3.ProjectOnPlane ((m_curHandWorldPos [i] - m_orgHandWorldPos [i]),
+				Vector3.up);
+
 		//visual debug
 		if (VisualDebug)
 		{
@@ -105,6 +111,7 @@ public class TwoHandedDeformable : DeformableBase
 		}
 
 		float verticalDelta = m_avgDir.y;
+
 		m_heightDeltaRatio = verticalDelta / m_heightBase;
 
         m_clayMeshContext.clayMesh.Height *= 1f + m_heightDeltaRatio;
@@ -113,6 +120,11 @@ public class TwoHandedDeformable : DeformableBase
 		float distDelta = m_curDist - m_orgDist;
 		m_radialDeltaRatio = distDelta / m_radialBase;
 
+		float sign = (distDelta > 0) ? 1f : -1f;
+
+		// method #2 - get the longer length
+		int lengthIndex = (m_handPosDeltaLength[0] > m_handPosDeltaLength[1]) ? 0 : 1;
+
         Vector3[] vertices = m_meshFilter.mesh.vertices;
         ///
 		for (int i = 0; i < vertices.Length; ++i)
@@ -120,37 +132,31 @@ public class TwoHandedDeformable : DeformableBase
             if (m_clayMeshContext.clayMesh.GetVertexTypeFromIndex(i) == ClayMesh.VertexType.OuterSide)
             {
                 //height
+				vertices [i].y = m_clayMeshContext.clayMesh.GetNewHeightForVertex(i);
+
+				//early out
+				if (m_weightList[i] == 0f)
+					continue;
 
                 //radial smooth
+				m_clayMeshContext.clayMesh.RadiusRadialSmoothingForVertex(i, m_weightList[i]);
+
+				//deform
+				//Deform(i, sign, length, weight);
+
+				Vector3 vertNormalDir = new Vector3(vertices[i].x, 0f, vertices[i].z).normalized;
+				float deltaR = 0f;
+				Vector3 radiusOffset = Vector3.zero;
+
+				//handle deform
+				//early out if weight is 0
+
+				radiusOffset = vertNormalDir * deltaR * m_weightList[i];
+				m_orgVertices[i] += radiusOffset * m_radiusDampFactor;
+
 
                 //deform
 
-
-                Vector3 vertNormalDir = new Vector3(vertices[i].x, 0f, vertices[i].z).normalized;
-                float deltaR = 0f;
-                Vector3 radiusOffset = Vector3.zero;
-
-                //handle deform
-                //early out if weight is 0
-                if (m_weightList[i] == 0f)
-                    continue;
-
-                //TODO
-                //handle height change
-                vertices[i].y = m_orgVertices[i].y + m_orgVertices[i].y * m_heightDeltaRatio;
-
-                // outer side
-                // 1. make the radius closer to avg radius
-                float oldR = m_clayMeshContext.clayMesh.RadiusMatrix[i];
-                float targetR = m_clayMeshContext.clayMesh.GetRowAvgRadiusForVertex(i);
-                deltaR = targetR - oldR;
-                float newR = oldR + deltaR * m_weightList[i] * m_radiusDampFactor;
-
-                // update Radius List, only for outer side
-                m_clayMeshContext.clayMesh.RadiusMatrix[i] = newR;
-
-                radiusOffset = vertNormalDir * deltaR * m_weightList[i];
-                m_orgVertices[i] += radiusOffset * m_radiusDampFactor;
             }
 
 
