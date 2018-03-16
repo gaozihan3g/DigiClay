@@ -34,7 +34,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1220258750009746}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 1.8, y: 0.9, z: -0.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -51,22 +51,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e89fb0a7418be94296f44e8dfcc3539, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_radius: 0.5
-  m_height: 0.5
-  m_segment: 36
-  m_verticalSegment: 20
-  m_thickness: 0.03
-  m_topRadiusRatio: 0.681
-  m_centerDistNoiseScale: 0.0727
-  m_centerDistNoiseSpan: 13.4
-  m_centerAngleNoiseSpan: 10.18
-  m_radiusNoiseScale: 0.2
-  m_radiusNoiseSpan: 3.32
-  m_individualNoiseScale: 0.05
-  m_individualNoiseSpan: 1
-  m_outerSide: 1
-  m_innerSide: 1
-  m_edge: 1
-  m_outerBottom: 1
-  m_innerBottom: 1
+  m_radius: 1
+  m_height: 1
+  m_segment: 8
+  m_verticalSegment: 10
+  m_thicknessRatio: 0.5
+  m_topBaseRatio: 0.5
+  m_centerNoiseScale: 0.02
+  m_rowNoiseScale: 0.02
+  m_individualNoiseScale: 0.02
+  m_centerNoiseSpan: 0.02
+  m_rowNoiseSpan: 0.02
+  m_individualNoiseSpan: 100
+  m_angleNoiseSpan: 0.02
   m_prefab: {fileID: 114356305944411990, guid: 9d5da131def4fc042bbacc953a0b88ef, type: 2}

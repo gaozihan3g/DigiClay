@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using DigiClay;
 using HTC.UnityPlugin.ColliderEvent;
 using HTC.UnityPlugin.Vive;
 using UnityEngine;
@@ -7,12 +6,6 @@ using UnityEngine;
 public class TwoHandedDeformable : DeformableBase
 {
 	public bool VisualDebug = true;
-
-	public float m_heightBase = 1f;
-	public float m_radialBase = 1f;
-    public float m_heightDeltaRatio = 1f;
-    public float m_radialDeltaRatio = 1f;
-    public float m_radiusDampFactor = 0.5f;
 
     Vector3[] m_orgHandLocalPos = new Vector3[2];
     Vector3[] m_orgHandWorldPos = new Vector3[2];
@@ -24,9 +17,12 @@ public class TwoHandedDeformable : DeformableBase
 	float[] m_handPosDeltaLength = new float[2];
 
     Vector3 m_avgOrgHandLocalPos;
-    Vector3 m_avgDir;
-    float m_orgDist;
-    float m_curDist;
+    Vector3 m_avgHandDeltaPos;
+    float m_orgHandDist;
+    float m_curHandDist;
+
+    float m_orgHeight;
+    List<float> m_orgMatrix;
 
 	#region IColliderEventHandler implementation
 	public override void OnColliderEventDragStart (ColliderButtonEventData eventData)
@@ -46,10 +42,13 @@ public class TwoHandedDeformable : DeformableBase
 			return;
 
 		m_avgOrgHandLocalPos = (m_orgHandLocalPos[0] + m_orgHandLocalPos[1]) / 2f;
-        m_orgDist = Vector3.Distance(m_orgHandLocalPos[0], m_orgHandLocalPos[1]);
+        m_orgHandDist = Vector3.Distance(m_orgHandLocalPos[0], m_orgHandLocalPos[1]);
 
 		m_orgVertices = m_meshFilter.mesh.vertices;
 		m_weightList = new List<float>();
+
+        m_orgHeight = m_clayMeshContext.clayMesh.Height;
+        m_orgMatrix = m_clayMeshContext.clayMesh.RadiusMatrix;
 
 		for (int i = 0; i < m_orgVertices.Length; ++i)
 		{
@@ -87,85 +86,53 @@ public class TwoHandedDeformable : DeformableBase
         m_curHandWorldPos[(int)role] = eventData.eventCaster.transform.position;
         m_curHandLocalPos[(int)role] = m_curHandWorldPos[(int)role] - transform.position;
 
-		m_avgDir = (m_curHandLocalPos[0] - m_orgHandLocalPos[0] + m_curHandLocalPos[1] - m_orgHandLocalPos[1]) / 2f;
-		m_curDist = Vector3.Distance (m_curHandLocalPos[0], m_curHandLocalPos[1]);
-
-		for (int i = 0; i < 2; ++i)
-			m_handPosDeltaLength [i] = Vector3.ProjectOnPlane ((m_curHandWorldPos [i] - m_orgHandWorldPos [i]),
-				Vector3.up);
-
-		//visual debug
-		if (VisualDebug)
-		{
-			for (int i = 0; i < 2; ++i)
-			{
+        //visual debug
+        if (VisualDebug)
+        {
+            for (int i = 0; i < 2; ++i)
+            {
                 Debug.DrawLine(m_curHandWorldPos[i], m_orgHandWorldPos[i], Color.green);
-			}
+            }
 
             var avgOrgHandWorldPos = (m_orgHandWorldPos[0] + m_orgHandWorldPos[1]) / 2f;
             var avgCurHandWorldPos = (m_curHandWorldPos[0] + m_curHandWorldPos[1]) / 2f;
 
-			Debug.DrawLine(avgOrgHandWorldPos, avgCurHandWorldPos, Color.red);
+            Debug.DrawLine(avgOrgHandWorldPos, avgCurHandWorldPos, Color.red);
 
             Debug.DrawLine(m_curHandWorldPos[0], m_curHandWorldPos[1], Color.blue);
-		}
+        }
 
-		float verticalDelta = m_avgDir.y;
+        m_avgHandDeltaPos = (m_curHandLocalPos[0] - m_orgHandLocalPos[0] + m_curHandLocalPos[1] - m_orgHandLocalPos[1]) / 2f;
+        m_curHandDist = Vector3.Distance (m_curHandLocalPos[0], m_curHandLocalPos[1]);
 
-		m_heightDeltaRatio = verticalDelta / m_heightBase;
+		for (int i = 0; i < 2; ++i)
+			m_handPosDeltaLength [i] = Vector3.ProjectOnPlane ((m_curHandWorldPos [i] - m_orgHandWorldPos [i]), Vector3.up).magnitude;
 
-        m_clayMeshContext.clayMesh.Height *= 1f + m_heightDeltaRatio;
+        // ## heightDelta
+        float heightDelta = m_avgHandDeltaPos.y;
+        // ## update HEIGHT
+        m_clayMeshContext.clayMesh.Height = m_orgHeight + heightDelta;
 
-		/// method #1 - based on hand distance
-		float distDelta = m_curDist - m_orgDist;
-		m_radialDeltaRatio = distDelta / m_radialBase;
-
+        // ## sign
+        float distDelta = m_curHandDist - m_orgHandDist;
 		float sign = (distDelta > 0) ? 1f : -1f;
+        // ## longerLengthIndex
+        int longerLengthIndex = (m_handPosDeltaLength[0] > m_handPosDeltaLength[1]) ? 0 : 1;
+        // ## update MATRIX
+        for (int i = 0; i < m_clayMeshContext.clayMesh.RadiusMatrix.Count; ++i)
+        {
+            //early out
+            if (Mathf.Approximately(m_weightList[i], 0f))
+                continue;
+            //deform
+            m_clayMeshContext.clayMesh.Deform(i, m_orgMatrix[i], sign, m_handPosDeltaLength[longerLengthIndex], m_weightList[i]);
+        }
 
-		// method #2 - get the longer length
-		int lengthIndex = (m_handPosDeltaLength[0] > m_handPosDeltaLength[1]) ? 0 : 1;
+        // ## radial smooth
+        m_clayMeshContext.clayMesh.RadialSmooth(m_weightList);
 
-        Vector3[] vertices = m_meshFilter.mesh.vertices;
-        ///
-		for (int i = 0; i < vertices.Length; ++i)
-		{
-            if (m_clayMeshContext.clayMesh.GetVertexTypeFromIndex(i) == ClayMesh.VertexType.OuterSide)
-            {
-                //height
-				vertices [i].y = m_clayMeshContext.clayMesh.GetNewHeightForVertex(i);
-
-				//early out
-				if (m_weightList[i] == 0f)
-					continue;
-
-                //radial smooth
-				m_clayMeshContext.clayMesh.RadiusRadialSmoothingForVertex(i, m_weightList[i]);
-
-				//deform
-				//Deform(i, sign, length, weight);
-
-				Vector3 vertNormalDir = new Vector3(vertices[i].x, 0f, vertices[i].z).normalized;
-				float deltaR = 0f;
-				Vector3 radiusOffset = Vector3.zero;
-
-				//handle deform
-				//early out if weight is 0
-
-				radiusOffset = vertNormalDir * deltaR * m_weightList[i];
-				m_orgVertices[i] += radiusOffset * m_radiusDampFactor;
-
-
-                //deform
-
-            }
-
-
-			//vertices[i].x = m_orgVertices[i].x + m_orgVertices[i].x * m_radialDeltaRatio * m_strength * m_weightList [i];
-			//vertices[i].z = m_orgVertices[i].z + m_orgVertices[i].z * m_radialDeltaRatio * m_strength * m_weightList [i];
-		}
-        ///
-		m_meshFilter.mesh.vertices = vertices;
-        m_clayMeshContext.clayMesh.RecalculateNormals();
+        // update mesh
+        m_clayMeshContext.clayMesh.UpdateMesh();
 
         TriggerHaptic (role, m_prevHandWorldPos[(int)role], m_curHandWorldPos[(int)role]);
         m_prevHandWorldPos[(int)role] = m_curHandWorldPos[(int)role];

@@ -1,38 +1,35 @@
-﻿using HTC.UnityPlugin.ColliderEvent;
-using HTC.UnityPlugin.Utility;
-using System;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Events;
-using Pose = HTC.UnityPlugin.PoseTracker.Pose;
-using System.Collections;
+﻿using DigiClay;
+using HTC.UnityPlugin.ColliderEvent;
 using HTC.UnityPlugin.Vive;
-using DigiClay;
+using UnityEngine;
 
 public class ThicknessDeformable : DeformableBase
 {
-    public float m_heightDeltaPercentage = 0f;
-
-    Vector3 m_originalLocalPos;
-    Vector3 m_previousWorldPosition;
+    Vector3 m_orgHandLocalPos;
+    Vector3 m_orgHandWorldPos;
+    Vector3 m_prevHandWorldPos;
     HandRole m_role;
-    
 
+    float m_orgThicknessRatio;
+
+    #region IColliderEventHandler implementation
     public override void OnColliderEventDragStart(ColliderButtonEventData eventData)
     {
-        if (eventData.button != m_deformButton) { return; }
+        if (eventData.button != m_deformButton)
+            return;
 
-        var casterWorldPosition = eventData.eventCaster.transform.position;
+        m_orgHandWorldPos = eventData.eventCaster.transform.position;
+        // this will remove rotation
+        m_orgHandLocalPos = m_orgHandWorldPos - transform.position;
 
-        m_previousWorldPosition = casterWorldPosition;
+        m_prevHandWorldPos = m_orgHandWorldPos;
 
         m_orgVertices = m_meshFilter.mesh.vertices;
 
+        m_orgThicknessRatio = m_clayMeshContext.clayMesh.ThicknessRatio;
+
         //register undo
         DeformManager.Instance.RegisterUndo(this, m_orgVertices);
-
-        // this will remove rotation
-        m_originalLocalPos = casterWorldPosition - transform.position;
 
         if (OnDeformStart != null)
         {
@@ -44,63 +41,33 @@ public class ThicknessDeformable : DeformableBase
 
     public override void OnColliderEventDragUpdate(ColliderButtonEventData eventData)
     {
-        if (eventData.button != m_deformButton) { return; }
+        if (eventData.button != m_deformButton)
+            return;
 
-        var currentWorldPosition = eventData.eventCaster.transform.position;
+        var m_curHandWorldPos = eventData.eventCaster.transform.position;
 
-        //        var originalWorldPosition = transform.localToWorldMatrix.MultiplyPoint(_originalLocalPos);
-        var originalWorldPosition = m_originalLocalPos + transform.position;
+        Debug.DrawLine(m_orgHandWorldPos, m_curHandWorldPos, Color.red);
 
-        Debug.DrawLine(originalWorldPosition, currentWorldPosition, Color.red);
+        Vector3 offsetVector = m_curHandWorldPos - m_orgHandWorldPos;
 
-        Vector3 offsetVector = currentWorldPosition - originalWorldPosition;
 
         float verticalDelta = Mathf.Clamp(offsetVector.y, -m_clayMeshContext.clayMesh.Height, 0f);
 
-        m_heightDeltaPercentage = verticalDelta / m_clayMeshContext.clayMesh.Height + 1f;
+        float thicknessDelta = verticalDelta / m_clayMeshContext.clayMesh.Height + 1f;
 
-        m_clayMeshContext.clayMesh.ThicknessRatio *= m_heightDeltaPercentage;
+        // get thickness
+        m_clayMeshContext.clayMesh.ThicknessRatio = m_orgThicknessRatio + thicknessDelta;
 
-        Vector3[] newVerts = m_meshFilter.mesh.vertices;
+        // update mesh
+        m_clayMeshContext.clayMesh.UpdateMesh();
 
-        for (int i = 0; i < newVerts.Length; ++i)
-        {
-            if (m_clayMeshContext.clayMesh.GetVertexTypeFromIndex(i) == ClayMesh.VertexType.InnerSide)
-            {
-                // inner side
-                //m_originalVertices[i] = m_originalVertices[i - m_clayMeshContext.clayMesh.RadiusList.Count] - vertNormalDir * m_clayMeshContext.clayMesh.Thickness;
-
-                Vector3 v = newVerts[i - m_clayMeshContext.clayMesh.RadiusMatrix.Count];
-
-                newVerts[i] = new Vector3(
-                    v.x * (1 - m_clayMeshContext.clayMesh.ThicknessRatio),
-                    v.y,
-                    v.z * (1 - m_clayMeshContext.clayMesh.ThicknessRatio));
-
-            }
-            else if (m_clayMeshContext.clayMesh.GetVertexTypeFromIndex(i) == ClayMesh.VertexType.InnerBottomEdge)
-            {
-                // inner bottom
-                newVerts[i] =
-                    newVerts[i -
-                                       (m_clayMeshContext.clayMesh.RadiusMatrix.Count * 2 + 1 + m_clayMeshContext.clayMesh.Column)];
-            }
-        }
-
-        m_meshFilter.mesh.vertices = newVerts;
-
-        if (m_clayMeshContext != null)
-            m_clayMeshContext.clayMesh.RecalculateNormals();
-        else
-            m_meshFilter.mesh.RecalculateNormals();
-
+        TriggerHaptic(m_role, m_prevHandWorldPos, m_curHandWorldPos);
     }
 
     public override void OnColliderEventDragEnd(ColliderButtonEventData eventData)
     {
-        if (eventData.button != m_deformButton) { return; }
-
-        //TODO remesh!
+        if (eventData.button != m_deformButton)
+            return;
 
         m_meshCollider.sharedMesh = m_meshFilter.mesh;
 
@@ -109,4 +76,5 @@ public class ThicknessDeformable : DeformableBase
             OnDeformEnd.Invoke(this);
         }
     }
+    #endregion
 }

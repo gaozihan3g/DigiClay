@@ -28,13 +28,13 @@ public class Smoothable : DeformableBase
 			return;
 
 		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
-		var casterWorldPosition = eventData.eventCaster.transform.position;
-		var localPos = transform.worldToLocalMatrix.MultiplyPoint(casterWorldPosition);
+        var curHandWorldPos = eventData.eventCaster.transform.position;
+        var curHandLocalPos = curHandWorldPos - transform.position;
 
 		if (DeformManager.Instance.IsHCSmoothing)
-        	m_meshFilter.mesh = MeshSmoothing.HCFilter(m_meshFilter.mesh, m_iterations, 0.5f, 0.75f, m_clayMeshContext.clayMesh.IsFeaturePoints.ToArray(), localPos, m_outerRadius);
+            m_meshFilter.mesh = MeshSmoothing.HCFilter(m_meshFilter.mesh, m_iterations, 0.5f, 0.75f, m_clayMeshContext.clayMesh.IsFeaturePoints.ToArray(), curHandLocalPos, m_outerRadius);
 		else
-			m_meshFilter.mesh = MeshSmoothing.LaplacianFilter(m_meshFilter.mesh, m_iterations, m_clayMeshContext.clayMesh.IsFeaturePoints.ToArray (), localPos, m_outerRadius);
+            m_meshFilter.mesh = MeshSmoothing.LaplacianFilter(m_meshFilter.mesh, m_iterations, m_clayMeshContext.clayMesh.IsFeaturePoints.ToArray (), curHandLocalPos, m_outerRadius);
 
 		ViveInput.TriggerHapticPulse(role, DeformManager.Instance.MinDuration);
 	}

@@ -23,12 +23,11 @@ GameObject:
   - component: {fileID: 23924476229132008}
   - component: {fileID: 64471071665594602}
   - component: {fileID: 114059313305045426}
-  - component: {fileID: 114752480915878810}
-  - component: {fileID: 114894753099384210}
   - component: {fileID: 114356305944411990}
-  - component: {fileID: 114516232368847494}
-  - component: {fileID: 114695437009851496}
+  - component: {fileID: 114752480915878810}
   - component: {fileID: 114424686280041234}
+  - component: {fileID: 114894753099384210}
+  - component: {fileID: 114516232368847494}
   m_Layer: 0
   m_Name: Clay Mesh
   m_TagString: Untagged
@@ -111,7 +110,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1165243728222688}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b14bb5611940f75469024bcfcb3fc562, type: 3}
   m_Name: 
@@ -133,23 +132,23 @@ MonoBehaviour:
     m_column: 0
     m_thicknessRatio: 0
     m_height: 0
-    m_baseRadiusList: []
-    m_noiseRadiusMatrix: []
+    m_radiusMatrix: []
+    m_rowAvgRadiusList: []
     m_isFeaturePoints: 
-    m_rowAvgRadius: []
     m_mesh: {fileID: 0}
+    m_radialSmoothingRatio: 0
 --- !u!114 &114424686280041234
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1165243728222688}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5e6ac07c5a73ac144aa7570be5b21929, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_deformButton: 0
+  m_deformButton: 1
   m_innerRadius: 0.1
   m_outerRadius: 0.5
   m_strength: 0.1
@@ -164,7 +163,6 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: DeformableBase+UnityEventDeformable, Assembly-CSharp, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_heightDeltaPercentage: 0
 --- !u!114 &114516232368847494
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -177,33 +175,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   identifier: 1
---- !u!114 &114695437009851496
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1165243728222688}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6933e03a36832c648bdfc409f1c09f84, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_deformButton: 0
-  m_innerRadius: 0.1
-  m_outerRadius: 0.5
-  m_strength: 0.1
-  m_clayMeshContext: {fileID: 0}
-  OnDeformStart:
-    m_PersistentCalls:
-      m_Calls: []
-    m_TypeName: DeformableBase+UnityEventDeformable, Assembly-CSharp, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
-  OnDeformEnd:
-    m_PersistentCalls:
-      m_Calls: []
-    m_TypeName: DeformableBase+UnityEventDeformable, Assembly-CSharp, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
-  m_radiusOffsetFactor: 0.05
 --- !u!114 &114752480915878810
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -242,27 +213,13 @@ MonoBehaviour:
     m_TypeName: DeformableBase+UnityEventDeformable, Assembly-CSharp, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
   VisualDebug: 1
-  m_heightBase: 1
-  m_radialBase: 1
-  m_heightDeltaPercentage: 1
-  m_radialDeltaPercentage: 1
-  m_originalLocalPos:
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  m_currentLocalPos:
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  m_originAvgLocalPos: {x: 0, y: 0, z: 0}
-  m_averageDir: {x: 0, y: 0, z: 0}
-  m_originDist: 0
-  m_currentDist: 0
 --- !u!114 &114894753099384210
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1165243728222688}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0363bdd21d0e54ba89f0800de536d5a8, type: 3}
   m_Name: 

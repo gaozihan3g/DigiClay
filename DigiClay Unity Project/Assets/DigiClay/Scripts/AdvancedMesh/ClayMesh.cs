@@ -11,8 +11,9 @@ namespace DigiClay
     //[2 * Row * Column] - Outer Bottom Center
     //[2 * Row * Column + 1, 2 * Row * Column + Column] - Outer Bottom Edge
 
-	[Serializable]
-	public class ClayMesh {
+    [Serializable]
+    public class ClayMesh
+    {
 
         public enum VertexType
         {
@@ -24,8 +25,8 @@ namespace DigiClay
             InnerBottomEdge
         }
 
-		[SerializeField]
-		int m_row;
+        [SerializeField]
+        int m_row;
         [SerializeField]
         int m_column;
         [SerializeField]
@@ -41,9 +42,7 @@ namespace DigiClay
         [SerializeField]
         Mesh m_mesh;
 
-		public float m_radialSmoothingRatio = 0.5f;
-
-        float m_delta;
+        float m_angleDelta;
         float m_heightDelta;
         List<Vector3> m_finalVertices;
         List<int> m_outerTriangles;
@@ -51,26 +50,35 @@ namespace DigiClay
         List<int> m_edgeTriangles;
         List<Vector2> m_finalUVs;
         //List<Vector2Int> m_uvSeams;
-        int m_offset;
+        int m_vertexIndexOffset;
 
-        public int Row {
-			get {
-				return m_row;
-			}
-		}
+        //TODO need this?
+        public float m_radialSmoothingRatio = 0.5f;
 
-		public int Column {
-			get {
-				return m_column;
-			}
-		}
+        public int Row
+        {
+            get
+            {
+                return m_row;
+            }
+        }
+
+        public int Column
+        {
+            get
+            {
+                return m_column;
+            }
+        }
 
 
-		public Mesh Mesh {
-			get {
-				return m_mesh;
-			}
-		}
+        public Mesh Mesh
+        {
+            get
+            {
+                return m_mesh;
+            }
+        }
 
 
         public List<bool> IsFeaturePoints
@@ -91,11 +99,6 @@ namespace DigiClay
             get
             {
                 return m_radiusMatrix;
-            }
-
-            set
-            {
-                m_radiusMatrix = value;
             }
         }
 
@@ -130,59 +133,19 @@ namespace DigiClay
             set
             {
                 m_height = value;
+                m_heightDelta = (float)m_height / (float)(Row - 1);
             }
         }
 
         public ClayMesh(int row, int column, float height, float thickness)
-		{
+        {
             m_row = row;
             m_column = column;
-            m_height = height;
-            m_thicknessRatio = thickness;
+            Height = height;
+            ThicknessRatio = thickness;
 
             m_rowAvgRadiusList = new float[row];
-        }
-
-        public void RecalculateAvgRadius()
-        {
-            float avgRadius = 0f;
-
-            for (int i = 0; i < Row; ++i)
-            {
-                avgRadius = 0f;
-                for (int j = 0; j < Column; ++j)
-                {
-                    avgRadius += m_radiusMatrix[i * Column + j];
-                }
-                avgRadius /= Column;
-                m_rowAvgRadiusList[i] = avgRadius;
-            }
-        }
-
-        public float GetRowAvgRadiusForVertex(int i)
-        {
-            if (i > m_radiusMatrix.Count)
-                throw new IndexOutOfRangeException();
-            return m_rowAvgRadiusList[i / Column];
-        }
-
-        public VertexType GetVertexTypeFromIndex(int i)
-        {
-            if (i < 0 || i >= Mesh.vertexCount)
-                throw new ArgumentException();
-
-            if (i < Row * Column)
-                return VertexType.OuterSide;
-            else if (i < 2 * Row * Column)
-                return VertexType.InnerSide;
-            else if (i == 2 * Row * Column)
-                return VertexType.OuterBottomCenter;
-            else if (i < 2 * Row * Column + Column + 1)
-                return VertexType.OuterBottomEdge;
-            else if (i == 2 * Row * Column + Column + 1)
-                return VertexType.InnerBottomCenter;
-            else
-                return VertexType.InnerBottomEdge;
+            m_angleDelta = 2f * Mathf.PI / (float)Column;
         }
 
         public void GenerateMesh()
@@ -193,7 +156,7 @@ namespace DigiClay
             m_edgeTriangles = new List<int>();
             m_finalUVs = new List<Vector2>();
             //m_uvSeams = new List<Vector2Int>();
-            m_offset = 0;
+            m_vertexIndexOffset = 0;
 
             //mesh
             m_mesh = new Mesh
@@ -202,10 +165,6 @@ namespace DigiClay
             };
 
             m_mesh.MarkDynamic();
-
-            m_delta = 2f * Mathf.PI / (float)Column;
-            m_heightDelta = (float)m_height / (float)(Row - 1);
-
             GenerateOuterSide();
             GenerateInnerSide();
             GenerateEdge();
@@ -241,23 +200,110 @@ namespace DigiClay
         }
 
         public void UpdateMesh()
-        { }
+        {
+            Vector3[] vertices = Mesh.vertices;
+            ///
+            for (int i = 0; i < vertices.Length; ++i)
+            {
+                if (GetVertexTypeFromIndex(i) == ClayMesh.VertexType.OuterSide)
+                {
+                    //get row column index
+                    int rowIndex = i / Column;
+                    int columnIndex = i % Column;
+                    //get r
+                    float r = RadiusMatrix[i];
+                    //get theta
+                    float angleTheta = m_angleDelta * columnIndex;
+                    //get heightTheta
+                    float heightTheta = m_heightDelta * rowIndex;
 
-		public float GetNewHeightForVertex (int i)
-		{
-			return (float)i / (float)Column * Height;
-		}
+                    heightTheta += m_heightDelta;
+                    vertices[i] = new Vector3(r * Mathf.Cos(angleTheta), heightTheta, r * Mathf.Sin(angleTheta));
+                }
+                else if (GetVertexTypeFromIndex(i) == ClayMesh.VertexType.InnerSide)
+                {
+                    // inner side
+                    vertices[i] = vertices[i - RadiusMatrix.Count] * ThicknessRatio;
+                }
+                else if (GetVertexTypeFromIndex(i) == ClayMesh.VertexType.OuterBottomEdge)
+                {
+                    // outer bottom
+                    vertices[i] = vertices[i - RadiusMatrix.Count * 2];
+                }
+                else if (GetVertexTypeFromIndex(i) == ClayMesh.VertexType.InnerBottomEdge)
+                {
+                    // inner bottom
+                    vertices[i] = vertices[i - (RadiusMatrix.Count * 2 + 1 + Column)];
+                }
+            }
 
-		public void RadiusRadialSmoothingForVertex(int i, float weight = 1f)
-		{
-			// old
-			float oldR = RadiusMatrix[i];
-			// target
-			float targetR = GetRowAvgRadiusForVertex(i);
-			// new
-			RadiusMatrix[i] = targetR * weight + oldR * (1f - weight);
+            Mesh.vertices = vertices;
+        }
 
-		}
+        public void RadialSmooth(List<float> weightList)
+        {
+            RecalculateAvgRadius();
+
+            for (int i = 0; i < RadiusMatrix.Count; ++i)
+            {
+                // old
+                float oldR = RadiusMatrix[i];
+                // target
+                float targetR = GetRowAvgRadiusForVertex(i);
+                // weight
+                float weight = weightList[i];
+                // new
+                RadiusMatrix[i] = targetR * weight + oldR * (1f - weight);
+            }
+        }
+
+        public void Deform(int i, float originLength, float sign, float length, float weight)
+        {
+            RadiusMatrix[i] = originLength + sign * length * weight;
+        }
+
+
+        VertexType GetVertexTypeFromIndex(int i)
+        {
+            if (i < 0 || i >= Mesh.vertexCount)
+                throw new ArgumentException();
+
+            if (i < Row * Column)
+                return VertexType.OuterSide;
+            else if (i < 2 * Row * Column)
+                return VertexType.InnerSide;
+            else if (i == 2 * Row * Column)
+                return VertexType.OuterBottomCenter;
+            else if (i < 2 * Row * Column + Column + 1)
+                return VertexType.OuterBottomEdge;
+            else if (i == 2 * Row * Column + Column + 1)
+                return VertexType.InnerBottomCenter;
+            else
+                return VertexType.InnerBottomEdge;
+        }
+
+        void RecalculateAvgRadius()
+        {
+            float avgRadius = 0f;
+
+            for (int i = 0; i < Row; ++i)
+            {
+                avgRadius = 0f;
+                for (int j = 0; j < Column; ++j)
+                {
+                    avgRadius += RadiusMatrix[i * Column + j];
+                }
+                avgRadius /= Column;
+                RowAvgRadiusList[i] = avgRadius;
+            }
+        }
+
+        float GetRowAvgRadiusForVertex(int i)
+        {
+            if (i > RadiusMatrix.Count)
+                throw new IndexOutOfRangeException();
+            return RowAvgRadiusList[i / Column];
+        }
 
         /// <summary>
         /// Mesh Radius Grid
@@ -269,7 +315,7 @@ namespace DigiClay
             List<int> newTriangles = new List<int>();
             List<Vector2> newUVs = new List<Vector2>();
 
-            float theta = 0f;
+            float angleTheta = 0f;
             float heightTheta = 0f;
             Vector3 origin = Vector3.zero;
             //int index = 0;
@@ -279,9 +325,9 @@ namespace DigiClay
                 for (int i = 0; i < Column; ++i)
                 {
                     //float r = m_baseRadiusList[j] + m_noiseRadiusMatrix[j * m_column + i];
-                    float r = m_radiusMatrix[j * Column + i];
-                    Vector3 p = new Vector3(r * Mathf.Cos(theta), heightTheta, r * Mathf.Sin(theta));
-                    
+                    float r = RadiusMatrix[j * Column + i];
+                    Vector3 p = new Vector3(r * Mathf.Cos(angleTheta), heightTheta, r * Mathf.Sin(angleTheta));
+
                     newVertices.Add(p);
 
                     // create uv, symmetric
@@ -295,7 +341,7 @@ namespace DigiClay
 
                     newUVs.Add(new Vector2(u, 1f / (float)(Row - 1) * j));
 
-                    theta += m_delta;
+                    angleTheta += m_angleDelta;
                 }
 
                 heightTheta += m_heightDelta;
@@ -312,14 +358,14 @@ namespace DigiClay
                                    (i + 1) % Column + Column * j,
                                    i + Column * (j + 1),
                                    (i + 1) % Column + Column * (j + 1),
-                                    m_offset);
+                                    m_vertexIndexOffset);
                 }
             }
 
             m_finalVertices.AddRange(newVertices);
             m_outerTriangles.AddRange(newTriangles);
             m_finalUVs.AddRange(newUVs);
-            m_offset = m_finalVertices.Count;
+            m_vertexIndexOffset = m_finalVertices.Count;
         }
 
 
@@ -357,14 +403,14 @@ namespace DigiClay
                                    i + Column * j,
                                    (i + 1) % Column + Column * (j + 1),
                                    i + Column * (j + 1),
-                                    m_offset);
+                                    m_vertexIndexOffset);
                 }
             }
 
             m_finalVertices.AddRange(newVertices);
             m_innerTriangles.AddRange(newTriangles);
             m_finalUVs.AddRange(newUVs);
-            m_offset = m_finalVertices.Count;
+            m_vertexIndexOffset = m_finalVertices.Count;
         }
 
         /// <summary>
@@ -420,13 +466,13 @@ namespace DigiClay
             //add triangles
             for (int i = 1; i < Column + 1; ++i)
             {
-                CreateTriangle(newTriangles, 0, i, i % Column + 1, m_offset);
+                CreateTriangle(newTriangles, 0, i, i % Column + 1, m_vertexIndexOffset);
             }
 
             m_finalVertices.AddRange(newVertices);
             m_outerTriangles.AddRange(newTriangles);
             m_finalUVs.AddRange(newUVs);
-            m_offset = m_finalVertices.Count;
+            m_vertexIndexOffset = m_finalVertices.Count;
         }
 
         /// <summary>
@@ -439,25 +485,25 @@ namespace DigiClay
             List<Vector2> newUVs = new List<Vector2>();
 
             // origin
-            newVertices.Add(new Vector3(0f, m_height / (Row - 1), 0f));
+            newVertices.Add(new Vector3(0f, Height / (Row - 1), 0f));
             newUVs.Add(Vector2.zero);
 
             for (int i = 0; i < Column; ++i)
             {
-                newVertices.Add(m_finalVertices[i + m_radiusMatrix.Count + Column]); // add second bottom row verts
+                newVertices.Add(m_finalVertices[i + RadiusMatrix.Count + Column]); // add second bottom row verts
                 newUVs.Add(Vector2.one);
             }
 
             //add triangles
             for (int i = 1; i < Column + 1; ++i)
             {
-                CreateTriangle(newTriangles, 0, i % Column + 1, i, m_offset);
+                CreateTriangle(newTriangles, 0, i % Column + 1, i, m_vertexIndexOffset);
             }
 
             m_finalVertices.AddRange(newVertices);
             m_innerTriangles.AddRange(newTriangles);
             m_finalUVs.AddRange(newUVs);
-            m_offset = m_finalVertices.Count;
+            m_vertexIndexOffset = m_finalVertices.Count;
         }
 
         /// <summary>
@@ -486,10 +532,5 @@ namespace DigiClay
             list.Add(c + offset);
         }
 
-        public void RecalculateNormals()
-        {
-            m_mesh.RecalculateNormals();
-            //m_mesh.FixUVSeam (m_uvSeams.ToArray ());
-        }
     }
 }
