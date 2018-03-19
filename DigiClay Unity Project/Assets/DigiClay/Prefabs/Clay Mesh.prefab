@@ -136,6 +136,8 @@ MonoBehaviour:
     m_rowAvgRadiusList: []
     m_isFeaturePoints: 
     m_mesh: {fileID: 0}
+    m_angleDelta: 0
+    m_heightDelta: 0
     m_radialSmoothingRatio: 0
 --- !u!114 &114424686280041234
 MonoBehaviour:
@@ -163,6 +165,9 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: DeformableBase+UnityEventDeformable, Assembly-CSharp, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
+  m_orgThicknessRatio: 0
+  verticalDelta: 0
+  thicknessDelta: 0
 --- !u!114 &114516232368847494
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -213,13 +218,25 @@ MonoBehaviour:
     m_TypeName: DeformableBase+UnityEventDeformable, Assembly-CSharp, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
   VisualDebug: 1
+  HeightChangeEnabled: 1
+  DeformEnabled: 1
+  RadialSmoothEnabled: 1
+  m_orgHandWorldPos:
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 0}
+  m_curHandWorldPos:
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 0}
+  m_handPosDeltaLength:
+  - 0
+  - 0
 --- !u!114 &114894753099384210
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1165243728222688}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0363bdd21d0e54ba89f0800de536d5a8, type: 3}
   m_Name: 

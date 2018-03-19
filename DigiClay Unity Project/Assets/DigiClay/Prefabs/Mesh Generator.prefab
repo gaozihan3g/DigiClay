@@ -55,7 +55,7 @@ MonoBehaviour:
   m_height: 1
   m_segment: 8
   m_verticalSegment: 10
-  m_thicknessRatio: 0.5
+  m_thicknessRatio: 1
   m_topBaseRatio: 0.5
   m_centerNoiseScale: 0.02
   m_rowNoiseScale: 0.02

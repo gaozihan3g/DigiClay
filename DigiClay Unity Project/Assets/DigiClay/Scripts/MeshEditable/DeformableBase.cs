@@ -158,7 +158,7 @@ public abstract class DeformableBase : MonoBehaviour
 	{
 		float dist = Vector3.Distance (oldP, newP);
 
-		Debug.Log (string.Format ("{0} {1:F3} {2}", role, dist, Time.frameCount));
+//		Debug.Log (string.Format ("{0} {1:F3} {2}", role, dist, Time.frameCount));
 
 		float t = dist / DeformManager.Instance.MaxDist;
 

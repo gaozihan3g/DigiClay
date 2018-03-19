@@ -10,7 +10,13 @@ public class ThicknessDeformable : DeformableBase
     Vector3 m_prevHandWorldPos;
     HandRole m_role;
 
+	[SerializeField]
     float m_orgThicknessRatio;
+
+	[SerializeField]
+	float verticalDelta;
+	[SerializeField]
+	float thicknessDelta;
 
     #region IColliderEventHandler implementation
     public override void OnColliderEventDragStart(ColliderButtonEventData eventData)
@@ -51,15 +57,18 @@ public class ThicknessDeformable : DeformableBase
         Vector3 offsetVector = m_curHandWorldPos - m_orgHandWorldPos;
 
 
-        float verticalDelta = Mathf.Clamp(offsetVector.y, -m_clayMeshContext.clayMesh.Height, 0f);
+//        verticalDelta = Mathf.Clamp(offsetVector.y, -m_clayMeshContext.clayMesh.Height, 0f);
+		verticalDelta = offsetVector.y;
 
-        float thicknessDelta = verticalDelta / m_clayMeshContext.clayMesh.Height + 1f;
+		thicknessDelta = verticalDelta / m_clayMeshContext.clayMesh.Height;
 
-        // get thickness
-        m_clayMeshContext.clayMesh.ThicknessRatio = m_orgThicknessRatio + thicknessDelta;
+        // get thickness 0 - 1
+		m_clayMeshContext.clayMesh.ThicknessRatio = Mathf.Clamp01(m_orgThicknessRatio + thicknessDelta);
 
         // update mesh
         m_clayMeshContext.clayMesh.UpdateMesh();
+
+		m_meshFilter.mesh = m_clayMeshContext.clayMesh.Mesh;
 
         TriggerHaptic(m_role, m_prevHandWorldPos, m_curHandWorldPos);
     }

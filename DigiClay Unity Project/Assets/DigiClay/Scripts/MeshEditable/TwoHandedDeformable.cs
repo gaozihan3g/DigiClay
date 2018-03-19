@@ -5,15 +5,27 @@ using UnityEngine;
 
 public class TwoHandedDeformable : DeformableBase
 {
-	public bool VisualDebug = true;
+	[SerializeField]
+	bool VisualDebug = true;
+	[SerializeField]
+	bool HeightChangeEnabled = true;
+	[SerializeField]
+	bool DeformEnabled = true;
+	[SerializeField]
+	bool RadialSmoothEnabled = true;
 
     Vector3[] m_orgHandLocalPos = new Vector3[2];
-    Vector3[] m_orgHandWorldPos = new Vector3[2];
-    Vector3[] m_prevHandWorldPos = new Vector3[2];
 
+	[SerializeField]
+    Vector3[] m_orgHandWorldPos = new Vector3[2];
+
+    Vector3[] m_prevHandWorldPos = new Vector3[2];
     Vector3[] m_curHandLocalPos = new Vector3[2];
+
+	[SerializeField]
     Vector3[] m_curHandWorldPos = new Vector3[2];
 
+	[SerializeField]
 	float[] m_handPosDeltaLength = new float[2];
 
     Vector3 m_avgOrgHandLocalPos;
@@ -22,7 +34,7 @@ public class TwoHandedDeformable : DeformableBase
     float m_curHandDist;
 
     float m_orgHeight;
-    List<float> m_orgMatrix;
+	float[] m_orgMatrix;
 
 	#region IColliderEventHandler implementation
 	public override void OnColliderEventDragStart (ColliderButtonEventData eventData)
@@ -48,7 +60,9 @@ public class TwoHandedDeformable : DeformableBase
 		m_weightList = new List<float>();
 
         m_orgHeight = m_clayMeshContext.clayMesh.Height;
-        m_orgMatrix = m_clayMeshContext.clayMesh.RadiusMatrix;
+
+		m_orgMatrix = new float[m_clayMeshContext.clayMesh.RadiusMatrix.Count];
+		m_clayMeshContext.clayMesh.RadiusMatrix.CopyTo(m_orgMatrix);
 
 		for (int i = 0; i < m_orgVertices.Length; ++i)
 		{
@@ -79,10 +93,6 @@ public class TwoHandedDeformable : DeformableBase
 		//record original positions
 		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
 
-        // TODO
-        // how many times does this get called per frame ?
-        Debug.Log(string.Format("role {0} frameCount {1}", role, Time.frameCount));
-
         m_curHandWorldPos[(int)role] = eventData.eventCaster.transform.position;
         m_curHandLocalPos[(int)role] = m_curHandWorldPos[(int)role] - transform.position;
 
@@ -108,31 +118,39 @@ public class TwoHandedDeformable : DeformableBase
 		for (int i = 0; i < 2; ++i)
 			m_handPosDeltaLength [i] = Vector3.ProjectOnPlane ((m_curHandWorldPos [i] - m_orgHandWorldPos [i]), Vector3.up).magnitude;
 
-        // ## heightDelta
-        float heightDelta = m_avgHandDeltaPos.y;
-        // ## update HEIGHT
-        m_clayMeshContext.clayMesh.Height = m_orgHeight + heightDelta;
+		if (HeightChangeEnabled) {
+	        // ## heightDelta
+	        float heightDelta = m_avgHandDeltaPos.y;
+	        // ## update HEIGHT
+	        m_clayMeshContext.clayMesh.Height = m_orgHeight + heightDelta;
+		}
 
-        // ## sign
-        float distDelta = m_curHandDist - m_orgHandDist;
-		float sign = (distDelta > 0) ? 1f : -1f;
-        // ## longerLengthIndex
-        int longerLengthIndex = (m_handPosDeltaLength[0] > m_handPosDeltaLength[1]) ? 0 : 1;
-        // ## update MATRIX
-        for (int i = 0; i < m_clayMeshContext.clayMesh.RadiusMatrix.Count; ++i)
-        {
-            //early out
-            if (Mathf.Approximately(m_weightList[i], 0f))
-                continue;
-            //deform
-            m_clayMeshContext.clayMesh.Deform(i, m_orgMatrix[i], sign, m_handPosDeltaLength[longerLengthIndex], m_weightList[i]);
-        }
+		if (DeformEnabled) {
+			// ## sign
+			float distDelta = m_curHandDist - m_orgHandDist;
+			var sign = (distDelta > 0) ? 1f : -1f;
+			// ## longerLengthIndex
+			var longerLengthIndex = (m_handPosDeltaLength [0] > m_handPosDeltaLength [1]) ? 0 : 1;
+			// ## update MATRIX
+			for (int i = 0; i < m_clayMeshContext.clayMesh.RadiusMatrix.Count; ++i)
+			{
+				//early out
+				if (Mathf.Approximately(m_weightList[i], 0f))
+					continue;
+				//deform
+				m_clayMeshContext.clayMesh.Deform(i, m_orgMatrix[i], sign, m_handPosDeltaLength[longerLengthIndex], m_weightList[i]);
+			}
+		}
 
-        // ## radial smooth
-        m_clayMeshContext.clayMesh.RadialSmooth(m_weightList);
+		if (RadialSmoothEnabled) {
+			// ## radial smooth
+	        m_clayMeshContext.clayMesh.RadialSmooth(m_weightList);
+		}
 
         // update mesh
         m_clayMeshContext.clayMesh.UpdateMesh();
+
+		m_meshFilter.mesh = m_clayMeshContext.clayMesh.Mesh;
 
         TriggerHaptic (role, m_prevHandWorldPos[(int)role], m_curHandWorldPos[(int)role]);
         m_prevHandWorldPos[(int)role] = m_curHandWorldPos[(int)role];
