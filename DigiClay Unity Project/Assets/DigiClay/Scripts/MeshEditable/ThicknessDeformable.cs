@@ -36,6 +36,7 @@ public class ThicknessDeformable : DeformableBase
 		//register undo
 		DeformManager.Instance.RegisterUndo(new DeformManager.UndoArgs(this, m_clayMeshContext.clayMesh.Height,
 			m_clayMeshContext.clayMesh.ThicknessRatio, null, Time.frameCount));
+		DeformManager.Instance.ClearRedo();
 
         if (OnDeformStart != null)
         {

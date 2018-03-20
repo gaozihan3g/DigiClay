@@ -104,6 +104,39 @@ public abstract class DeformableBase : MonoBehaviour
 	{
 		var clayMesh = m_clayMeshContext.clayMesh;
 
+		// register current to REDO
+		var curRadiusList = new float[clayMesh.RadiusList.Count];
+		clayMesh.RadiusList.CopyTo(curRadiusList);
+
+		DeformManager.Instance.RegisterRedo(new DeformManager.UndoArgs(this, clayMesh.Height,
+			clayMesh.ThicknessRatio, curRadiusList, Time.frameCount));
+
+
+		// update with args
+		clayMesh.Height = args.height;
+		clayMesh.ThicknessRatio = args.thicknessRatio;
+
+		if (args.radiusList != null)
+			clayMesh.RadiusList = new List<float>(args.radiusList);
+
+		clayMesh.UpdateMesh();
+
+		m_meshFilter.mesh = clayMesh.Mesh;
+		m_meshCollider.sharedMesh = clayMesh.Mesh;
+	}
+
+	public void RedoDeform(DeformManager.UndoArgs args)
+	{
+		var clayMesh = m_clayMeshContext.clayMesh;
+
+		// register current to UNDO
+		var curRadiusList = new float[clayMesh.RadiusList.Count];
+		clayMesh.RadiusList.CopyTo(curRadiusList);
+
+		DeformManager.Instance.RegisterUndo(new DeformManager.UndoArgs(this, clayMesh.Height,
+			clayMesh.ThicknessRatio, curRadiusList, Time.frameCount));
+
+		// update with args
 		clayMesh.Height = args.height;
 		clayMesh.ThicknessRatio = args.thicknessRatio;
 

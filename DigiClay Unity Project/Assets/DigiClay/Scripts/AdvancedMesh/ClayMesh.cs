@@ -31,12 +31,13 @@ namespace DigiClay
         [SerializeField]
         float m_thicknessRatio;
 		// thickness matrix
+		[SerializeField]
 		Matrix4x4 m_thicknessMatrix;
 
         [SerializeField]
         float m_height;
-        [SerializeField]
-		List<float> m_radiusList;
+		[SerializeField]
+		List<float> m_radiusList = new List<float>();
         [SerializeField]
         float[] m_rowAvgRadiusList;
 
@@ -137,7 +138,7 @@ namespace DigiClay
             m_column = column;
             Height = height;
             ThicknessRatio = thickness;
-			m_radiusList = radiusList;
+			RadiusList = radiusList;
 
             m_rowAvgRadiusList = new float[row];
             m_angleDelta = 2f * Mathf.PI / (float)Column;
@@ -255,37 +256,35 @@ namespace DigiClay
 
             for (int i = 0; i < vertices.Length; ++i)
             {
-                if (GetVertexTypeFromIndex(i) == ClayMesh.VertexType.OuterSide)
-                {
-                    //get row column index
-					int rowIndex = Get2DRowIndex(i);
-					int columnIndex = Get2DColumnIndex(i);
-                    //get r
-                    float r = RadiusList[i];
-                    //get theta
-                    float angleTheta = m_angleDelta * columnIndex;
-                    //get heightTheta
-                    float heightTheta = m_heightDelta * rowIndex;
+				if (GetVertexTypeFromIndex (i) == VertexType.OuterSide) {
+					//get row column index
+					int rowIndex = Get2DRowIndex (i);
+					int columnIndex = Get2DColumnIndex (i);
+					//get r
+					float r = RadiusList [i];
+					//get theta
+					float angleTheta = m_angleDelta * columnIndex;
+					//get heightTheta
+					float heightTheta = m_heightDelta * rowIndex;
 
-                    vertices[i] = new Vector3(r * Mathf.Cos(angleTheta), heightTheta, r * Mathf.Sin(angleTheta));
-                }
-                else if (GetVertexTypeFromIndex(i) == ClayMesh.VertexType.InnerSide)
-                {
-                    // inner side
+					vertices [i] = new Vector3 (r * Mathf.Cos (angleTheta), heightTheta, r * Mathf.Sin (angleTheta));
+				} else if (GetVertexTypeFromIndex (i) == VertexType.InnerSide) {
+					// inner side
 					vertices [i] = m_thicknessMatrix.MultiplyPoint3x4 (vertices [i - RadiusList.Count]);
-                }
-                else if (GetVertexTypeFromIndex(i) == ClayMesh.VertexType.OuterBottomEdge)
-                {
-                    // outer bottom
+				} else if (GetVertexTypeFromIndex (i) == VertexType.OuterBottomCenter) {
+					// do nothing
+				} else if (GetVertexTypeFromIndex (i) == VertexType.OuterBottomEdge) {
+					// outer bottom
 					// i th of outer side
-					vertices[i] = vertices[i - (RadiusList.Count * 2 + 1)];
-                }
-                else if (GetVertexTypeFromIndex(i) == ClayMesh.VertexType.InnerBottomEdge)
-                {
-                    // inner bottom
+					vertices [i] = vertices [i - (RadiusList.Count * 2 + 1)];
+				} else if (GetVertexTypeFromIndex (i) == VertexType.InnerBottomCenter) {
+					// inner bottom
+					vertices [i].y = m_heightDelta;
+				} else if (GetVertexTypeFromIndex (i) == VertexType.InnerBottomEdge) {
+					//InnerBottomEdge
 					// i th in the second row of inner side
-                    vertices[i] = vertices[i - (RadiusList.Count + 2)];
-                }
+					vertices [i] = vertices [i - (RadiusList.Count + 2)];
+				}
             }
 
 			m_mesh.vertices = vertices;

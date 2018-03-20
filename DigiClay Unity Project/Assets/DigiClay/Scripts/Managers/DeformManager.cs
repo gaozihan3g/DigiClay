@@ -12,6 +12,7 @@ public class DeformManager : MonoBehaviour {
 	public static DeformManager Instance;
 
 	Stack<UndoArgs> m_undoStack = new Stack<UndoArgs>();
+	Stack<UndoArgs> m_redoStack = new Stack<UndoArgs>();
 
 	[Serializable]
 	public class UnityEventDeform : UnityEvent<DeformArgs> { }
@@ -261,6 +262,7 @@ public class DeformManager : MonoBehaviour {
 			if (Mathf.Abs(angle) < 45f)
 			{
 				//right
+				PerformRedo();
 			}
 			else if (Mathf.Abs(angle) > 135f)
 			{
@@ -290,13 +292,35 @@ public class DeformManager : MonoBehaviour {
 		Debug.Log ("undo registered " + args.timeStamp + " stack size " + m_undoStack.Count);
 	}
 
+	public void ClearRedo()
+	{
+		m_redoStack.Clear ();
+	}
+
+	public void RegisterRedo(UndoArgs args)
+	{
+		m_redoStack.Push (args);
+		Debug.Log ("redo registered " + args.timeStamp + " stack size " + m_redoStack.Count);
+	}
+
 	public void PerformUndo()
 	{
 		if (m_undoStack.Count == 0)
 			return;
 
 		var args = m_undoStack.Pop ();
-		Debug.Log ("undo registered " + args.timeStamp + " stack size " + m_undoStack.Count);
+		Debug.Log ("undo performed " + args.timeStamp + " stack size " + m_undoStack.Count);
+
 		args.deformable.UndoDeform (args);
+	}
+
+	public void PerformRedo()
+	{
+		if (m_redoStack.Count == 0)
+			return;
+
+		var args = m_redoStack.Pop ();
+		Debug.Log ("redo performed " + args.timeStamp + " stack size " + m_redoStack.Count);
+		args.deformable.RedoDeform (args);
 	}
 }

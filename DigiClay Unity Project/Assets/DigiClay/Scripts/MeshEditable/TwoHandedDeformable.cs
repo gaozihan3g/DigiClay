@@ -76,6 +76,7 @@ public class TwoHandedDeformable : DeformableBase
 		//register undo
 		DeformManager.Instance.RegisterUndo(new DeformManager.UndoArgs(this, m_clayMeshContext.clayMesh.Height,
 			m_clayMeshContext.clayMesh.ThicknessRatio, m_orgRadiusList, Time.frameCount));
+		DeformManager.Instance.ClearRedo();
 
 		if (OnDeformStart != null)
 		{
