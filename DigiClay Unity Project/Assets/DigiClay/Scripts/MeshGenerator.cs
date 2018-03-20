@@ -61,13 +61,12 @@ public class MeshGenerator : MonoBehaviour
 
     ClayMesh ClayMeshFactory()
     {
-        ClayMesh cMesh = new ClayMesh(m_verticalSegment + 1, m_segment, m_height, m_thicknessRatio);
-
         float delta = 2f * Mathf.PI / (float)m_segment;
         float heightDelta = (float)m_height / (float)m_verticalSegment;
         float theta = 0f;
         float heightTheta = 0f;
         Perlin perlin = new Perlin();
+		List<float> radiusList = new List<float> ();
 
         for (int j = 0; j < m_verticalSegment + 1; ++j)
         {
@@ -111,27 +110,21 @@ public class MeshGenerator : MonoBehaviour
                     Mathf.Sin(theta) * m_individualNoiseSpan);
 
                 float individualNoiseRadius = noise3 * m_individualNoiseScale * baseRadius;
-
                 float finalRadius = baseRadius + rowNoiseRadius + individualNoiseRadius;
 
                 var noisePos = noiseCenter + new Vector3(finalRadius * Mathf.Cos(theta), 0f, finalRadius * Mathf.Sin(theta));
-
                 float result = noisePos.magnitude;
 
-                //Debug.Log(string.Format("noise {0:F3}\t finalRadius {1:F3}\t result {2:F3}",
-                          //noise,
-                          //finalRadius, result));
-
                 // fill noise radius matrix
-                cMesh.RadiusMatrix.Add(result);
-
-                // add feature points for smoothing
-                cMesh.IsFeaturePoints.Add((j == 0 || j == m_verticalSegment) ? true : false);
+				radiusList.Add(result);
 
                 theta += delta;
             }
             heightTheta += heightDelta;
         }
+
+		ClayMesh cMesh = new ClayMesh(m_verticalSegment + 1, m_segment, m_height, m_thicknessRatio, radiusList);
+
         return cMesh;
     }
 }

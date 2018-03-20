@@ -200,16 +200,18 @@ MonoBehaviour:
       Culture=neutral, PublicKeyToken=null
   m_ready: 0000
   _innerRadius: 0.05
-  m_ratio: 0.5
+  m_ratio: 0.01
   _outerRadius: 0.1
   _strength: 1
   m_maxDist: 0.01
   m_minDuration: 100
-  m_maxDuration: 1000
+  m_maxDuration: 500
   _symmetric: 1
   m_isHCSmoothing: 0
   deltaAmount: 0.01
   ratioDeltaAmount: 0.1
+  RadialSmoothingRatio: 0.3
+  LaplacianSmoothingRatio: 0.1
 --- !u!114 &114973842973836390
 MonoBehaviour:
   m_ObjectHideFlags: 1

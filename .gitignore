@@ -6,3 +6,5 @@ DigiClay Unity Project/Temp/
 DigiClay Unity Project/UnityPackageManager/
 *.csproj
 *.sln
+*.unityproj
+*.userprefs

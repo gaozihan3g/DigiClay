@@ -33,12 +33,18 @@ public class DeformManager : MonoBehaviour {
 	public class UndoArgs
 	{
 		public DeformableBase deformable;
-		public Vector3[] verts;
+		public float height;
+		public float thicknessRatio;
+		public float[] radiusList;
+		public int timeStamp;
 
-		public UndoArgs(DeformableBase bd, Vector3[] v)
+		public UndoArgs(DeformableBase bd, float h, float t, float[] rl, int ts)
 		{
 			deformable = bd;
-			verts = v;
+			height = h;
+			thicknessRatio = t;
+			radiusList = rl;
+			timeStamp = ts;
 		}
 	}
 
@@ -185,6 +191,10 @@ public class DeformManager : MonoBehaviour {
 	public float deltaAmount = 0.01f;
 	public float ratioDeltaAmount = 0.05f;
 
+	public float DeformRatio = 0.5f;
+	public float RadialSmoothingRatio = 0.1f;
+	public float LaplacianSmoothingRatio = 0.1f;
+
     void Awake()
     {
 		Debug.Log ("DeformManager Awake" + gameObject.name + " frame " + Time.frameCount );
@@ -272,17 +282,12 @@ public class DeformManager : MonoBehaviour {
 			Symmetric = !Symmetric;
 		});
 	}
+		
 
-	void Update()
+	public void RegisterUndo(UndoArgs args)
 	{
-//		var triggerValue = ViveInput.GetAxis(HandRole.RightHand, ControllerAxis.Trigger);
-//		Strength = triggerValue;
-//		Debug.Log ("right hand trigger " + triggerValue);
-	}
-
-	public void RegisterUndo(DeformableBase bd, Vector3[] verts)
-	{
-		m_undoStack.Push (new UndoArgs(bd, verts));
+		m_undoStack.Push (args);
+		Debug.Log ("undo registered " + args.timeStamp + " stack size " + m_undoStack.Count);
 	}
 
 	public void PerformUndo()
@@ -291,6 +296,7 @@ public class DeformManager : MonoBehaviour {
 			return;
 
 		var args = m_undoStack.Pop ();
-		args.deformable.UndoDeform (args.verts);
+		Debug.Log ("undo registered " + args.timeStamp + " stack size " + m_undoStack.Count);
+		args.deformable.UndoDeform (args);
 	}
 }

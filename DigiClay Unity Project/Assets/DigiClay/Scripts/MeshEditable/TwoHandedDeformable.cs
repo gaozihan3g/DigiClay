@@ -34,7 +34,7 @@ public class TwoHandedDeformable : DeformableBase
     float m_curHandDist;
 
     float m_orgHeight;
-	float[] m_orgMatrix;
+	float[] m_orgRadiusList;
 
 	#region IColliderEventHandler implementation
 	public override void OnColliderEventDragStart (ColliderButtonEventData eventData)
@@ -61,8 +61,8 @@ public class TwoHandedDeformable : DeformableBase
 
         m_orgHeight = m_clayMeshContext.clayMesh.Height;
 
-		m_orgMatrix = new float[m_clayMeshContext.clayMesh.RadiusMatrix.Count];
-		m_clayMeshContext.clayMesh.RadiusMatrix.CopyTo(m_orgMatrix);
+		m_orgRadiusList = new float[m_clayMeshContext.clayMesh.RadiusList.Count];
+		m_clayMeshContext.clayMesh.RadiusList.CopyTo(m_orgRadiusList);
 
 		for (int i = 0; i < m_orgVertices.Length; ++i)
 		{
@@ -73,8 +73,9 @@ public class TwoHandedDeformable : DeformableBase
 			m_weightList.Add(weight);
 		}
 
-        //register undo
-        DeformManager.Instance.RegisterUndo(this, m_orgVertices);
+		//register undo
+		DeformManager.Instance.RegisterUndo(new DeformManager.UndoArgs(this, m_clayMeshContext.clayMesh.Height,
+			m_clayMeshContext.clayMesh.ThicknessRatio, m_orgRadiusList, Time.frameCount));
 
 		if (OnDeformStart != null)
 		{
@@ -120,7 +121,7 @@ public class TwoHandedDeformable : DeformableBase
 
 		if (HeightChangeEnabled) {
 	        // ## heightDelta
-	        float heightDelta = m_avgHandDeltaPos.y;
+			float heightDelta = m_avgHandDeltaPos.y * DeformManager.Instance.DeformRatio;
 	        // ## update HEIGHT
 	        m_clayMeshContext.clayMesh.Height = m_orgHeight + heightDelta;
 		}
@@ -132,13 +133,13 @@ public class TwoHandedDeformable : DeformableBase
 			// ## longerLengthIndex
 			var longerLengthIndex = (m_handPosDeltaLength [0] > m_handPosDeltaLength [1]) ? 0 : 1;
 			// ## update MATRIX
-			for (int i = 0; i < m_clayMeshContext.clayMesh.RadiusMatrix.Count; ++i)
+			for (int i = 0; i < m_clayMeshContext.clayMesh.RadiusList.Count; ++i)
 			{
 				//early out
 				if (Mathf.Approximately(m_weightList[i], 0f))
 					continue;
 				//deform
-				m_clayMeshContext.clayMesh.Deform(i, m_orgMatrix[i], sign, m_handPosDeltaLength[longerLengthIndex], m_weightList[i]);
+				m_clayMeshContext.clayMesh.Deform(i, m_orgRadiusList[i], sign, m_handPosDeltaLength[longerLengthIndex] * DeformManager.Instance.DeformRatio, m_weightList[i]);
 			}
 		}
 

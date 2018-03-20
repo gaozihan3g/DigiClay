@@ -25,16 +25,16 @@ public class MeshSmoother : MonoBehaviour {
     {
 		Mesh mesh = GetComponent<MeshFilter> ().mesh;
 
-        if (isHC)
-        {
-            mesh = MeshSmoothing.HCFilter(mesh, m_iterations, alpha, beta, m_cmc.clayMesh.IsFeaturePoints.ToArray());
-            Debug.Log("HC Smoothing " + m_iterations);
-        }
-        else
-        {
-            mesh = MeshSmoothing.LaplacianFilter(mesh, m_iterations, m_cmc.clayMesh.IsFeaturePoints.ToArray());
-            Debug.Log("LaplacianSmoothing " + m_iterations);
-        }
+//        if (isHC)
+//        {
+//            mesh = MeshSmoothing.HCFilter(mesh, m_iterations, alpha, beta, m_cmc.clayMesh.IsFeaturePoints.ToArray());
+//            Debug.Log("HC Smoothing " + m_iterations);
+//        }
+//        else
+//        {
+//            mesh = MeshSmoothing.LaplacianFilter(mesh, m_iterations, m_cmc.clayMesh.IsFeaturePoints.ToArray());
+//            Debug.Log("LaplacianSmoothing " + m_iterations);
+//        }
         
 
     }

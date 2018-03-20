@@ -134,7 +134,6 @@ MonoBehaviour:
     m_height: 0
     m_radiusMatrix: []
     m_rowAvgRadiusList: []
-    m_isFeaturePoints: 
     m_mesh: {fileID: 0}
     m_angleDelta: 0
     m_heightDelta: 0
@@ -236,7 +235,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1165243728222688}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0363bdd21d0e54ba89f0800de536d5a8, type: 3}
   m_Name: 
@@ -257,3 +256,4 @@ MonoBehaviour:
     m_TypeName: DeformableBase+UnityEventDeformable, Assembly-CSharp, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_iterations: 1
+  m_orgHandWorldPos: {x: 0, y: 0, z: 0}

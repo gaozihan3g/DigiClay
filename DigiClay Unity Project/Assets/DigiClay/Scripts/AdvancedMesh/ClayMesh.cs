@@ -30,17 +30,20 @@ namespace DigiClay
         int m_column;
         [SerializeField]
         float m_thicknessRatio;
+		// thickness matrix
+		Matrix4x4 m_thicknessMatrix;
+
         [SerializeField]
         float m_height;
         [SerializeField]
-        List<float> m_radiusMatrix = new List<float>();
+		List<float> m_radiusList;
         [SerializeField]
         float[] m_rowAvgRadiusList;
-        [SerializeField, HideInInspector]
-        List<bool> m_isFeaturePoints = new List<bool>();
+
+		Dictionary<int, HashSet<int>> m_connectionNetwork;
+
         [SerializeField]
         Mesh m_mesh;
-
 		[SerializeField]
         float m_angleDelta;
 		[SerializeField]
@@ -54,10 +57,7 @@ namespace DigiClay
         //List<Vector2Int> m_uvSeams;
         int m_vertexIndexOffset;
 
-        //TODO need this?
-        public float m_radialSmoothingRatio = 0.5f;
-
-        public int Row
+        int Row
         {
             get
             {
@@ -65,7 +65,7 @@ namespace DigiClay
             }
         }
 
-        public int Column
+        int Column
         {
             get
             {
@@ -73,82 +73,133 @@ namespace DigiClay
             }
         }
 
+		float[] RowAvgRadiusList
+		{
+			get
+			{
+				return m_rowAvgRadiusList;
+			}
+		}
 
-        public Mesh Mesh
-        {
-            get
-            {
-                return m_mesh;
-            }
-        }
+		public float Height
+		{
+			get
+			{
+				return m_height;
+			}
 
+			set
+			{
+				m_height = Mathf.Clamp(value, DigiClayConstant.MIN_HEIGHT, DigiClayConstant.MAX_HEIGHT);
+				m_heightDelta = (float)m_height / (float)(Row - 1);
+			}
+		}
 
-        public List<bool> IsFeaturePoints
-        {
-            get
-            {
-                return m_isFeaturePoints;
-            }
+		public float ThicknessRatio
+		{
+			get
+			{
+				return m_thicknessRatio;
+			}
 
-            set
-            {
-                m_isFeaturePoints = value;
-            }
-        }
+			set
+			{
+				m_thicknessRatio = value;
 
-        public List<float> RadiusMatrix
-        {
-            get
-            {
-                return m_radiusMatrix;
-            }
-        }
+				m_thicknessMatrix = new Matrix4x4 (
+					new Vector4 ( 1f - m_thicknessRatio, 0f, 0f, 0f),
+					new Vector4 (0f, 1f, 0f, 0f),
+					new Vector4 (0f, 0f, 1f - m_thicknessRatio, 0f),
+					new Vector4 (0f, 0f, 0f, 1f));
+			}
+		}
 
-        public float[] RowAvgRadiusList
-        {
-            get
-            {
-                return m_rowAvgRadiusList;
-            }
-        }
+		public List<float> RadiusList {
+			get {
+				return m_radiusList;
+			}
+			set {
+				m_radiusList = value;
+			}
+		}
 
-        public float ThicknessRatio
-        {
-            get
-            {
-                return m_thicknessRatio;
-            }
+		public Mesh Mesh
+		{
+			get
+			{
+				return m_mesh;
+			}
+		}
 
-            set
-            {
-                m_thicknessRatio = value;
-            }
-        }
-
-        public float Height
-        {
-            get
-            {
-                return m_height;
-            }
-
-            set
-            {
-                m_height = value;
-                m_heightDelta = (float)m_height / (float)(Row - 1);
-            }
-        }
-
-        public ClayMesh(int row, int column, float height, float thickness)
+		public ClayMesh(int row, int column, float height, float thickness, List<float> radiusList)
         {
             m_row = row;
             m_column = column;
             Height = height;
             ThicknessRatio = thickness;
+			m_radiusList = radiusList;
 
             m_rowAvgRadiusList = new float[row];
             m_angleDelta = 2f * Mathf.PI / (float)Column;
         }
+
+		int Get2DRowIndex(int i)
+		{
+			return i / Column;
+		}
+
+		int Get2DColumnIndex(int i)
+		{
+			return i % Column;
+		}
+
+		int Get1DIndex(int i, int j)
+		{
+			return i * Column + j;
+		}
+
+		void BuildConnectionNetwork()
+		{
+			m_connectionNetwork = new Dictionary<int, HashSet<int>> ();
+
+			for (int k = 0; k < RadiusList.Count; ++k) {
+				
+				if (IsFeaturePoint(k))
+					continue;
+
+				HashSet<int> hs = new HashSet<int> ();
+
+				// get [i,j]
+				int i = Get2DRowIndex(k);
+				int j = Get2DColumnIndex(k);
+
+				// [i-1, j]
+				hs.Add (Get1DIndex ((i-1+Row) % Row, j));
+				// [i+1, j]
+				hs.Add (Get1DIndex ((i+1) % Row, j));
+				// [i, j-1]
+				hs.Add (Get1DIndex (i, (j-1+Column) % Column));
+				// [i, j+1]
+				hs.Add (Get1DIndex (i, (j+1) % Column));
+				// [i-1, j-1] ?
+//				hs.Add (Get1DIndex ((i-1+Row) % Row, (j-1+Column) % Column));
+				// [i+1, j+1] ?
+//				hs.Add (Get1DIndex ((i+1) % Row, (j+1) % Column));
+
+				m_connectionNetwork.Add (k, hs);
+			}
+		}
+
+		void TestConnectionNetwork()
+		{
+			foreach (var kvp in m_connectionNetwork) {
+				string s = kvp.Key.ToString () + " |";
+				foreach (var v in kvp.Value) {
+					s += " " + v.ToString ();
+				}
+				Debug.Log (s);
+			}
+		}
 
         public void GenerateMesh()
         {
@@ -161,12 +212,10 @@ namespace DigiClay
             m_vertexIndexOffset = 0;
 
             //mesh
-            m_mesh = new Mesh
-            {
-                name = "Generated Mesh"
-            };
-
+			m_mesh = new Mesh();
+			m_mesh.name = "Generated Mesh";
             m_mesh.MarkDynamic();
+
             GenerateOuterSide();
             GenerateInnerSide();
             GenerateEdge();
@@ -188,7 +237,6 @@ namespace DigiClay
             m_mesh.subMeshCount = meshCount;
 
             int subMeshIndex = 0;
-            //set outer submesh
 
             if (m_outerTriangles.Count != 0)
                 m_mesh.SetTriangles(m_outerTriangles.ToArray(), subMeshIndex++);
@@ -204,16 +252,16 @@ namespace DigiClay
         public void UpdateMesh()
         {
             Vector3[] vertices = Mesh.vertices;
-            ///
+
             for (int i = 0; i < vertices.Length; ++i)
             {
                 if (GetVertexTypeFromIndex(i) == ClayMesh.VertexType.OuterSide)
                 {
                     //get row column index
-                    int rowIndex = i / Column;
-                    int columnIndex = i % Column;
+					int rowIndex = Get2DRowIndex(i);
+					int columnIndex = Get2DColumnIndex(i);
                     //get r
-                    float r = RadiusMatrix[i];
+                    float r = RadiusList[i];
                     //get theta
                     float angleTheta = m_angleDelta * columnIndex;
                     //get heightTheta
@@ -223,57 +271,90 @@ namespace DigiClay
                 }
                 else if (GetVertexTypeFromIndex(i) == ClayMesh.VertexType.InnerSide)
                 {
-					Matrix4x4 mat = new Matrix4x4 (
-						                new Vector4 ( 1f - ThicknessRatio, 0f, 0f, 0f),
-						                new Vector4 (0f, 1f, 0f, 0f),
-										new Vector4 (0f, 0f, 1f - ThicknessRatio, 0f),
-						                new Vector4 (0f, 0f, 0f, 1f));
                     // inner side
-//                    vertices[i] = vertices[i - RadiusMatrix.Count] * ThicknessRatio;
-					vertices [i] = mat.MultiplyPoint3x4 (vertices [i - RadiusMatrix.Count]);
+					vertices [i] = m_thicknessMatrix.MultiplyPoint3x4 (vertices [i - RadiusList.Count]);
                 }
                 else if (GetVertexTypeFromIndex(i) == ClayMesh.VertexType.OuterBottomEdge)
                 {
                     // outer bottom
 					// i th of outer side
-					vertices[i] = vertices[i - (RadiusMatrix.Count * 2 + 1)];
+					vertices[i] = vertices[i - (RadiusList.Count * 2 + 1)];
                 }
                 else if (GetVertexTypeFromIndex(i) == ClayMesh.VertexType.InnerBottomEdge)
                 {
                     // inner bottom
 					// i th in the second row of inner side
-                    vertices[i] = vertices[i - (RadiusMatrix.Count + 2)];
+                    vertices[i] = vertices[i - (RadiusList.Count + 2)];
                 }
             }
 
 			m_mesh.vertices = vertices;
 			m_mesh.RecalculateNormals();
+			m_mesh.RecalculateBounds();
         }
 
         public void RadialSmooth(List<float> weightList)
         {
             RecalculateAvgRadius();
 
-            for (int i = 0; i < RadiusMatrix.Count; ++i)
+            for (int i = 0; i < RadiusList.Count; ++i)
             {
+				if (Mathf.Approximately(weightList[i], 0f))
+					continue;
+				
                 // old
-                float oldR = RadiusMatrix[i];
+                float oldR = RadiusList[i];
                 // target
                 float targetR = GetRowAvgRadiusForVertex(i);
                 // weight
-				float weight = weightList[i] * m_radialSmoothingRatio;
+				float weight = DeformManager.Instance.RadialSmoothingRatio;
                 // new
-                RadiusMatrix[i] = targetR * weight + oldR * (1f - weight);
+                RadiusList[i] = targetR * weight + oldR * (1f - weight);
             }
         }
 
+		public void LaplacianSmooth(List<float> weightList)
+		{
+			if (m_connectionNetwork == null)
+				BuildConnectionNetwork();
+			
+			for (int i = 0; i < RadiusList.Count; ++i) {
+				
+				// early out if feature point
+				if (IsFeaturePoint(i))
+					continue;
+				// early out if weight is 0
+				if (Mathf.Approximately (weightList [i], 0f))
+					continue;
+
+				// get network
+				var adjVectices = m_connectionNetwork[i];
+
+				float sum = 0f;
+
+				foreach (var v in adjVectices) {
+					sum += RadiusList [v];
+				}
+
+				float weight = DeformManager.Instance.LaplacianSmoothingRatio;
+
+				RadiusList [i] = weight * sum / adjVectices.Count
+					+ (1f - weight) * RadiusList [i];
+			}
+		}
+
         public void Deform(int i, float originLength, float sign, float length, float weight)
         {
-			if (i == 10)
-				Debug.Log (string.Format("i:{0} originLength:{1:F3} \t sign:{2} length:{3:F3} weight:{4:F3}", i, originLength, sign, length, weight));
-			//avoid negative values
-			RadiusMatrix[i] = Mathf.Clamp(originLength + sign * length * weight, DigiClayConstant.MIN_RADIUS, DigiClayConstant.MAX_RADIUS);
+//			if (i == 10)
+//				Debug.Log (string.Format("i:{0} originLength:{1:F3} \t sign:{2} length:{3:F3} weight:{4:F3}", i, originLength, sign, length, weight));
+			RadiusList[i] = Mathf.Clamp(originLength + sign * length * weight, DigiClayConstant.MIN_RADIUS, DigiClayConstant.MAX_RADIUS);
         }
+
+		public bool IsFeaturePoint(int i)
+		{
+			int r = Get2DRowIndex(i);
+			return (r == 0 || r == Row - 1);
+		}
 
         VertexType GetVertexTypeFromIndex(int i)
         {
@@ -303,7 +384,7 @@ namespace DigiClay
                 avgRadius = 0f;
                 for (int j = 0; j < Column; ++j)
                 {
-                    avgRadius += RadiusMatrix[i * Column + j];
+					avgRadius += RadiusList[Get1DIndex(i,j)];
                 }
                 avgRadius /= Column;
                 RowAvgRadiusList[i] = avgRadius;
@@ -312,9 +393,9 @@ namespace DigiClay
 
         float GetRowAvgRadiusForVertex(int i)
         {
-            if (i > RadiusMatrix.Count)
+            if (i > RadiusList.Count)
                 throw new IndexOutOfRangeException();
-            return RowAvgRadiusList[i / Column];
+			return RowAvgRadiusList[Get2DRowIndex(i)];
         }
 
         /// <summary>
@@ -332,12 +413,12 @@ namespace DigiClay
             Vector3 origin = Vector3.zero;
             //int index = 0;
 
-            for (int j = 0; j < Row; ++j)
+			for (int i = 0; i < Row; ++i)
             {
-                for (int i = 0; i < Column; ++i)
+				for (int j = 0; j < Column; ++j)
                 {
                     //float r = m_baseRadiusList[j] + m_noiseRadiusMatrix[j * m_column + i];
-                    float r = RadiusMatrix[j * Column + i];
+					float r = RadiusList[Get1DIndex(i,j)];
                     Vector3 p = new Vector3(r * Mathf.Cos(angleTheta), heightTheta, r * Mathf.Sin(angleTheta));
 
                     newVertices.Add(p);
@@ -346,12 +427,12 @@ namespace DigiClay
                     // TODO seamless 0 - 1
                     float u;
 
-                    if (i < Column / 2)
-                        u = 2f * (float)i / (float)Column;
+                    if (j < Column / 2)
+                        u = 2f * (float)j / (float)Column;
                     else
-                        u = -2f * (float)i / (float)Column + 2f;
+                        u = -2f * (float)j / (float)Column + 2f;
 
-                    newUVs.Add(new Vector2(u, 1f / (float)(Row - 1) * j));
+                    newUVs.Add(new Vector2(u, 1f / (float)(Row - 1) * i));
 
                     angleTheta += m_angleDelta;
                 }
@@ -502,7 +583,7 @@ namespace DigiClay
 
             for (int i = 0; i < Column; ++i)
             {
-                newVertices.Add(m_finalVertices[i + RadiusMatrix.Count + Column]); // add second bottom row verts
+                newVertices.Add(m_finalVertices[i + RadiusList.Count + Column]); // add second bottom row verts
                 newUVs.Add(Vector2.one);
             }
 

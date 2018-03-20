@@ -10,7 +10,6 @@ public class ThicknessDeformable : DeformableBase
     Vector3 m_prevHandWorldPos;
     HandRole m_role;
 
-	[SerializeField]
     float m_orgThicknessRatio;
 
 	[SerializeField]
@@ -34,8 +33,9 @@ public class ThicknessDeformable : DeformableBase
 
         m_orgThicknessRatio = m_clayMeshContext.clayMesh.ThicknessRatio;
 
-        //register undo
-        DeformManager.Instance.RegisterUndo(this, m_orgVertices);
+		//register undo
+		DeformManager.Instance.RegisterUndo(new DeformManager.UndoArgs(this, m_clayMeshContext.clayMesh.Height,
+			m_clayMeshContext.clayMesh.ThicknessRatio, null, Time.frameCount));
 
         if (OnDeformStart != null)
         {
@@ -56,8 +56,6 @@ public class ThicknessDeformable : DeformableBase
 
         Vector3 offsetVector = m_curHandWorldPos - m_orgHandWorldPos;
 
-
-//        verticalDelta = Mathf.Clamp(offsetVector.y, -m_clayMeshContext.clayMesh.Height, 0f);
 		verticalDelta = offsetVector.y;
 
 		thicknessDelta = verticalDelta / m_clayMeshContext.clayMesh.Height;
