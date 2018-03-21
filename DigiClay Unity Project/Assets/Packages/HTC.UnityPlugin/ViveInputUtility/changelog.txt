@@ -1,5 +1,19 @@
-﻿# Vive Input Utility for Unity - v1.8.0
+﻿# Vive Input Utility for Unity - v1.8.1
 Copyright (c) 2016-2018, HTC Corporation. All rights reserved.
+
+## Changes for v1.8.1:
+
+* New features
+  - VIVE Focus Support
+    - Required Unity 5.6 or later version
+    - Download and install WaveVR SDK Unity plugin from https://hub.vive.com/profile/material-download
+    - Enable VIVE Focus support under Edit > Preference > VIU Settings
+	
+* Bug fix
+  - Fix no tracking devices dectected when SteamVR plugin v1.2.3 is installed
+  - Fix compile error in Unity 2018.1
+  - Fix VIUSettings changes not saved into asset data file
+
 
 ## Changes for v1.8.0:
 
