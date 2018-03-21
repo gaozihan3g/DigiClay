@@ -13,8 +13,6 @@ public class MeshExport : MonoBehaviour {
 	}
 
 	void Start () {
-		OnScreenUIManager.Instance.AddCommand("Save Mesh " + identifier, ()=>{
-			MeshIOManager.Instance.ExportMesh(_meshFilter.mesh);
-		});
+		MeshIOManager.Instance.Mesh = _meshFilter.mesh;
 	}
 }

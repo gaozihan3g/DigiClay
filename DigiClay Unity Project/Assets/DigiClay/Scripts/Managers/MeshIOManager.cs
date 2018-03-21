@@ -9,6 +9,19 @@ public class MeshIOManager : MonoBehaviour {
 
     public static MeshIOManager Instance;
 
+	[SerializeField]
+	Mesh m_mesh;
+
+	public Mesh Mesh {
+		get {
+			return m_mesh;
+		}
+		set {
+			m_mesh = value;
+			Debug.Log ("Mesh Assigned MeshIOManager");
+		}
+	}
+
     void Awake()
     {
         if (Instance == null)
@@ -34,6 +47,11 @@ public class MeshIOManager : MonoBehaviour {
             //TODO load mesh data
         });
     }
+
+	public void ExportMesh()
+	{
+		ExportMesh (Mesh);
+	}
 
     public void ExportMesh(Mesh mesh, string meshName = "")
     {

@@ -6,6 +6,8 @@ using DigiClay;
 [ExecuteInEditMode]
 public class MeshGenerator : MonoBehaviour
 {
+	public static MeshGenerator Instance;
+
     [SerializeField, Range(DigiClayConstant.MIN_RADIUS, DigiClayConstant.MAX_RADIUS)]
     float m_radius = 1;
     [SerializeField, Range(DigiClayConstant.MIN_HEIGHT, DigiClayConstant.MAX_HEIGHT)]
@@ -40,6 +42,18 @@ public class MeshGenerator : MonoBehaviour
 
     [SerializeField]
     ClayMeshContext m_prefab;
+
+	void Awake()
+	{
+		if (Instance == null)
+		{
+			Instance = this;
+		}
+		else
+		{
+			Destroy(this);
+		}
+	}
 
     public void CreateMesh()
     {

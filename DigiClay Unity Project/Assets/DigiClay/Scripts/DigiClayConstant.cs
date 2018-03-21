@@ -8,5 +8,8 @@ public static class DigiClayConstant {
 	public const float MAX_HEIGHT = 2f;
 	public const float MIN_RADIUS = 0.02f;
 	public const float MAX_RADIUS = 1f;
+	public const ushort MIN_HAPTIC = 100;
+	public const ushort MAX_HAPTIC = 3600;
+	public const float HAPTIC_MAX_DISTANCE = 0.1f;
     public const string OUTPUT_PATH = "Assets/Mesh/";
 }

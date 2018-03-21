@@ -5,32 +5,12 @@ using HTC.UnityPlugin.Vive;
 
 public class HapticManager : MonoBehaviour {
 
-	[Range(1, 3600)]
-	public ushort _duration = 500;
-	public ushort maxDuration = 3600;
-
-	public float _strength;
-
-	public float Strength {
-		get {
-			return _strength;
-		}
-		set {
-			_strength = value;
-			_duration = (ushort)(maxDuration * value);
-		}
-	}
-
-	[Range(1,1000)]
-	public ushort _interval = 1;
-
-	public int _loops = 10;
+	[SerializeField]
+	ushort[] m_duration = new ushort[2];
+	[SerializeField]
+	float[] m_strength = new float[2];
 
 	public static HapticManager Instance;
-
-	IEnumerator _rightCoroutine;
-	IEnumerator _leftCoroutine;
-
 	Dictionary<HandRole, IEnumerator> coroutineDic = new Dictionary<HandRole, IEnumerator>();
 
 	void Awake()
@@ -45,33 +25,17 @@ public class HapticManager : MonoBehaviour {
 		}
 	}
 
-	// Use this for initialization
-	void Start ()
+	public void SetRoleStrength(HandRole role, float str = 0f)
 	{
-		Init ();
+		int i = (int)role;
+		str = Mathf.Clamp01 (str);
+		m_strength[i] = str;
+		m_duration[i] = (ushort)(DigiClayConstant.MIN_HAPTIC + (DigiClayConstant.MAX_HAPTIC - DigiClayConstant.MIN_HAPTIC) * str);
 	}
-
-	void Init()
+		
+	public void StartHaptic(HandRole role, float str = 0f)
 	{
-//		OnScreenUIManager.Instance.AddCommand ("Right", () => {
-//			StartRightHaptic();
-//		});
-//
-//		OnScreenUIManager.Instance.AddCommand ("Left", () => {
-//			StartLeftHaptic();
-//		});
-//
-//		OnScreenUIManager.Instance.AddCommand ("Stop Left", () => {
-//			EndLeftHaptic();
-//		});
-//
-//		OnScreenUIManager.Instance.AddCommand ("Stop Right", () => {
-//			EndRightHaptic();
-//		});
-	}
-
-	public void StartHaptic(HandRole role)
-	{
+		SetRoleStrength (role, str);
 		IEnumerator c = HapticSequence (role);
 		coroutineDic.Add (role, c);
 		StartCoroutine (c);
@@ -87,34 +51,13 @@ public class HapticManager : MonoBehaviour {
 		coroutineDic.Remove (role);
 	}
 
-//	public void StartRightHaptic(ushort duration = 1, ushort interval = 1)
-//	{
-//		_rightCoroutine = HapticSequence (HandRole.RightHand, duration, interval);
-//		StartCoroutine(_rightCoroutine);
-//	}
-//
-//	public void StartLeftHaptic(ushort duration = 1, ushort interval = 1)
-//	{
-//		_leftCoroutine = HapticSequence (HandRole.LeftHand, duration, interval);
-//		StartCoroutine(_leftCoroutine);
-//	}
-//
-//	public void EndRightHaptic()
-//	{
-//		StopCoroutine(_rightCoroutine);
-//	}
-//
-//	public void EndLeftHaptic()
-//	{
-//		StopCoroutine(_leftCoroutine);
-//	}
-
 	IEnumerator HapticSequence(HandRole role)
 	{
+		int i = (int)role;
 		while (true)
 		{
-			ViveInput.TriggerHapticPulse(role, _duration);
-			yield return new WaitForSeconds ( (float)_interval / 1000f);
+			ViveInput.TriggerHapticPulse(role, m_duration[i]);
+			yield return new WaitForEndOfFrame();
 		}
 	}
 }

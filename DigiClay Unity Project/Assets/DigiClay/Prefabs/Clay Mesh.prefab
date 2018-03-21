@@ -28,6 +28,7 @@ GameObject:
   - component: {fileID: 114424686280041234}
   - component: {fileID: 114894753099384210}
   - component: {fileID: 114516232368847494}
+  - component: {fileID: 114437560479967222}
   m_Layer: 0
   m_Name: Clay Mesh
   m_TagString: Untagged
@@ -131,13 +132,29 @@ MonoBehaviour:
     m_row: 0
     m_column: 0
     m_thicknessRatio: 0
+    m_thicknessMatrix:
+      e00: 0
+      e01: 0
+      e02: 0
+      e03: 0
+      e10: 0
+      e11: 0
+      e12: 0
+      e13: 0
+      e20: 0
+      e21: 0
+      e22: 0
+      e23: 0
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 0
     m_height: 0
-    m_radiusMatrix: []
+    m_radiusList: []
     m_rowAvgRadiusList: []
     m_mesh: {fileID: 0}
     m_angleDelta: 0
     m_heightDelta: 0
-    m_radialSmoothingRatio: 0
 --- !u!114 &114424686280041234
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -164,9 +181,20 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: DeformableBase+UnityEventDeformable, Assembly-CSharp, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_orgThicknessRatio: 0
   verticalDelta: 0
   thicknessDelta: 0
+--- !u!114 &114437560479967222
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1165243728222688}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d00f26a9838c9c49bbe209df4d08581, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  duration: 100
 --- !u!114 &114516232368847494
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -226,9 +254,19 @@ MonoBehaviour:
   m_curHandWorldPos:
   - {x: 0, y: 0, z: 0}
   - {x: 0, y: 0, z: 0}
-  m_handPosDeltaLength:
-  - 0
-  - 0
+  m_avgOrgHandLocalPos: {x: 0, y: 0, z: 0}
+  closest2DPointPos:
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 0}
+  offsetVector:
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 0}
+  sign: 0
+  curHandLocalDist: 0
+  id: 0
+  curHand2DLocalPos:
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 0}
 --- !u!114 &114894753099384210
 MonoBehaviour:
   m_ObjectHideFlags: 1

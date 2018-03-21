@@ -77,57 +77,6 @@ public class DeformManager : MonoBehaviour {
 	[Range(0f, 1f), SerializeField]
 	private float _strength = 1f;
 
-	[Range(0f, 1f), SerializeField]
-	private float m_maxDist = 0.01f;
-
-	public float MaxDist {
-		get {
-			return m_maxDist;
-		}
-		set {
-			m_maxDist = value;
-		}
-	}
-
-	[Range(0, 3000), SerializeField]
-	private ushort m_minDuration = 200;
-
-	public ushort MinDuration {
-		get {
-			return m_minDuration;
-		}
-		set {
-			m_minDuration = value;
-		}
-	}
-
-	[Range(0, 3000), SerializeField]
-	private ushort m_maxDuration = 1000;
-
-	public ushort MaxDuration {
-		get {
-			return m_maxDuration;
-		}
-		set {
-			m_maxDuration = value;
-		}
-	}
-
-	[SerializeField]
-	private bool _symmetric = false;
-
-	[SerializeField]
-	private bool m_isHCSmoothing = false;
-
-	public bool Symmetric {
-		get {
-			return _symmetric;
-		}
-		set {
-			_symmetric = value;
-		}
-	}
-
 	public float Ratio {
 		get {
 			return m_ratio;
@@ -177,15 +126,6 @@ public class DeformManager : MonoBehaviour {
 		}
 		set {
 			_strength = value;
-		}
-	}
-
-	public bool IsHCSmoothing {
-		get {
-			return m_isHCSmoothing;
-		}
-		set {
-			m_isHCSmoothing = value;
 		}
 	}
 
@@ -273,15 +213,16 @@ public class DeformManager : MonoBehaviour {
 			else if (angle > 45f && angle < 135f)
 			{
 				//up
+				MeshGenerator.Instance.CreateMesh();
 			}
 			else if (angle > -135f && angle < -45f)
 			{
 				//down
+				MeshIOManager.Instance.ExportMesh();
 			}
 		});
 
 		ViveInput.AddPressUp (HandRole.RightHand, ControllerButton.Menu, () => {
-			Symmetric = !Symmetric;
 		});
 	}
 		

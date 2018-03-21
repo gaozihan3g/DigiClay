@@ -26,7 +26,6 @@ public abstract class DeformableBase : MonoBehaviour
 
 	[SerializeField]
 	protected float m_strength = 0.1f;
-
 	//a ref, this might be null
 	[SerializeField]
 	protected ClayMeshContext m_clayMeshContext;
@@ -190,16 +189,9 @@ public abstract class DeformableBase : MonoBehaviour
         return 2f * x * x * x - 3f * x * x + 1f;
     }
 
-    protected void TriggerHaptic(HandRole role, Vector3 oldP, Vector3 newP)
+    protected void UpdateHapticStrength(HandRole role, Vector3 oldP, Vector3 newP)
 	{
 		float dist = Vector3.Distance (oldP, newP);
-
-//		Debug.Log (string.Format ("{0} {1:F3} {2}", role, dist, Time.frameCount));
-
-		float t = dist / DeformManager.Instance.MaxDist;
-
-		float duration = Mathf.Lerp (DeformManager.Instance.MinDuration, DeformManager.Instance.MaxDuration, t);
-
-		ViveInput.TriggerHapticPulse(role, (ushort)duration);
+		HapticManager.Instance.SetRoleStrength(role, dist / DigiClayConstant.HAPTIC_MAX_DISTANCE);
 	}
 }

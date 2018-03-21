@@ -10,11 +10,7 @@ using DigiClay;
 public class Smoothable : DeformableBase
 {
 	public int m_iterations = 1;
-
-	Vector3 m_orgHandLocalPos = new Vector3();
-	[SerializeField]
-	Vector3 m_orgHandWorldPos = new Vector3();
-
+	Vector3 m_prevHandWorldPos;
 	float[] m_orgRadiusList;
 
 	#region IColliderEventHandler implementation
@@ -23,14 +19,13 @@ public class Smoothable : DeformableBase
 		if (eventData.button != m_deformButton)
 			return;
 
-		m_orgHandWorldPos = eventData.eventCaster.transform.position;
-		m_orgHandLocalPos = m_orgHandWorldPos - transform.position;
-
+		m_prevHandWorldPos = eventData.eventCaster.transform.position;
 		m_orgVertices = m_meshFilter.mesh.vertices;
-		m_weightList = new List<float>();
 
 		m_orgRadiusList = new float[m_clayMeshContext.clayMesh.RadiusList.Count];
 		m_clayMeshContext.clayMesh.RadiusList.CopyTo(m_orgRadiusList);
+
+		m_weightList = new List<float> ();
 
 		//register undo
 		DeformManager.Instance.RegisterUndo(new DeformManager.UndoArgs(this, m_clayMeshContext.clayMesh.Height,
@@ -70,13 +65,17 @@ public class Smoothable : DeformableBase
 
 		m_meshFilter.mesh = m_clayMeshContext.clayMesh.Mesh;
 
-		ViveInput.TriggerHapticPulse(role, DeformManager.Instance.MinDuration);
+		UpdateHapticStrength(role, m_prevHandWorldPos, curHandWorldPos);
+		m_prevHandWorldPos = curHandWorldPos;
 	}
 
 	public override void OnColliderEventDragEnd (ColliderButtonEventData eventData)
 	{
 		if (eventData.button != m_deformButton)
 			return;
+		
+		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
+		HapticManager.Instance.SetRoleStrength(role, 0f);
 	}
 	#endregion
 }

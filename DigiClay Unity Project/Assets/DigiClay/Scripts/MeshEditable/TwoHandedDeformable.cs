@@ -16,25 +16,38 @@ public class TwoHandedDeformable : DeformableBase
 
     Vector3[] m_orgHandLocalPos = new Vector3[2];
 
+	float[] m_orgHand2DLocalDist = new float[2];
+
 	[SerializeField]
     Vector3[] m_orgHandWorldPos = new Vector3[2];
 
     Vector3[] m_prevHandWorldPos = new Vector3[2];
     Vector3[] m_curHandLocalPos = new Vector3[2];
 
+	//TODO fix this
 	[SerializeField]
     Vector3[] m_curHandWorldPos = new Vector3[2];
 
 	[SerializeField]
-	float[] m_handPosDeltaLength = new float[2];
-
     Vector3 m_avgOrgHandLocalPos;
     Vector3 m_avgHandDeltaPos;
-    float m_orgHandDist;
-    float m_curHandDist;
 
     float m_orgHeight;
 	float[] m_orgRadiusList;
+
+	[SerializeField]
+	Vector3[] closest2DPointPos = new Vector3[2];
+	[SerializeField]
+	Vector3[] offsetVector = new Vector3[2];
+	float[] offsetDist = new float[2];
+	[SerializeField]
+	float sign;
+	[SerializeField]
+	float curHandLocalDist;
+	[SerializeField]
+	int id;
+	[SerializeField]
+	Vector3[] curHand2DLocalPos = new Vector3[2];
 
 	#region IColliderEventHandler implementation
 	public override void OnColliderEventDragStart (ColliderButtonEventData eventData)
@@ -43,10 +56,12 @@ public class TwoHandedDeformable : DeformableBase
 			return;
 		
 		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
-
+		int roleIndex = (int)role;
 		//record original positions
-        m_orgHandWorldPos[(int)role] = eventData.eventCaster.transform.position;
-        m_orgHandLocalPos[(int)role] = m_orgHandWorldPos[(int)role] - transform.position;
+		m_orgHandWorldPos[roleIndex] = eventData.eventCaster.transform.position;
+		m_orgHandLocalPos[roleIndex] = m_orgHandWorldPos[roleIndex] - transform.position;
+
+		m_orgHand2DLocalDist [roleIndex] = Vector3.ProjectOnPlane (m_orgHandLocalPos [roleIndex], Vector3.up).magnitude;
 
         DeformManager.Instance.SetHandStatus(role, true);
 		//early out if both hands not ready
@@ -54,7 +69,7 @@ public class TwoHandedDeformable : DeformableBase
 			return;
 
 		m_avgOrgHandLocalPos = (m_orgHandLocalPos[0] + m_orgHandLocalPos[1]) / 2f;
-        m_orgHandDist = Vector3.Distance(m_orgHandLocalPos[0], m_orgHandLocalPos[1]);
+//        m_orgHandDist = Vector3.Distance(m_orgHandLocalPos[0], m_orgHandLocalPos[1]);
 
 		m_orgVertices = m_meshFilter.mesh.vertices;
 		m_weightList = new List<float>();
@@ -88,23 +103,19 @@ public class TwoHandedDeformable : DeformableBase
 	{
 		if (eventData.button != m_deformButton)
 			return;
-		
 		if (!DeformManager.Instance.IsBothHandReady)
 			return;
-
 		//record original positions
 		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
+		int roleIndex = (int)role;
 
-        m_curHandWorldPos[(int)role] = eventData.eventCaster.transform.position;
-        m_curHandLocalPos[(int)role] = m_curHandWorldPos[(int)role] - transform.position;
+		m_curHandWorldPos[roleIndex] = eventData.eventCaster.transform.position;
+		m_curHandLocalPos[roleIndex] = m_curHandWorldPos[roleIndex] - transform.position;
 
         //visual debug
         if (VisualDebug)
         {
-            for (int i = 0; i < 2; ++i)
-            {
-                Debug.DrawLine(m_curHandWorldPos[i], m_orgHandWorldPos[i], Color.green);
-            }
+			Debug.DrawLine(m_curHandWorldPos[roleIndex], m_orgHandWorldPos[roleIndex], Color.green);
 
             var avgOrgHandWorldPos = (m_orgHandWorldPos[0] + m_orgHandWorldPos[1]) / 2f;
             var avgCurHandWorldPos = (m_curHandWorldPos[0] + m_curHandWorldPos[1]) / 2f;
@@ -115,10 +126,6 @@ public class TwoHandedDeformable : DeformableBase
         }
 
         m_avgHandDeltaPos = (m_curHandLocalPos[0] - m_orgHandLocalPos[0] + m_curHandLocalPos[1] - m_orgHandLocalPos[1]) / 2f;
-        m_curHandDist = Vector3.Distance (m_curHandLocalPos[0], m_curHandLocalPos[1]);
-
-		for (int i = 0; i < 2; ++i)
-			m_handPosDeltaLength [i] = Vector3.ProjectOnPlane ((m_curHandWorldPos [i] - m_orgHandWorldPos [i]), Vector3.up).magnitude;
 
 		if (HeightChangeEnabled) {
 	        // ## heightDelta
@@ -128,11 +135,26 @@ public class TwoHandedDeformable : DeformableBase
 		}
 
 		if (DeformEnabled) {
+
+			// get 2D hand local pos
+			curHand2DLocalPos[roleIndex] = Vector3.ProjectOnPlane (m_curHandLocalPos [roleIndex], Vector3.up);
+			// get closest point
+			closest2DPointPos[roleIndex] = curHand2DLocalPos[roleIndex].normalized * m_orgHand2DLocalDist[roleIndex];
+			// offset vector between
+			offsetVector[roleIndex] = curHand2DLocalPos[roleIndex] - closest2DPointPos[roleIndex];
+
+			// ##
+			// dist of offset
+			offsetDist[roleIndex] = offsetVector[roleIndex].magnitude;
+
+			// get the index of min dist
+			id = (offsetDist [0] < offsetDist [1]) ? 0 : 1;
+
+			curHandLocalDist = curHand2DLocalPos[id].magnitude;
+
 			// ## sign
-			float distDelta = m_curHandDist - m_orgHandDist;
-			var sign = (distDelta > 0) ? 1f : -1f;
-			// ## longerLengthIndex
-			var longerLengthIndex = (m_handPosDeltaLength [0] > m_handPosDeltaLength [1]) ? 0 : 1;
+			sign = (curHandLocalDist > m_orgHand2DLocalDist[id]) ? 1f : -1f;
+
 			// ## update MATRIX
 			for (int i = 0; i < m_clayMeshContext.clayMesh.RadiusList.Count; ++i)
 			{
@@ -140,7 +162,7 @@ public class TwoHandedDeformable : DeformableBase
 				if (Mathf.Approximately(m_weightList[i], 0f))
 					continue;
 				//deform
-				m_clayMeshContext.clayMesh.Deform(i, m_orgRadiusList[i], sign, m_handPosDeltaLength[longerLengthIndex] * DeformManager.Instance.DeformRatio, m_weightList[i]);
+				m_clayMeshContext.clayMesh.Deform(i, m_orgRadiusList[i], sign, offsetDist[id] * DeformManager.Instance.DeformRatio, m_weightList[i]);
 			}
 		}
 
@@ -154,8 +176,8 @@ public class TwoHandedDeformable : DeformableBase
 
 		m_meshFilter.mesh = m_clayMeshContext.clayMesh.Mesh;
 
-        TriggerHaptic (role, m_prevHandWorldPos[(int)role], m_curHandWorldPos[(int)role]);
-        m_prevHandWorldPos[(int)role] = m_curHandWorldPos[(int)role];
+		UpdateHapticStrength (role, m_prevHandWorldPos[roleIndex], m_curHandWorldPos[roleIndex]);
+		m_prevHandWorldPos[roleIndex] = m_curHandWorldPos[roleIndex];
 	}
 
 	public override void OnColliderEventDragEnd (ColliderButtonEventData eventData)
@@ -165,14 +187,11 @@ public class TwoHandedDeformable : DeformableBase
 
 		m_meshCollider.sharedMesh = m_meshFilter.mesh;
 
-
 		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
 
-        //reset position
-        m_orgHandLocalPos[(int)role] = Vector3.zero;
-        m_curHandLocalPos[(int)role] = Vector3.zero;
+		DeformManager.Instance.SetHandStatus(role, false);
 
-		DeformManager.Instance.SetHandStatus (role, false);
+		HapticManager.Instance.SetRoleStrength(role, 0f);
 
 		if (OnDeformEnd != null)
 		{

@@ -51,11 +51,11 @@ public class ThicknessDeformable : DeformableBase
         if (eventData.button != m_deformButton)
             return;
 
-        var m_curHandWorldPos = eventData.eventCaster.transform.position;
+		var curHandWorldPos = eventData.eventCaster.transform.position;
 
-        Debug.DrawLine(m_orgHandWorldPos, m_curHandWorldPos, Color.red);
+        Debug.DrawLine(m_orgHandWorldPos, curHandWorldPos, Color.red);
 
-        Vector3 offsetVector = m_curHandWorldPos - m_orgHandWorldPos;
+        Vector3 offsetVector = curHandWorldPos - m_orgHandWorldPos;
 
 		verticalDelta = offsetVector.y;
 
@@ -69,7 +69,8 @@ public class ThicknessDeformable : DeformableBase
 
 		m_meshFilter.mesh = m_clayMeshContext.clayMesh.Mesh;
 
-        TriggerHaptic(m_role, m_prevHandWorldPos, m_curHandWorldPos);
+        UpdateHapticStrength(m_role, m_prevHandWorldPos, curHandWorldPos);
+		m_prevHandWorldPos = curHandWorldPos;
     }
 
     public override void OnColliderEventDragEnd(ColliderButtonEventData eventData)
@@ -78,6 +79,9 @@ public class ThicknessDeformable : DeformableBase
             return;
 
         m_meshCollider.sharedMesh = m_meshFilter.mesh;
+
+		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
+		HapticManager.Instance.SetRoleStrength(role, 0f);
 
         if (OnDeformEnd != null)
         {
