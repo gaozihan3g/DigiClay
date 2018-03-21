@@ -34,8 +34,7 @@ public abstract class DeformableBase : MonoBehaviour
 
 	protected Vector3[] m_orgVertices;
 	protected List<float> m_weightList;
-
-
+	protected float[] m_orgRadiusList;
 
 	public List<float> WeightList
 	{
@@ -50,24 +49,52 @@ public abstract class DeformableBase : MonoBehaviour
 		}
 	}
 
+	[HideInInspector]
 	public UnityEventDeformable OnDeformStart = new UnityEventDeformable();
+
+	[HideInInspector]
 	public UnityEventDeformable OnDeformEnd = new UnityEventDeformable();
 
 	#region IColliderEventDragStartHandler implementation
 	public virtual void OnColliderEventDragStart (ColliderButtonEventData eventData)
 	{
-		throw new System.NotImplementedException ();
+		m_orgVertices = m_meshFilter.sharedMesh.vertices;
+		m_orgRadiusList = new float[m_clayMeshContext.clayMesh.RadiusList.Count];
+		m_clayMeshContext.clayMesh.RadiusList.CopyTo(m_orgRadiusList);
+
+		//register undo
+		DeformManager.Instance.RegisterUndo(new DeformManager.UndoArgs(this, m_clayMeshContext.clayMesh.Height,
+			m_clayMeshContext.clayMesh.ThicknessRatio, m_orgRadiusList, Time.frameCount));
+		
+		DeformManager.Instance.ClearRedo();
+
+		DeformManager.Instance.IsDeforming = true;
+
+		if (OnDeformStart != null)
+		{
+			OnDeformStart.Invoke(this);
+		}
 	}
 
 	public virtual void OnColliderEventDragUpdate (ColliderButtonEventData eventData)
 	{
-		throw new System.NotImplementedException ();
 	}
 
 
 	public virtual void OnColliderEventDragEnd (ColliderButtonEventData eventData)
 	{
-		throw new System.NotImplementedException ();
+		m_meshCollider.sharedMesh = m_meshFilter.sharedMesh;
+
+		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
+
+		HapticManager.Instance.SetRoleStrength(role, 0f);
+
+		DeformManager.Instance.IsDeforming = false;
+
+		if (OnDeformEnd != null)
+		{
+			OnDeformEnd.Invoke(this);
+		}
 	}
 	#endregion
 

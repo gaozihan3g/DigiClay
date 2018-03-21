@@ -21,16 +21,20 @@ public class Touchable : MonoBehaviour
 			return;
 		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
 		HapticManager.Instance.StartHaptic(role);
-		Debug.Log ("OnColliderEventHoverEnter " + role.ToString());
+//		Debug.Log ("OnColliderEventHoverEnter " + role.ToString());
 	}
 
 	public void OnColliderEventHoverExit (ColliderHoverEventData eventData)
 	{
 		if (!exit)
 			return;
+
+//		if (DeformManager.Instance.IsDeforming)
+//			return;
+		
 		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
 		HapticManager.Instance.EndHaptic(role);
-		Debug.Log ("OnColliderEventHoverExit " + role.ToString());
+//		Debug.Log ("OnColliderEventHoverExit " + role.ToString());
 	}
 
 	#endregion

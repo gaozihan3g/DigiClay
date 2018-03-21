@@ -49,92 +49,78 @@ public class DeformManager : MonoBehaviour {
 		}
 	}
 
-	public UnityEventDeform ValueChanged;
-
 	[SerializeField]
 	private bool[] m_ready = { false, false };
 
-	public bool IsBothHandReady {
-		get {
-			return m_ready[0] && m_ready[1];
-		}
-	}
-
-	public void SetHandStatus(HandRole role, bool value)
-	{
-		m_ready [(int)role] = value;
-	}
-
 	[Range(0.01f, 5f), SerializeField]
-	private float _innerRadius = 0.1f;
+	private float m_innerRadius = 0.1f;
 
 	[Range(0.01f, 1f), SerializeField]
 	private float m_ratio = 0.5f;
 
 	[Range(0.01f, 5f), SerializeField]
-	private float _outerRadius = 0.5f;
+	private float m_outerRadius = 0.5f;
 
 	[Range(0f, 1f), SerializeField]
-	private float _strength = 1f;
+	private float m_strength = 1f;
+
+	[SerializeField]
+	float m_radiusDeltaAmount = 0.01f;
+	[SerializeField]
+	float m_ratioDeltaAmount = 0.05f;
+
+	public float DeformRatio = 0.5f;
+	public float RadialSmoothingRatio = 0.1f;
+	public float LaplacianSmoothingRatio = 0.1f;
+
+	// this is a flag for haptic
+	public bool IsDeforming = false;
+
+	public UnityEventDeform ValueChanged;
 
 	public float Ratio {
 		get {
 			return m_ratio;
 		}
 		set {
-			if (value < 0f)
-				value = 0f;
-			
-			if (value > 1f)
-				value = 1f;
-			
-			m_ratio = value;
+			m_ratio = Mathf.Clamp01(value);
 		}
 	}
 
 	public float InnerRadius {
 		get {
-			return _innerRadius;
+			return m_innerRadius;
 		}
 		set {
-			_innerRadius = value;
-
-			ValueChanged.Invoke (new DeformArgs(_innerRadius, _outerRadius, _strength));
+			m_innerRadius = value;
+			ValueChanged.Invoke (new DeformArgs(m_innerRadius, m_outerRadius, m_strength));
 		}
 	}
 
 	public float OuterRadius {
 		get {
-			return _outerRadius;
+			return m_outerRadius;
 		}
 		set {
-			
-			if (value > DigiClayConstant.MAX_RADIUS)
-				value = DigiClayConstant.MAX_RADIUS;
-			
-			if (value < DigiClayConstant.MIN_RADIUS)
-				value = DigiClayConstant.MIN_RADIUS;
-
-			_outerRadius = value;
-			ValueChanged.Invoke (new DeformArgs(_innerRadius, _outerRadius, _strength));
+			m_outerRadius = Mathf.Clamp(value, DigiClayConstant.MIN_RADIUS, DigiClayConstant.MAX_RADIUS);
+			ValueChanged.Invoke (new DeformArgs(m_innerRadius, m_outerRadius, m_strength));
 		}
 	}
 
 	public float Strength {
 		get {
-			return _strength;
+			return m_strength;
 		}
 		set {
-			_strength = value;
+			m_strength = value;
 		}
 	}
 
-	public float deltaAmount = 0.01f;
-	public float ratioDeltaAmount = 0.05f;
-
-	public float DeformRatio = 0.5f;
-	public float RadialSmoothingRatio = 0.1f;
-	public float LaplacianSmoothingRatio = 0.1f;
+	public bool AreBothHandsReady {
+		get {
+			return m_ready[0] && m_ready[1];
+		}
+	}
 
     void Awake()
     {
@@ -152,8 +138,11 @@ public class DeformManager : MonoBehaviour {
 
 	void Start()
 	{
-		//initialization
-		Debug.Log("DefromManager Start");
+		Init();
+	}
+
+	void Init()
+	{
 
 		ViveInput.AddPressUp (HandRole.RightHand, ControllerButton.Pad, () => {
 
@@ -166,28 +155,28 @@ public class DeformManager : MonoBehaviour {
 			{
 				//right
 				//+ inner
-				Ratio += ratioDeltaAmount;
+				Ratio += m_ratioDeltaAmount;
 				InnerRadius = OuterRadius * Ratio;
 			}
 			else if (Mathf.Abs(angle) > 135f)
 			{
 				//left
 				//- inner
-				Ratio -= ratioDeltaAmount;
+				Ratio -= m_ratioDeltaAmount;
 				InnerRadius = OuterRadius * Ratio;
 			}
 			else if (angle > 45f && angle < 135f)
 			{
 				//up
 				//+ outer
-				OuterRadius += deltaAmount;
+				OuterRadius += m_radiusDeltaAmount;
 				InnerRadius = OuterRadius * Ratio;
 			}
 			else if (angle > -135f && angle < -45f)
 			{
 				//down
 				//- outer
-				OuterRadius -= deltaAmount;
+				OuterRadius -= m_radiusDeltaAmount;
 				InnerRadius = OuterRadius * Ratio;
 			}
 		});
@@ -225,7 +214,16 @@ public class DeformManager : MonoBehaviour {
 		ViveInput.AddPressUp (HandRole.RightHand, ControllerButton.Menu, () => {
 		});
 	}
-		
+
+	void OnValidate()
+	{
+		InnerRadius = OuterRadius * Ratio;
+	}
+
+	public void SetHandStatus(HandRole role, bool value)
+	{
+		m_ready [(int)role] = value;
+	}
 
 	public void RegisterUndo(UndoArgs args)
 	{

@@ -58,6 +58,7 @@ namespace DigiClay
 
 		void Start()
 		{
+			Init ();
 		}
 
 		void Init()

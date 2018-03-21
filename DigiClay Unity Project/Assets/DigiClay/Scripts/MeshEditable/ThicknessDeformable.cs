@@ -20,8 +20,10 @@ public class ThicknessDeformable : DeformableBase
     #region IColliderEventHandler implementation
     public override void OnColliderEventDragStart(ColliderButtonEventData eventData)
     {
-        if (eventData.button != m_deformButton)
-            return;
+		if (eventData.button != m_deformButton)
+			return;
+		
+		base.OnColliderEventDragStart (eventData);
 
         m_orgHandWorldPos = eventData.eventCaster.transform.position;
         // this will remove rotation
@@ -29,27 +31,17 @@ public class ThicknessDeformable : DeformableBase
 
         m_prevHandWorldPos = m_orgHandWorldPos;
 
-		m_orgVertices = m_meshFilter.sharedMesh.vertices;
-
         m_orgThicknessRatio = m_clayMeshContext.clayMesh.ThicknessRatio;
-
-		//register undo
-		DeformManager.Instance.RegisterUndo(new DeformManager.UndoArgs(this, m_clayMeshContext.clayMesh.Height,
-			m_clayMeshContext.clayMesh.ThicknessRatio, null, Time.frameCount));
-		DeformManager.Instance.ClearRedo();
-
-        if (OnDeformStart != null)
-        {
-            OnDeformStart.Invoke(this);
-        }
 
         m_role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster>().viveRole.roleValue);
     }
 
     public override void OnColliderEventDragUpdate(ColliderButtonEventData eventData)
     {
-        if (eventData.button != m_deformButton)
-            return;
+		if (eventData.button != m_deformButton)
+			return;
+		
+		base.OnColliderEventDragUpdate (eventData);
 
 		var curHandWorldPos = eventData.eventCaster.transform.position;
 
@@ -73,18 +65,10 @@ public class ThicknessDeformable : DeformableBase
 
     public override void OnColliderEventDragEnd(ColliderButtonEventData eventData)
     {
-        if (eventData.button != m_deformButton)
-            return;
-
-		m_meshCollider.sharedMesh = m_meshFilter.sharedMesh;
-
-		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
-		HapticManager.Instance.SetRoleStrength(role, 0f);
-
-        if (OnDeformEnd != null)
-        {
-            OnDeformEnd.Invoke(this);
-        }
+		if (eventData.button != m_deformButton)
+			return;
+		
+		base.OnColliderEventDragEnd (eventData);
     }
     #endregion
 }
