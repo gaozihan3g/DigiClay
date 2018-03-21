@@ -13,6 +13,6 @@ public class MeshExport : MonoBehaviour {
 	}
 
 	void Start () {
-		MeshIOManager.Instance.Mesh = _meshFilter.mesh;
+		MeshIOManager.Instance.Mesh = _meshFilter.sharedMesh;
 	}
 }

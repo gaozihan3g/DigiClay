@@ -28,7 +28,7 @@ public class ClayMeshContext : MonoBehaviour {
 	}
 		
 	void Start () {
-		m_meshFilter.mesh = clayMesh.Mesh;
+		m_meshFilter.sharedMesh = clayMesh.Mesh;
 		m_meshCollider.sharedMesh = clayMesh.Mesh;
 	}
 

@@ -71,7 +71,7 @@ public class TwoHandedDeformable : DeformableBase
 		m_avgOrgHandLocalPos = (m_orgHandLocalPos[0] + m_orgHandLocalPos[1]) / 2f;
 //        m_orgHandDist = Vector3.Distance(m_orgHandLocalPos[0], m_orgHandLocalPos[1]);
 
-		m_orgVertices = m_meshFilter.mesh.vertices;
+		m_orgVertices = m_meshFilter.sharedMesh.vertices;
 		m_weightList = new List<float>();
 
         m_orgHeight = m_clayMeshContext.clayMesh.Height;
@@ -174,7 +174,7 @@ public class TwoHandedDeformable : DeformableBase
         // update mesh
         m_clayMeshContext.clayMesh.UpdateMesh();
 
-		m_meshFilter.mesh = m_clayMeshContext.clayMesh.Mesh;
+//		m_meshFilter.sharedMesh = m_clayMeshContext.clayMesh.Mesh;
 
 		UpdateHapticStrength (role, m_prevHandWorldPos[roleIndex], m_curHandWorldPos[roleIndex]);
 		m_prevHandWorldPos[roleIndex] = m_curHandWorldPos[roleIndex];
@@ -185,7 +185,7 @@ public class TwoHandedDeformable : DeformableBase
 		if (eventData.button != m_deformButton)
 			return;
 
-		m_meshCollider.sharedMesh = m_meshFilter.mesh;
+		m_meshCollider.sharedMesh = m_meshFilter.sharedMesh;
 
 		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
 

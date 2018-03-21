@@ -120,7 +120,7 @@ public abstract class DeformableBase : MonoBehaviour
 
 		clayMesh.UpdateMesh();
 
-		m_meshFilter.mesh = clayMesh.Mesh;
+		m_meshFilter.sharedMesh = clayMesh.Mesh;
 		m_meshCollider.sharedMesh = clayMesh.Mesh;
 	}
 
@@ -144,7 +144,7 @@ public abstract class DeformableBase : MonoBehaviour
 
 		clayMesh.UpdateMesh();
 
-		m_meshFilter.mesh = clayMesh.Mesh;
+		m_meshFilter.sharedMesh = clayMesh.Mesh;
 		m_meshCollider.sharedMesh = clayMesh.Mesh;
 	}
 

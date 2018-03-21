@@ -20,7 +20,7 @@ public class Smoothable : DeformableBase
 			return;
 
 		m_prevHandWorldPos = eventData.eventCaster.transform.position;
-		m_orgVertices = m_meshFilter.mesh.vertices;
+		m_orgVertices = m_meshFilter.sharedMesh.vertices;
 
 		m_orgRadiusList = new float[m_clayMeshContext.clayMesh.RadiusList.Count];
 		m_clayMeshContext.clayMesh.RadiusList.CopyTo(m_orgRadiusList);
@@ -63,7 +63,7 @@ public class Smoothable : DeformableBase
 		// update mesh
 		m_clayMeshContext.clayMesh.UpdateMesh();
 
-		m_meshFilter.mesh = m_clayMeshContext.clayMesh.Mesh;
+		m_meshFilter.sharedMesh = m_clayMeshContext.clayMesh.Mesh;
 
 		UpdateHapticStrength(role, m_prevHandWorldPos, curHandWorldPos);
 		m_prevHandWorldPos = curHandWorldPos;

@@ -29,7 +29,7 @@ public class ThicknessDeformable : DeformableBase
 
         m_prevHandWorldPos = m_orgHandWorldPos;
 
-        m_orgVertices = m_meshFilter.mesh.vertices;
+		m_orgVertices = m_meshFilter.sharedMesh.vertices;
 
         m_orgThicknessRatio = m_clayMeshContext.clayMesh.ThicknessRatio;
 
@@ -67,8 +67,6 @@ public class ThicknessDeformable : DeformableBase
         // update mesh
         m_clayMeshContext.clayMesh.UpdateMesh();
 
-		m_meshFilter.mesh = m_clayMeshContext.clayMesh.Mesh;
-
         UpdateHapticStrength(m_role, m_prevHandWorldPos, curHandWorldPos);
 		m_prevHandWorldPos = curHandWorldPos;
     }
@@ -78,7 +76,7 @@ public class ThicknessDeformable : DeformableBase
         if (eventData.button != m_deformButton)
             return;
 
-        m_meshCollider.sharedMesh = m_meshFilter.mesh;
+		m_meshCollider.sharedMesh = m_meshFilter.sharedMesh;
 
 		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
 		HapticManager.Instance.SetRoleStrength(role, 0f);
