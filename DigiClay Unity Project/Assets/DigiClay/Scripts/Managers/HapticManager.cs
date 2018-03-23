@@ -36,9 +36,9 @@ public class HapticManager : MonoBehaviour {
 	public void StartHaptic(HandRole role, float str = 0f)
 	{
 		SetRoleStrength (role, str);
-		IEnumerator c = HapticSequence (role);
 
 		if (!coroutineDic.ContainsKey (role)) {
+			IEnumerator c = HapticSequence (role);
 			coroutineDic.Add (role, c);
 			StartCoroutine (c);
 		}

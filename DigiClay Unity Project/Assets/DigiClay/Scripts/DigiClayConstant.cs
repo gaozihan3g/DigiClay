@@ -6,10 +6,18 @@ public static class DigiClayConstant {
 
 	public const float MIN_HEIGHT = 0.05f;
 	public const float MAX_HEIGHT = 2f;
+
+	public const float MIN_THICKNESS_RATIO = 0.02f;
+
 	public const float MIN_RADIUS = 0.02f;
 	public const float MAX_RADIUS = 1f;
-	public const ushort MIN_HAPTIC = 100;
-	public const ushort MAX_HAPTIC = 3600;
-	public const float HAPTIC_MAX_DISTANCE = 0.1f;
+
+    public const float CURSOR_MIN_RADIUS = 0.01f;
+    public const float CURSOR_MAX_RADIUS = 0.2f;
+
+    public const ushort MIN_HAPTIC = 100;
+	public const ushort MAX_HAPTIC = 2000;
+	public const float HAPTIC_MAX_DISTANCE = 0.05f;
+
     public const string OUTPUT_PATH = "Assets/Mesh/";
 }

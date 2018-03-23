@@ -7,11 +7,11 @@ namespace DigiClay
 {
 	public class Cursor : MonoBehaviour {
 
-		[Range(DigiClayConstant.MIN_RADIUS, DigiClayConstant.MAX_RADIUS)]
+		[Range(DigiClayConstant.CURSOR_MIN_RADIUS, DigiClayConstant.CURSOR_MAX_RADIUS)]
 		[SerializeField]
 		private float outerRadius;
 
-		[Range(DigiClayConstant.MIN_RADIUS, DigiClayConstant.MAX_RADIUS)]
+		[Range(DigiClayConstant.CURSOR_MIN_RADIUS, DigiClayConstant.CURSOR_MAX_RADIUS)]
 		[SerializeField]
 		private float innerRadius;
 
@@ -76,12 +76,12 @@ namespace DigiClay
 		public void UpdateInnerRadius(float v)
 		{
 			innerRadius = v;
-			innerSphere.localScale = Vector3.one * Mathf.Max(innerRadius * 2f, DigiClayConstant.MIN_RADIUS);
+			innerSphere.localScale = Vector3.one * Mathf.Max(innerRadius * 2f, DigiClayConstant.CURSOR_MIN_RADIUS);
 		}
 
 		public void DeformParameterChangedHandler(DeformManager.DeformArgs args)
 		{
-			Debug.Log ("ValueChangedHandler from Cursor");
+//			Debug.Log ("ValueChangedHandler from Cursor");
 			UpdateInnerRadius (args.innerRadius);
 			UpdateOuterRadius (args.outerRadius);
 		}

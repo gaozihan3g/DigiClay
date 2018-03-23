@@ -10,7 +10,6 @@ using DigiClay;
 public class Smoothable : DeformableBase
 {
 	public int m_iterations = 1;
-	Vector3 m_prevHandWorldPos;
 
 	#region IColliderEventHandler implementation
 	public override void OnColliderEventDragStart (ColliderButtonEventData eventData)
@@ -18,9 +17,10 @@ public class Smoothable : DeformableBase
 		if (eventData.button != m_deformButton)
 			return;
 		
+		//basic init
 		base.OnColliderEventDragStart (eventData);
 
-		m_prevHandWorldPos = eventData.eventCaster.transform.position;
+		//additional init
 
 		m_weightList = new List<float> ();
 	}
@@ -29,31 +29,15 @@ public class Smoothable : DeformableBase
 	{
 		if (eventData.button != m_deformButton)
 			return;
-		
-		base.OnColliderEventDragUpdate (eventData);
 
-		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
+		m_curHandWorldPos = eventData.eventCaster.transform.position;
+		var curHandLocalPos = m_curHandWorldPos - transform.position;
 
-        var curHandWorldPos = eventData.eventCaster.transform.position;
-        var curHandLocalPos = curHandWorldPos - transform.position;
-
-		m_weightList.Clear();
-
-		for (int i = 0; i < m_orgVertices.Length; ++i)
-		{
-			float dist = 0f;
-			dist = Mathf.Abs(m_orgVertices[i].y - curHandLocalPos.y);
-
-			float weight = Falloff( m_innerRadius, m_outerRadius, dist);
-			m_weightList.Add(weight);
-		}
+        UpdateWeightList(curHandLocalPos);
 
 		m_clayMeshContext.clayMesh.LaplacianSmooth(m_weightList);
-		// update mesh
-		m_clayMeshContext.clayMesh.UpdateMesh();
 
-		UpdateHapticStrength(role, m_prevHandWorldPos, curHandWorldPos);
-		m_prevHandWorldPos = curHandWorldPos;
+		base.OnColliderEventDragUpdate (eventData);
 	}
 
 	public override void OnColliderEventDragEnd (ColliderButtonEventData eventData)

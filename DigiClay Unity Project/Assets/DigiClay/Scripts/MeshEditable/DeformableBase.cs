@@ -17,15 +17,10 @@ public abstract class DeformableBase : MonoBehaviour
 
 	[SerializeField]
 	protected ColliderButtonEventData.InputButton m_deformButton = ColliderButtonEventData.InputButton.Trigger;
-
 	[SerializeField]
 	protected float m_innerRadius = 0.1f;
-
 	[SerializeField]
 	protected float m_outerRadius = 0.5f;
-
-	[SerializeField]
-	protected float m_strength = 0.1f;
 	//a ref, this might be null
 	[SerializeField]
 	protected ClayMeshContext m_clayMeshContext;
@@ -35,6 +30,18 @@ public abstract class DeformableBase : MonoBehaviour
 	protected Vector3[] m_orgVertices;
 	protected List<float> m_weightList;
 	protected float[] m_orgRadiusList;
+
+	// hand position
+	protected Vector3 m_orgHandLocalPos;
+	protected Vector3 m_orgHandWorldPos;
+	protected Vector3 m_prevHandWorldPos;
+	protected Vector3 m_curHandWorldPos;
+	protected HandRole m_role;
+
+	[HideInInspector]
+	public UnityEventDeformable OnDeformStart = new UnityEventDeformable();
+	[HideInInspector]
+	public UnityEventDeformable OnDeformEnd = new UnityEventDeformable();
 
 	public List<float> WeightList
 	{
@@ -49,26 +56,18 @@ public abstract class DeformableBase : MonoBehaviour
 		}
 	}
 
-	[HideInInspector]
-	public UnityEventDeformable OnDeformStart = new UnityEventDeformable();
-
-	[HideInInspector]
-	public UnityEventDeformable OnDeformEnd = new UnityEventDeformable();
-
 	#region IColliderEventDragStartHandler implementation
 	public virtual void OnColliderEventDragStart (ColliderButtonEventData eventData)
 	{
-		m_orgVertices = m_meshFilter.sharedMesh.vertices;
-		m_orgRadiusList = new float[m_clayMeshContext.clayMesh.RadiusList.Count];
-		m_clayMeshContext.clayMesh.RadiusList.CopyTo(m_orgRadiusList);
+		// hand position
+		m_role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster>().viveRole.roleValue);
+		m_orgHandWorldPos = eventData.eventCaster.transform.position;
+		m_orgHandLocalPos = m_orgHandWorldPos - transform.position;
+		m_prevHandWorldPos = m_orgHandWorldPos;
 
-		//register undo
-		DeformManager.Instance.RegisterUndo(new DeformManager.UndoArgs(this, m_clayMeshContext.clayMesh.Height,
-			m_clayMeshContext.clayMesh.ThicknessRatio, m_orgRadiusList, Time.frameCount));
-		
-		DeformManager.Instance.ClearRedo();
+        RegisterOrgClayMesh();
 
-		DeformManager.Instance.IsDeforming = true;
+		DeformManager.Instance.IsDeforming (m_role, true);
 
 		if (OnDeformStart != null)
 		{
@@ -78,6 +77,9 @@ public abstract class DeformableBase : MonoBehaviour
 
 	public virtual void OnColliderEventDragUpdate (ColliderButtonEventData eventData)
 	{
+		m_clayMeshContext.clayMesh.UpdateMesh();
+		UpdateHapticStrength(m_role, m_prevHandWorldPos, m_curHandWorldPos);
+		m_prevHandWorldPos = m_curHandWorldPos;
 	}
 
 
@@ -87,9 +89,7 @@ public abstract class DeformableBase : MonoBehaviour
 
 		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
 
-		HapticManager.Instance.SetRoleStrength(role, 0f);
-
-		DeformManager.Instance.IsDeforming = false;
+		DeformManager.Instance.IsDeforming (role, false);
 
 		if (OnDeformEnd != null)
 		{
@@ -100,10 +100,8 @@ public abstract class DeformableBase : MonoBehaviour
 
 	protected virtual void Awake()
 	{
-		m_meshFilter = GetComponentInChildren<MeshFilter>();
-		m_meshCollider = GetComponentInChildren<MeshCollider>();
-
-		// this might be null
+		m_meshFilter = GetComponent<MeshFilter>();
+		m_meshCollider = GetComponent<MeshCollider>();
 		m_clayMeshContext = GetComponent<ClayMeshContext>();
 	}
 
@@ -123,7 +121,6 @@ public abstract class DeformableBase : MonoBehaviour
 	{
 		m_innerRadius = args.innerRadius;
 		m_outerRadius = args.outerRadius;
-		m_strength = args.strength;
 	}
 
 	public void UndoDeform(DeformManager.UndoArgs args)
@@ -184,11 +181,6 @@ public abstract class DeformableBase : MonoBehaviour
 	{
 		m_innerRadius = DeformManager.Instance.InnerRadius;
 		m_outerRadius = DeformManager.Instance.OuterRadius;
-		m_strength = DeformManager.Instance.Strength;
-	}
-	
-	// Update is called once per frame
-	void Update () {
 	}
 
 	protected float Falloff(float inner, float outer, float value)
@@ -216,9 +208,36 @@ public abstract class DeformableBase : MonoBehaviour
         return 2f * x * x * x - 3f * x * x + 1f;
     }
 
+    protected void UpdateWeightList(Vector3 handLocalPos)
+    {
+        m_weightList = new List<float>();
+
+        for (int i = 0; i < m_orgVertices.Length; ++i)
+        {
+            float dist = 0f;
+            dist = Mathf.Abs(m_orgVertices[i].y - handLocalPos.y);
+
+            float weight = Falloff(m_innerRadius, m_outerRadius, dist);
+            m_weightList.Add(weight);
+        }
+    }
+
     protected void UpdateHapticStrength(HandRole role, Vector3 oldP, Vector3 newP)
 	{
 		float dist = Vector3.Distance (oldP, newP);
 		HapticManager.Instance.SetRoleStrength(role, dist / DigiClayConstant.HAPTIC_MAX_DISTANCE);
 	}
+
+    //TODO move to base
+    protected void RegisterOrgClayMesh()
+    {
+        m_orgVertices = m_meshFilter.sharedMesh.vertices;
+        m_orgRadiusList = new float[m_clayMeshContext.clayMesh.RadiusList.Count];
+        m_clayMeshContext.clayMesh.RadiusList.CopyTo(m_orgRadiusList);
+
+        //register undo
+        DeformManager.Instance.RegisterUndo(new DeformManager.UndoArgs(this, m_clayMeshContext.clayMesh.Height,
+            m_clayMeshContext.clayMesh.ThicknessRatio, m_orgRadiusList, Time.frameCount));
+        DeformManager.Instance.ClearRedo();
+    }
 }

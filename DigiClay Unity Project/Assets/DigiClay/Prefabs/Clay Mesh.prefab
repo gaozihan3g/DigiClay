@@ -24,7 +24,7 @@ GameObject:
   - component: {fileID: 64471071665594602}
   - component: {fileID: 114059313305045426}
   - component: {fileID: 114356305944411990}
-  - component: {fileID: 114752480915878810}
+  - component: {fileID: 114136962226453108}
   - component: {fileID: 114424686280041234}
   - component: {fileID: 114894753099384210}
   - component: {fileID: 114516232368847494}
@@ -117,6 +117,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 1000
+--- !u!114 &114136962226453108
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1165243728222688}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 503a95f80f4895b43be676098c09f07e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_deformButton: 0
+  m_innerRadius: 0.1
+  m_outerRadius: 0.5
+  m_clayMeshContext: {fileID: 0}
+  OnDeformStart:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: DeformableBase+UnityEventDeformable, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  OnDeformEnd:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: DeformableBase+UnityEventDeformable, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  m_state: 0
+  m_workingHand: -1
+  VisualDebug: 1
 --- !u!114 &114356305944411990
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -169,7 +197,6 @@ MonoBehaviour:
   m_deformButton: 1
   m_innerRadius: 0.1
   m_outerRadius: 0.5
-  m_strength: 0.1
   m_clayMeshContext: {fileID: 0}
   OnDeformStart:
     m_PersistentCalls:
@@ -194,7 +221,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d00f26a9838c9c49bbe209df4d08581, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  duration: 100
 --- !u!114 &114516232368847494
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -207,66 +233,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   identifier: 1
---- !u!114 &114752480915878810
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1165243728222688}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec6acd22edf251f4996e6bf6ecfc5ffb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_deformButton: 0
-  m_innerRadius: 0.1
-  m_outerRadius: 0.5
-  m_strength: 0.1
-  m_clayMeshContext: {fileID: 0}
-  OnDeformStart:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 0}
-        m_MethodName: DeformCallBack
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-    m_TypeName: DeformableBase+UnityEventDeformable, Assembly-CSharp, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
-  OnDeformEnd:
-    m_PersistentCalls:
-      m_Calls: []
-    m_TypeName: DeformableBase+UnityEventDeformable, Assembly-CSharp, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
-  VisualDebug: 1
-  HeightChangeEnabled: 1
-  DeformEnabled: 1
-  RadialSmoothEnabled: 1
-  m_orgHandWorldPos:
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  m_curHandWorldPos:
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  m_avgOrgHandLocalPos: {x: 0, y: 0, z: 0}
-  closest2DPointPos:
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  offsetVector:
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  sign: 0
-  curHandLocalDist: 0
-  id: 0
-  curHand2DLocalPos:
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
 --- !u!114 &114894753099384210
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -281,7 +247,6 @@ MonoBehaviour:
   m_deformButton: 2
   m_innerRadius: 0.1
   m_outerRadius: 0.5
-  m_strength: 0.1
   m_clayMeshContext: {fileID: 0}
   OnDeformStart:
     m_PersistentCalls:
@@ -294,4 +259,3 @@ MonoBehaviour:
     m_TypeName: DeformableBase+UnityEventDeformable, Assembly-CSharp, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_iterations: 1
-  m_orgHandWorldPos: {x: 0, y: 0, z: 0}

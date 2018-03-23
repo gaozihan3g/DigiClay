@@ -11,30 +11,17 @@ public class Touchable : MonoBehaviour
 , IColliderEventHoverEnterHandler
 , IColliderEventHoverExitHandler
 {
-	public bool enter = true;
-	public bool exit = true;
-
 	#region implementation
 	public void OnColliderEventHoverEnter (ColliderHoverEventData eventData)
 	{
-		if (!enter)
-			return;
 		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
-		HapticManager.Instance.StartHaptic(role);
-//		Debug.Log ("OnColliderEventHoverEnter " + role.ToString());
+		DeformManager.Instance.IsTouching(role, true);
 	}
 
 	public void OnColliderEventHoverExit (ColliderHoverEventData eventData)
 	{
-		if (!exit)
-			return;
-
-//		if (DeformManager.Instance.IsDeforming)
-//			return;
-		
 		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
-		HapticManager.Instance.EndHaptic(role);
-//		Debug.Log ("OnColliderEventHoverExit " + role.ToString());
+		DeformManager.Instance.IsTouching(role, false);
 	}
 
 	#endregion

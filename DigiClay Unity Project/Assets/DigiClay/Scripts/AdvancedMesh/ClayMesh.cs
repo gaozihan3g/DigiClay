@@ -105,7 +105,7 @@ namespace DigiClay
 
 			set
 			{
-				m_thicknessRatio = value;
+				m_thicknessRatio = Mathf.Clamp(value, DigiClayConstant.MIN_THICKNESS_RATIO, 1f);
 
 				m_thicknessMatrix = new Matrix4x4 (
 					new Vector4 ( 1f - m_thicknessRatio, 0f, 0f, 0f),
@@ -342,7 +342,19 @@ namespace DigiClay
 			}
 		}
 
-        public void Deform(int i, float originLength, float sign, float length, float weight)
+        public void Deform(float sign, float length, float[] orgRadiusList, List<float> weightList)
+        {
+            for (int i = 0; i < RadiusList.Count; ++i)
+            {
+                //early out
+                if (Mathf.Approximately(weightList[i], 0f))
+                    continue;
+                //deform
+                Deform(i, orgRadiusList[i], sign, length * DeformManager.Instance.DeformRatio, weightList[i]);
+            }
+        }
+
+        void Deform(int i, float originLength, float sign, float length, float weight)
         {
 //			if (i == 10)
 //				Debug.Log (string.Format("i:{0} originLength:{1:F3} \t sign:{2} length:{3:F3} weight:{4:F3}", i, originLength, sign, length, weight));

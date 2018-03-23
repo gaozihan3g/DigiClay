@@ -1,15 +1,10 @@
-﻿using DigiClay;
-using HTC.UnityPlugin.ColliderEvent;
+﻿using HTC.UnityPlugin.ColliderEvent;
 using HTC.UnityPlugin.Vive;
 using UnityEngine;
+using DigiClay;
 
 public class ThicknessDeformable : DeformableBase
 {
-    Vector3 m_orgHandLocalPos;
-    Vector3 m_orgHandWorldPos;
-    Vector3 m_prevHandWorldPos;
-    HandRole m_role;
-
     float m_orgThicknessRatio;
 
 	[SerializeField]
@@ -22,45 +17,40 @@ public class ThicknessDeformable : DeformableBase
     {
 		if (eventData.button != m_deformButton)
 			return;
-		
+
+		//basic init
 		base.OnColliderEventDragStart (eventData);
 
-        m_orgHandWorldPos = eventData.eventCaster.transform.position;
-        // this will remove rotation
-        m_orgHandLocalPos = m_orgHandWorldPos - transform.position;
+		//additional init
 
-        m_prevHandWorldPos = m_orgHandWorldPos;
+		if (m_role != HandRole.RightHand)
+			return;
 
         m_orgThicknessRatio = m_clayMeshContext.clayMesh.ThicknessRatio;
-
-        m_role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster>().viveRole.roleValue);
     }
 
     public override void OnColliderEventDragUpdate(ColliderButtonEventData eventData)
     {
 		if (eventData.button != m_deformButton)
 			return;
-		
-		base.OnColliderEventDragUpdate (eventData);
 
-		var curHandWorldPos = eventData.eventCaster.transform.position;
+		if (m_role != HandRole.RightHand)
+			return;
 
-        Debug.DrawLine(m_orgHandWorldPos, curHandWorldPos, Color.red);
+		m_curHandWorldPos = eventData.eventCaster.transform.position;
 
-        Vector3 offsetVector = curHandWorldPos - m_orgHandWorldPos;
+        Debug.DrawLine(m_orgHandWorldPos, m_curHandWorldPos, Color.red);
+
+        Vector3 offsetVector = m_curHandWorldPos - m_orgHandWorldPos;
 
 		verticalDelta = offsetVector.y;
 
 		thicknessDelta = verticalDelta / m_clayMeshContext.clayMesh.Height;
 
         // get thickness 0 - 1
-		m_clayMeshContext.clayMesh.ThicknessRatio = Mathf.Clamp01(m_orgThicknessRatio + thicknessDelta);
+		m_clayMeshContext.clayMesh.ThicknessRatio = m_orgThicknessRatio + thicknessDelta;
 
-        // update mesh
-        m_clayMeshContext.clayMesh.UpdateMesh();
-
-        UpdateHapticStrength(m_role, m_prevHandWorldPos, curHandWorldPos);
-		m_prevHandWorldPos = curHandWorldPos;
+		base.OnColliderEventDragUpdate (eventData);
     }
 
     public override void OnColliderEventDragEnd(ColliderButtonEventData eventData)
