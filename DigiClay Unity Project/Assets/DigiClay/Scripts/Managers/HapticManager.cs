@@ -63,4 +63,9 @@ public class HapticManager : MonoBehaviour {
 			yield return new WaitForEndOfFrame();
 		}
 	}
+
+    public void TriggerHaptic(HandRole role)
+    {
+        ViveInput.TriggerHapticPulse(role);
+    }
 }

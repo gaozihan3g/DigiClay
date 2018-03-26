@@ -76,17 +76,21 @@ public class OneAndTwoHandedDeformable : DeformableBase
         if (eventData.button != m_deformButton)
             return;
 
-        var roleIndex = eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue;
-		UpdateStateEnd (roleIndex);
+        var roleIndex = eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster>().viveRole.roleValue;
 
-		if (m_state == DeformTools.ToolState.OneHand) {
-			if (!IsWorkingHand (roleIndex))
-				return;
-			OneHandEnd (eventData);
-		} else if (m_state == DeformTools.ToolState.TwoHand) {
-			TwoHandEnd (eventData);
-		}
-	}
+        if (m_state == DeformTools.ToolState.OneHand)
+        {
+            if (!IsWorkingHand(roleIndex))
+                return;
+            OneHandEnd(eventData);
+        }
+        else if (m_state == DeformTools.ToolState.TwoHand)
+        {
+            TwoHandEnd(eventData);
+        }
+
+        UpdateStateEnd(roleIndex);
+    }
 
 	#endregion
 
@@ -229,9 +233,10 @@ public class OneAndTwoHandedDeformable : DeformableBase
 	void TwoHandEnd(ColliderButtonEventData eventData)
 	{
 		Debug.Log ("TwoHandEnd" + Time.frameCount);
-        int roleIndex = eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster>().viveRole.roleValue;
+        //int roleIndex = eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster>().viveRole.roleValue;
         m_meshCollider.sharedMesh = m_meshFilter.sharedMesh;
-        DeformManager.Instance.IsDeforming((HandRole)roleIndex, false);
+        DeformManager.Instance.IsDeforming((HandRole)0, false);
+        DeformManager.Instance.IsDeforming((HandRole)1, false);
     }
 
     void RegisterOrgHandPos(int roleIndex, ColliderButtonEventData eventData)

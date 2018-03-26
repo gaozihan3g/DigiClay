@@ -57,8 +57,11 @@ public class ThicknessDeformable : DeformableBase
     {
 		if (eventData.button != m_deformButton)
 			return;
-		
-		base.OnColliderEventDragEnd (eventData);
+
+        if (m_role != HandRole.RightHand)
+            return;
+
+        base.OnColliderEventDragEnd (eventData);
     }
     #endregion
 }

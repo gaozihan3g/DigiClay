@@ -194,21 +194,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: baf7c0f7f9047a74abcfd74840cad482, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ToolState: 0
+  m_innerRadius: 0.001
+  m_ratio: 0.01
+  m_outerRadius: 0.1
+  DeformRatio: 1
+  RadialSmoothingRatio: 0.3
+  LaplacianSmoothingRatio: 0.1
+  m_radiusDeltaAmount: 0.01
+  m_ratioDeltaAmount: 0.25
   ValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: DeformManager+UnityEventDeform, Assembly-CSharp, Version=0.0.0.0,
+    m_TypeName: DigiClay.DeformManager+UnityEventDeform, Assembly-CSharp, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_ready: 0000
-  _innerRadius: 0.002
-  m_ratio: 0.01
-  _outerRadius: 0.2
-  _strength: 1
-  deltaAmount: 0.01
-  ratioDeltaAmount: 0.1
-  DeformRatio: 0.5
-  RadialSmoothingRatio: 0.3
-  LaplacianSmoothingRatio: 0.1
 --- !u!114 &114973842973836390
 MonoBehaviour:
   m_ObjectHideFlags: 1

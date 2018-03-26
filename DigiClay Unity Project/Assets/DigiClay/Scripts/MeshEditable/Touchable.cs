@@ -15,14 +15,25 @@ public class Touchable : MonoBehaviour
 	public void OnColliderEventHoverEnter (ColliderHoverEventData eventData)
 	{
 		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
-		DeformManager.Instance.IsTouching(role, true);
+
+        eventData.eventCaster.gameObject.transform.Find("Outline").gameObject.SetActive(true);
+
+        HapticManager.Instance.TriggerHaptic(role);
+
+        //DeformManager.Instance.IsTouching(role, true);
 	}
 
 	public void OnColliderEventHoverExit (ColliderHoverEventData eventData)
 	{
 		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
-		DeformManager.Instance.IsTouching(role, false);
+
+        eventData.eventCaster.gameObject.transform.Find("Outline").gameObject.SetActive(false);
+
+        //DeformManager.Instance.IsTouching(role, false);
 	}
 
-	#endregion
+    #endregion
+
+    void Start()
+    { }
 }

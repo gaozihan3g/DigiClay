@@ -87,9 +87,7 @@ public abstract class DeformableBase : MonoBehaviour
 	{
 		m_meshCollider.sharedMesh = m_meshFilter.sharedMesh;
 
-		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
-
-		DeformManager.Instance.IsDeforming (role, false);
+		DeformManager.Instance.IsDeforming (m_role, false);
 
 		if (OnDeformEnd != null)
 		{

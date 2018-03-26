@@ -102,12 +102,19 @@ namespace DigiClay
 		{
 			int i = (int)role;
 
-			if (m_isTouching[i])
-				HapticManager.Instance.StartHaptic (role);
+            if (m_isDeforming[i])
+                HapticManager.Instance.StartHaptic(role);
 
-			if (!m_isDeforming[i] && !m_isTouching[i])
-				HapticManager.Instance.EndHaptic (role);
-		}
+            if (!m_isDeforming[i])
+                HapticManager.Instance.EndHaptic(role);
+
+
+            //if (m_isTouching[i])
+            //	HapticManager.Instance.StartHaptic (role);
+
+            //if (!m_isDeforming[i] && !m_isTouching[i])
+            //	HapticManager.Instance.EndHaptic (role);
+        }
 
 		[HideInInspector]
 		public UnityEventDeform ValueChanged;
@@ -163,7 +170,7 @@ namespace DigiClay
 		void Init()
 		{
 
-			ViveInput.AddPress (HandRole.RightHand, ControllerButton.Pad, () => {
+			ViveInput.AddPressUp (HandRole.RightHand, ControllerButton.Pad, () => {
 
 				float x = ViveInput.GetAxis(HandRole.RightHand, ControllerAxis.PadX);
 				float y = ViveInput.GetAxis(HandRole.RightHand, ControllerAxis.PadY);

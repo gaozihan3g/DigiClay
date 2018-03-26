@@ -144,7 +144,6 @@ MonoBehaviour:
       Culture=neutral, PublicKeyToken=null
   m_state: 0
   m_workingHand: -1
-  VisualDebug: 1
 --- !u!114 &114356305944411990
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -194,7 +193,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e6ac07c5a73ac144aa7570be5b21929, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_deformButton: 1
+  m_deformButton: 3
   m_innerRadius: 0.1
   m_outerRadius: 0.5
   m_clayMeshContext: {fileID: 0}
