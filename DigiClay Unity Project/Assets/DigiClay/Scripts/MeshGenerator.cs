@@ -12,9 +12,9 @@ public class MeshGenerator : MonoBehaviour
     float m_radius = 1;
     [SerializeField, Range(DigiClayConstant.MIN_HEIGHT, DigiClayConstant.MAX_HEIGHT)]
     float m_height = 1;
-    [SerializeField, Range(3, 60)]
+    [SerializeField, Range(3, 360)]
     int m_segment = 8;
-    [SerializeField, Range(1, 100)]
+    [SerializeField, Range(1, 1000)]
     int m_verticalSegment = 10;
     [SerializeField, Range(0f, 1f)]
     float m_thicknessRatio = 0.5f;
@@ -22,11 +22,12 @@ public class MeshGenerator : MonoBehaviour
     [SerializeField, Range(0f, 1f)]
     float m_topBaseRatio = 0.5f;
 
-    [SerializeField, Range(0f, 5f)]
+    // all scale are percentage
+    [SerializeField, Range(0f, 1f)]
     float m_centerNoiseScale = 0.02f;
-    [SerializeField, Range(0f, 5f)]
+    [SerializeField, Range(0f, 1f)]
     float m_rowNoiseScale = 0.02f;
-    [SerializeField, Range(0f, 5f)]
+    [SerializeField, Range(0f, 1f)]
     float m_individualNoiseScale = 0.02f;
     // angle scale is fixed: 0 - 2 * Pi
 
@@ -41,7 +42,28 @@ public class MeshGenerator : MonoBehaviour
     float m_angleNoiseSpan = 0.02f;
 
     [SerializeField]
-    ClayMeshContext m_prefab;
+    ClayMeshContext m_prefab = null;
+
+    [HideInInspector]
+    public int Vertices;
+    [HideInInspector]
+    public int Triangles;
+
+    public int Segment
+    {
+        get
+        {
+            return m_segment;
+        }
+    }
+
+    public int VerticalSegment
+    {
+        get
+        {
+            return m_verticalSegment;
+        }
+    }
 
 	void Awake()
 	{
@@ -71,6 +93,9 @@ public class MeshGenerator : MonoBehaviour
 
         // generate mesh based on ClayMesh
         clayMesh.GenerateMesh();
+
+        Vertices = clayMesh.Mesh.vertexCount;
+        Triangles = clayMesh.Mesh.triangles.Length / 3;
     }
 
     ClayMesh ClayMeshFactory()
@@ -102,7 +127,7 @@ public class MeshGenerator : MonoBehaviour
             // 2. length
             // 1D
             float noise1 = perlin.Noise(noiseParameter * m_centerNoiseSpan);
-            float offsetLength = noise1 * m_centerNoiseScale * baseRadius;
+            float offsetLength = noise1 * m_centerNoiseScale * m_radius;
 
             // the noise center
             Vector3 noiseCenter = offsetDir * offsetLength;
@@ -111,7 +136,7 @@ public class MeshGenerator : MonoBehaviour
             // 1D
             // 1. length
             float noise2 = perlin.Noise(noiseParameter * m_rowNoiseSpan);
-            float rowNoiseRadius = noise2 * m_rowNoiseScale * baseRadius;
+            float rowNoiseRadius = noise2 * m_rowNoiseScale * m_radius;
 
             for (int i = 0; i < m_segment; ++i)
             {
@@ -123,7 +148,7 @@ public class MeshGenerator : MonoBehaviour
                     noiseParameter * m_individualNoiseSpan,
                     Mathf.Sin(theta) * m_individualNoiseSpan);
 
-                float individualNoiseRadius = noise3 * m_individualNoiseScale * baseRadius;
+                float individualNoiseRadius = noise3 * m_individualNoiseScale * m_radius;
                 float finalRadius = baseRadius + rowNoiseRadius + individualNoiseRadius;
 
                 var noisePos = noiseCenter + new Vector3(finalRadius * Mathf.Cos(theta), 0f, finalRadius * Mathf.Sin(theta));
