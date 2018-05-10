@@ -16,8 +16,8 @@ public class MeshGenerator : MonoBehaviour
     int m_segment = 8;
     [SerializeField, Range(1, 1000)]
     int m_verticalSegment = 10;
-    [SerializeField, Range(0f, 1f)]
-    float m_thicknessRatio = 0.5f;
+    [SerializeField, Range(DigiClayConstant.MIN_THICKNESS, DigiClayConstant.MAX_THICKNESS)]
+    float m_thickness = 0.5f;
     // noise parameters
     [SerializeField, Range(0f, 1f)]
     float m_topBaseRatio = 0.5f;
@@ -106,6 +106,7 @@ public class MeshGenerator : MonoBehaviour
         float heightTheta = 0f;
         Perlin perlin = new Perlin();
 		List<float> radiusList = new List<float> ();
+        float maxRadius = 0f;
 
         for (int j = 0; j < m_verticalSegment + 1; ++j)
         {
@@ -154,6 +155,9 @@ public class MeshGenerator : MonoBehaviour
                 var noisePos = noiseCenter + new Vector3(finalRadius * Mathf.Cos(theta), 0f, finalRadius * Mathf.Sin(theta));
                 float result = noisePos.magnitude;
 
+                if (result > maxRadius)
+                    maxRadius = result;
+
                 // fill noise radius matrix
 				radiusList.Add(result);
 
@@ -162,7 +166,7 @@ public class MeshGenerator : MonoBehaviour
             heightTheta += heightDelta;
         }
 
-		ClayMesh cMesh = new ClayMesh(m_verticalSegment + 1, m_segment, m_height, m_thicknessRatio, radiusList);
+		ClayMesh cMesh = new ClayMesh(m_verticalSegment + 1, m_segment, m_height, m_thickness, radiusList);
 
         return cMesh;
     }

@@ -46,7 +46,7 @@ namespace DigiClay
 		{
 			public DeformableBase deformable;
 			public float height;
-			public float thicknessRatio;
+			public float thickness;
 			public float[] radiusList;
 			public int timeStamp;
 
@@ -54,7 +54,7 @@ namespace DigiClay
 			{
 				deformable = bd;
 				height = h;
-				thicknessRatio = t;
+				thickness = t;
 				radiusList = rl;
 				timeStamp = ts;
 			}

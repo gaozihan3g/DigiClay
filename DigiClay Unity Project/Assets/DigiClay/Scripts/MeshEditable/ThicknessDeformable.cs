@@ -5,7 +5,7 @@ using DigiClay;
 
 public class ThicknessDeformable : DeformableBase
 {
-    float m_orgThicknessRatio;
+    float m_orgThickness;
 
 	[SerializeField]
 	float verticalDelta;
@@ -26,7 +26,7 @@ public class ThicknessDeformable : DeformableBase
 		if (m_role != HandRole.RightHand)
 			return;
 
-        m_orgThicknessRatio = m_clayMeshContext.clayMesh.ThicknessRatio;
+        m_orgThickness = m_clayMeshContext.clayMesh.Thickness;
     }
 
     public override void OnColliderEventDragUpdate(ColliderButtonEventData eventData)
@@ -48,7 +48,7 @@ public class ThicknessDeformable : DeformableBase
 		thicknessDelta = verticalDelta / m_clayMeshContext.clayMesh.Height;
 
         // get thickness 0 - 1
-		m_clayMeshContext.clayMesh.ThicknessRatio = m_orgThicknessRatio + thicknessDelta;
+		m_clayMeshContext.clayMesh.Thickness = m_orgThickness + thicknessDelta;
 
 		base.OnColliderEventDragUpdate (eventData);
     }

@@ -26,7 +26,7 @@ public class MeshGeneratorEditor : Editor {
                                                "{1} \t height segments\n" +
                                                "{2} \t vertices\n" +
                                                "{3} \t triangles\n" +
-                                               "{4} \t ms",
+                                               "{4:F2} \t ms",
                                                mg.Segment, mg.VerticalSegment, mg.Vertices, mg.Triangles, t), MessageType.Info);
 	}
 }
