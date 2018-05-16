@@ -145,9 +145,9 @@ public class MeshGenerator : MonoBehaviour
                 // 3D
 
                 float noise3 = perlin.Noise(
-                    Mathf.Cos(theta) * m_individualNoiseSpan,
-                    noiseParameter * m_individualNoiseSpan,
-                    Mathf.Sin(theta) * m_individualNoiseSpan);
+                    Mathf.Cos(theta) * m_radius * m_individualNoiseSpan,
+                    heightTheta,
+                    Mathf.Sin(theta) * m_radius * m_individualNoiseSpan);
 
                 float individualNoiseRadius = noise3 * m_individualNoiseScale * m_radius;
                 float finalRadius = baseRadius + rowNoiseRadius + individualNoiseRadius;

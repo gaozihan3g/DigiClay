@@ -637,13 +637,13 @@ namespace DigiClay
         /// <param name="c">C.</param>
         /// <param name="d">D.</param>
         /// <param name="offset">Offset.</param>
-        void CreateTriangle(List<int> list, int a, int b, int c, int d, int offset = 0)
+        public static void CreateTriangle(List<int> list, int a, int b, int c, int d, int offset = 0)
         {
             CreateTriangle(list, a, c, b, offset);
             CreateTriangle(list, b, c, d, offset);
         }
 
-        void CreateTriangle(List<int> list, int a, int b, int c, int offset = 0)
+        static void CreateTriangle(List<int> list, int a, int b, int c, int offset = 0)
         {
             if (list == null)
                 Debug.LogError("The triangle list is null");
@@ -651,6 +651,5 @@ namespace DigiClay
             list.Add(b + offset);
             list.Add(c + offset);
         }
-
     }
 }
