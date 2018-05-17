@@ -49,6 +49,8 @@ public class MeshGenerator : MonoBehaviour
     [HideInInspector]
     public int Triangles;
 
+    public Transform m_clayRoot;
+
     public int Segment
     {
         get
@@ -80,14 +82,14 @@ public class MeshGenerator : MonoBehaviour
     public void CreateMesh()
     {
         // cleanup first
-        for (int i = 0; i < transform.childCount; ++i)
-            DestroyImmediate(transform.GetChild(i).gameObject);
+        for (int i = 0; i < m_clayRoot.childCount; ++i)
+            DestroyImmediate(m_clayRoot.GetChild(i).gameObject);
 
         // create ClayMesh
         ClayMesh clayMesh = ClayMeshFactory();
 
         // assign ClayMesh
-        ClayMeshContext cmc = Instantiate<ClayMeshContext>(m_prefab, transform);
+        ClayMeshContext cmc = Instantiate<ClayMeshContext>(m_prefab, m_clayRoot);
         cmc.gameObject.name = "Clay Mesh " + System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
         cmc.clayMesh = clayMesh;
 

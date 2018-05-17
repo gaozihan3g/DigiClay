@@ -3,24 +3,42 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 using UnityExtension;
+using DigiClay;
 
 public class MeshIOManager : MonoBehaviour {
 
     public static MeshIOManager Instance;
 
+    public ClayObject m_clayObject;
+
 	[SerializeField]
 	Mesh m_mesh;
+    [SerializeField]
+    ClayMesh m_clayMesh;
 
-	public Mesh Mesh {
+    public Mesh Mesh {
 		get {
 			return m_mesh;
 		}
 		set {
 			m_mesh = value;
-			Debug.Log ("Mesh Assigned MeshIOManager");
 		}
 	}
+
+    public ClayMesh ClayMesh
+    {
+        get
+        {
+            return m_clayMesh;
+        }
+
+        set
+        {
+            m_clayMesh = value;
+        }
+    }
 
     void Awake()
     {
@@ -46,14 +64,21 @@ public class MeshIOManager : MonoBehaviour {
             }
             //TODO load mesh data
         });
+
+        OnScreenUIManager.Instance.AddCommand("Create Clay Object", () => {
+
+            ClayObject a = ScriptableObject.CreateInstance<ClayObject>();
+            AssetDatabase.CreateAsset(a, DigiClayConstant.CLAY_DATA_PATH + "MyClay.asset");
+            Debug.Log(AssetDatabase.GetAssetPath(a));
+        });
     }
 
 	public void ExportMesh()
 	{
-		ExportMesh (Mesh);
+		Export();
 	}
 
-    public void ExportMesh(Mesh mesh, string meshName = "")
+    public void Export(string meshName = "")
     {
         if (meshName.IsNullOrEmpty())
             meshName = System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
@@ -61,14 +86,29 @@ public class MeshIOManager : MonoBehaviour {
         if (!Directory.Exists(DigiClayConstant.OUTPUT_PATH))
         {
             Directory.CreateDirectory(DigiClayConstant.OUTPUT_PATH);
-            Debug.Log("Directory created.");
+            Debug.Log("OUTPUT_PATH Directory created.");
+        }
+
+        if (!Directory.Exists(DigiClayConstant.CLAY_DATA_PATH))
+        {
+            Directory.CreateDirectory(DigiClayConstant.CLAY_DATA_PATH);
+            Debug.Log("CLAY_DATA_PATH Directory created.");
         }
 
 
         var lStream = new FileStream(DigiClayConstant.OUTPUT_PATH + meshName + ".obj", FileMode.Create);
-        var lOBJData = mesh.EncodeOBJ();
+        var lOBJData = Mesh.EncodeOBJ();
         OBJLoader.ExportOBJ(lOBJData, lStream);
         lStream.Close();
         Debug.Log("Mesh Saved.");
+
+
+        ClayObject co = ScriptableObject.CreateInstance<ClayObject>();
+        co.ClayName = meshName;
+        co.ClayMesh = ClayMesh;
+        co.ModelFile = AssetDatabase.LoadMainAssetAtPath(DigiClayConstant.OUTPUT_PATH + meshName + ".obj");
+
+        AssetDatabase.CreateAsset(co, DigiClayConstant.CLAY_DATA_PATH + meshName + " ClayData.asset");
+        Debug.Log(AssetDatabase.GetAssetPath(co));
     }
 }

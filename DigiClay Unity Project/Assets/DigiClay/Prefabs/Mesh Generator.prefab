@@ -33,7 +33,7 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1220258750009746}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
@@ -54,14 +54,17 @@ MonoBehaviour:
   m_radius: 0.1
   m_height: 0.1
   m_segment: 60
-  m_verticalSegment: 20
-  m_thicknessRatio: 1
-  m_topBaseRatio: 0.8
-  m_centerNoiseScale: 1.16
-  m_rowNoiseScale: 0.53
-  m_individualNoiseScale: 0.22
-  m_centerNoiseSpan: 0.26
-  m_rowNoiseSpan: 1.07
-  m_individualNoiseSpan: 0.67
-  m_angleNoiseSpan: 2.95
+  m_verticalSegment: 100
+  m_thickness: 0.76
+  m_topBaseRatio: 0.43
+  m_centerNoiseScale: 0.24
+  m_rowNoiseScale: 0.16
+  m_individualNoiseScale: 0.05
+  m_centerNoiseSpan: 0.81
+  m_rowNoiseSpan: 3.19
+  m_individualNoiseSpan: 0.86
+  m_angleNoiseSpan: 3.75
   m_prefab: {fileID: 114356305944411990, guid: 69308764fddd92541bd727e692695fd3, type: 2}
+  Vertices: 24242
+  Triangles: 48120
+  m_clayRoot: {fileID: 0}

@@ -21,4 +21,5 @@ public static class DigiClayConstant {
 	public const float HAPTIC_MAX_DISTANCE = 0.05f;
 
     public const string OUTPUT_PATH = "Assets/Mesh/";
+    public const string CLAY_DATA_PATH = "Assets/ClayData/";
 }

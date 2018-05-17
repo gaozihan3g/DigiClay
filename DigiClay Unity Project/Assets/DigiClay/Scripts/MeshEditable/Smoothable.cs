@@ -20,9 +20,6 @@ public class Smoothable : DeformableBase
 		//basic init
 		base.OnColliderEventDragStart (eventData);
 
-        if (m_role != HandRole.RightHand)
-            return;
-
         //additional init
 
         m_weightList = new List<float> ();
@@ -32,9 +29,6 @@ public class Smoothable : DeformableBase
 	{
 		if (eventData.button != m_deformButton)
 			return;
-
-        if (m_role != HandRole.RightHand)
-            return;
 
         m_curHandWorldPos = eventData.eventCaster.transform.position;
 		var curHandLocalPos = m_curHandWorldPos - transform.position;
@@ -50,9 +44,6 @@ public class Smoothable : DeformableBase
 	{
 		if (eventData.button != m_deformButton)
 			return;
-
-        if (m_role != HandRole.RightHand)
-            return;
 
         base.OnColliderEventDragEnd (eventData);
 	}

@@ -1,46 +1,13 @@
 fileFormatVersion: 2
-guid: 9b8a49431a35d754bb2a0774bb485d17
-timeCreated: 1513941073
+guid: 3307e343197aad04b9c8409f775edb27
+timeCreated: 1526544850
 licenseType: Free
 ModelImporter:
   serializedVersion: 22
   fileIDToRecycleName:
     100000: //RootNode
-    100002: Generated_Mesh_Instance_0
-    100004: Generated_Mesh_Instance_1
-    100006: Generated_Mesh_Instance_2
     400000: //RootNode
-    400002: Generated_Mesh_Instance_0
-    400004: Generated_Mesh_Instance_1
-    400006: Generated_Mesh_Instance_2
-    2100000: Generated_Mesh_Instance_0Mat
-    2100002: Generated_Mesh_Instance_1Mat
-    2100004: Generated_Mesh_Instance_2Mat
-    2300000: Generated_Mesh_Instance_0
-    2300002: Generated_Mesh_Instance_1
-    2300004: Generated_Mesh_Instance_2
-    3300000: Generated_Mesh_Instance_0
-    3300002: Generated_Mesh_Instance_1
-    3300004: Generated_Mesh_Instance_2
-    4300000: Generated_Mesh_Instance_0
-    4300002: Generated_Mesh_Instance_1
-    4300004: Generated_Mesh_Instance_2
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Generated_Mesh_Instance_0Mat
-    second: {fileID: 2100000, guid: de32addad728a96479801c2f2b425ee1, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Generated_Mesh_Instance_1Mat
-    second: {fileID: 2100000, guid: de32addad728a96479801c2f2b425ee1, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Generated_Mesh_Instance_2Mat
-    second: {fileID: 2100000, guid: de32addad728a96479801c2f2b425ee1, type: 2}
+  externalObjects: {}
   materials:
     importMaterials: 1
     materialName: 0

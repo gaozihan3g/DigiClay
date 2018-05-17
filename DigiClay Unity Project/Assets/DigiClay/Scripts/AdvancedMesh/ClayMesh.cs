@@ -36,10 +36,10 @@ namespace DigiClay
 
         [SerializeField]
         float m_height;
-		[SerializeField]
+		[SerializeField,HideInInspector]
 		List<float> m_radiusList = new List<float>();
         [SerializeField]
-        float[] m_rowAvgRadiusList;
+        List<float> m_rowAvgRadiusList = new List<float>();
 
 		Dictionary<int, HashSet<int>> m_connectionNetwork;
 
@@ -58,6 +58,8 @@ namespace DigiClay
         //List<Vector2Int> m_uvSeams;
         int m_vertexIndexOffset;
 
+        bool m_isDirty = false;
+
         int Row
         {
             get
@@ -74,7 +76,7 @@ namespace DigiClay
             }
         }
 
-		float[] RowAvgRadiusList
+		public List<float> RowAvgRadiusList
 		{
 			get
 			{
@@ -91,6 +93,9 @@ namespace DigiClay
 
 			set
 			{
+                if (value != m_height)
+                    m_isDirty = true;
+
 				m_height = Mathf.Clamp(value, DigiClayConstant.MIN_HEIGHT, DigiClayConstant.MAX_HEIGHT);
 				m_heightDelta = (float)m_height / (float)(Row - 1);
 			}
@@ -105,7 +110,10 @@ namespace DigiClay
 
 			set
 			{
-				m_thickness = Mathf.Clamp(value, DigiClayConstant.MIN_THICKNESS, DigiClayConstant.MAX_RADIUS);
+                if (value != m_thickness)
+                    m_isDirty = true;
+
+                m_thickness = Mathf.Clamp(value, DigiClayConstant.MIN_THICKNESS, DigiClayConstant.MAX_RADIUS);
 
 				m_thicknessMatrix = new Matrix4x4 (
 					new Vector4 (1f, 0f, 0f, 0f),
@@ -141,7 +149,11 @@ namespace DigiClay
             Thickness = thickness;
 			RadiusList = radiusList;
 
-            m_rowAvgRadiusList = new float[row];
+            for (int i = 0; i < row; ++i)
+            {
+                RowAvgRadiusList.Add(0f);
+            }
+
             m_angleDelta = 2f * Mathf.PI / (float)Column;
         }
 
@@ -253,6 +265,9 @@ namespace DigiClay
 
         public void UpdateMesh()
         {
+            if (!m_isDirty)
+                return;
+
             Vector3[] vertices = Mesh.vertices;
 
             for (int i = 0; i < vertices.Length; ++i)
@@ -302,6 +317,10 @@ namespace DigiClay
 			m_mesh.vertices = vertices;
 			m_mesh.RecalculateNormals();
 			m_mesh.RecalculateBounds();
+
+            RecalculateAvgRadius();
+
+            m_isDirty = false;
         }
 
         public void RadialSmooth(List<float> weightList)
@@ -322,6 +341,7 @@ namespace DigiClay
                 // new
                 RadiusList[i] = targetR * weight + oldR * (1f - weight);
             }
+            m_isDirty = true;
         }
 
 		public void LaplacianSmooth(List<float> weightList)
@@ -352,7 +372,8 @@ namespace DigiClay
 				RadiusList [i] = weight * sum / adjVectices.Count
 					+ (1f - weight) * RadiusList [i];
 			}
-		}
+            m_isDirty = true;
+        }
 
         public void Deform(float sign, float length, float[] orgRadiusList, List<float> weightList)
         {
@@ -364,6 +385,7 @@ namespace DigiClay
                 //deform
                 Deform(i, orgRadiusList[i], sign, length * DeformManager.Instance.DeformRatio, weightList[i]);
             }
+            m_isDirty = true;
         }
 
         void Deform(int i, float originLength, float sign, float length, float weight)
