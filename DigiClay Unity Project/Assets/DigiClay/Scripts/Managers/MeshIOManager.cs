@@ -56,7 +56,7 @@ public class MeshIOManager : MonoBehaviour {
     {
         OnScreenUIManager.Instance.AddCommand("Load All Mesh", () => {
             
-            var files = Directory.GetFiles(DigiClayConstant.OUTPUT_PATH, "*.obj");
+            var files = Directory.GetFiles(DigiClayConstant.CLAY_DATA_PATH, "*.obj");
 
             foreach (var f in files)
             {
@@ -83,12 +83,6 @@ public class MeshIOManager : MonoBehaviour {
         if (meshName.IsNullOrEmpty())
             meshName = System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
 
-        if (!Directory.Exists(DigiClayConstant.OUTPUT_PATH))
-        {
-            Directory.CreateDirectory(DigiClayConstant.OUTPUT_PATH);
-            Debug.Log("OUTPUT_PATH Directory created.");
-        }
-
         if (!Directory.Exists(DigiClayConstant.CLAY_DATA_PATH))
         {
             Directory.CreateDirectory(DigiClayConstant.CLAY_DATA_PATH);
@@ -96,19 +90,22 @@ public class MeshIOManager : MonoBehaviour {
         }
 
 
-        var lStream = new FileStream(DigiClayConstant.OUTPUT_PATH + meshName + ".obj", FileMode.Create);
+        var lStream = new FileStream(DigiClayConstant.CLAY_DATA_PATH + meshName + ".obj", FileMode.Create);
         var lOBJData = Mesh.EncodeOBJ();
         OBJLoader.ExportOBJ(lOBJData, lStream);
         lStream.Close();
         Debug.Log("Mesh Saved.");
 
+        AssetDatabase.Refresh();
 
         ClayObject co = ScriptableObject.CreateInstance<ClayObject>();
         co.ClayName = meshName;
         co.ClayMesh = ClayMesh;
-        co.ModelFile = AssetDatabase.LoadMainAssetAtPath(DigiClayConstant.OUTPUT_PATH + meshName + ".obj");
+        co.ModelFile = AssetDatabase.LoadMainAssetAtPath(DigiClayConstant.CLAY_DATA_PATH + meshName + ".obj");
 
         AssetDatabase.CreateAsset(co, DigiClayConstant.CLAY_DATA_PATH + meshName + " ClayData.asset");
         Debug.Log(AssetDatabase.GetAssetPath(co));
+
+        AssetDatabase.SaveAssets();
     }
 }

@@ -15,24 +15,7 @@ MonoBehaviour:
   ClayMesh:
     m_row: 101
     m_column: 60
-    m_thickness: 0.76
-    m_thicknessMatrix:
-      e00: 1
-      e01: 0
-      e02: 0
-      e03: 0
-      e10: 0
-      e11: 1
-      e12: 0
-      e13: 0
-      e20: 0
-      e21: 0
-      e22: 1
-      e23: 0
-      e30: 0
-      e31: 0
-      e32: 0
-      e33: 1
+    m_thicknessRatio: 0
     m_height: 0.36810297
     m_radiusList:
     - 0.10847516

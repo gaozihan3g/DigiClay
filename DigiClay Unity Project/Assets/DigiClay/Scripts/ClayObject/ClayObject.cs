@@ -15,7 +15,9 @@ namespace DigiClay
 
         public void Link()
         {
-            ModelFile = AssetDatabase.LoadMainAssetAtPath(DigiClayConstant.OUTPUT_PATH + ClayName + ".obj");
+            AssetDatabase.Refresh();
+            ModelFile = AssetDatabase.LoadMainAssetAtPath(DigiClayConstant.CLAY_DATA_PATH + ClayName + ".obj");
+            AssetDatabase.SaveAssets();
         }
     }
 
