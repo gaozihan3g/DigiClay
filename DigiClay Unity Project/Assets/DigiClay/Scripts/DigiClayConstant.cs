@@ -7,8 +7,7 @@ public static class DigiClayConstant {
 	public const float MIN_HEIGHT = 0.05f;
 	public const float MAX_HEIGHT = 2f;
 
-	public const float MIN_THICKNESS = 0.001f;
-    public const float MAX_THICKNESS = 10f;
+	public const float MIN_THICKNESS = 0.002f;
 
     public const float MIN_RADIUS = 0.005f;
 	public const float MAX_RADIUS = 1f;

@@ -29,10 +29,8 @@ namespace DigiClay
         [SerializeField]
         int m_column;
         [SerializeField]
+        float m_thicknessRatio;
         float m_thickness;
-		// thickness matrix
-		[SerializeField]
-		Matrix4x4 m_thicknessMatrix;
 
         [SerializeField]
         float m_height;
@@ -101,27 +99,21 @@ namespace DigiClay
 			}
 		}
 
-		public float Thickness
+		public float ThicknessRatio
 		{
 			get
 			{
-				return m_thickness;
+				return m_thicknessRatio;
 			}
 
 			set
 			{
-                if (value != m_thickness)
+                if (value != m_thicknessRatio)
                     m_isDirty = true;
 
-                m_thickness = Mathf.Clamp(value, DigiClayConstant.MIN_THICKNESS, DigiClayConstant.MAX_RADIUS);
-
-				m_thicknessMatrix = new Matrix4x4 (
-					new Vector4 (1f, 0f, 0f, 0f),
-					new Vector4 (0f, 1f, 0f, 0f),
-					new Vector4 (0f, 0f, 1f, 0f),
-					new Vector4 (0f, 0f, 0f, 1f)
-                    );
-			}
+                m_thicknessRatio = Mathf.Clamp01(value);
+                m_thickness = Mathf.Max(DigiClayConstant.MIN_THICKNESS, RadiusList[RadiusList.Count - 1] * m_thicknessRatio);
+            }
 		}
 
 		public List<float> RadiusList {
@@ -141,13 +133,13 @@ namespace DigiClay
 			}
 		}
 
-		public ClayMesh(int row, int column, float height, float thickness, List<float> radiusList)
+		public ClayMesh(int row, int column, List<float> radiusList, float height, float thicknessRatio)
         {
             m_row = row;
             m_column = column;
+            RadiusList = radiusList;
             Height = height;
-            Thickness = thickness;
-			RadiusList = radiusList;
+            ThicknessRatio = thicknessRatio;
 
             for (int i = 0; i < row; ++i)
             {
@@ -270,6 +262,8 @@ namespace DigiClay
 
             Vector3[] vertices = Mesh.vertices;
 
+            float thickness = Mathf.Max(DigiClayConstant.MIN_THICKNESS, RadiusList[RadiusList.Count - 1] * ThicknessRatio);
+
             for (int i = 0; i < vertices.Length; ++i)
             {
 				if (GetVertexTypeFromIndex (i) == VertexType.OuterSide) {
@@ -286,13 +280,11 @@ namespace DigiClay
 					vertices [i] = new Vector3 (r * Mathf.Cos (angleTheta), heightTheta, r * Mathf.Sin (angleTheta));
 				} else if (GetVertexTypeFromIndex (i) == VertexType.InnerSide) {
                     // inner side
-                    // vertices [i] = m_thicknessMatrix.MultiplyPoint3x4 (vertices [i - RadiusList.Count]);
-
                     int columnIndex = Get2DColumnIndex(i - RadiusList.Count);
                     //get theta
                     float angleTheta = m_angleDelta * columnIndex;
 
-                    float innerRadius = Mathf.Max(0f, (RadiusList[i - RadiusList.Count] - Thickness));
+                    float innerRadius = (ThicknessRatio == 1f) ? 0f : (RadiusList[i - RadiusList.Count] - m_thickness);
 
                     vertices[i] = new Vector3(innerRadius * Mathf.Cos(angleTheta),
                                                       vertices[i - RadiusList.Count].y,
@@ -521,13 +513,11 @@ namespace DigiClay
             // based on outer side
             for (int i = 0; i < m_finalVertices.Count; i++)
             {
-                // this makes sure that the inner side do not overlap
-                float innerRadius = Mathf.Max(0f, (RadiusList[i] - Thickness));
+                float innerRadius = ThicknessRatio == 1f ? 0f : RadiusList[i] - m_thickness;
+
                 Vector3 innerVertex = new Vector3(innerRadius * Mathf.Cos(angleTheta),
-                                                  m_finalVertices[i].y, // + (i < m_segment ? m_bottomThickness : 0f),
-                                                  innerRadius * Mathf.Sin(angleTheta));
-                //if (m_finalVertices[i].sqrMagnitude > m_thickness * m_thickness)
-                //innerVertex = m_finalVertices[i] - m_normals[i] * m_thickness;
+                                  m_finalVertices[i].y, // + (i < m_segment ? m_bottomThickness : 0f),
+                                  innerRadius * Mathf.Sin(angleTheta));
 
                 angleTheta += m_angleDelta;
                 newVertices.Add(innerVertex);
@@ -629,6 +619,8 @@ namespace DigiClay
             // Inner Bottom Center
 			newVertices.Add(new Vector3(0f, m_heightDelta, 0f));
             newUVs.Add(Vector2.zero);
+
+            //int n = (int)(m_thickness / m_heightDelta);
 
             for (int i = 0; i < Column; ++i)
             {

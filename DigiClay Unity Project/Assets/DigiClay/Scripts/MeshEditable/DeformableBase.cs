@@ -130,12 +130,12 @@ public abstract class DeformableBase : MonoBehaviour
 		clayMesh.RadiusList.CopyTo(curRadiusList);
 
 		DeformManager.Instance.RegisterRedo(new DeformManager.UndoArgs(this, clayMesh.Height,
-			clayMesh.Thickness, curRadiusList, Time.frameCount));
+			clayMesh.ThicknessRatio, curRadiusList, Time.frameCount));
 
 
 		// update with args
 		clayMesh.Height = args.height;
-		clayMesh.Thickness = args.thickness;
+		clayMesh.ThicknessRatio = args.thickness;
 
 		if (args.radiusList != null)
 			clayMesh.RadiusList = new List<float>(args.radiusList);
@@ -155,11 +155,11 @@ public abstract class DeformableBase : MonoBehaviour
 		clayMesh.RadiusList.CopyTo(curRadiusList);
 
 		DeformManager.Instance.RegisterUndo(new DeformManager.UndoArgs(this, clayMesh.Height,
-			clayMesh.Thickness, curRadiusList, Time.frameCount));
+			clayMesh.ThicknessRatio, curRadiusList, Time.frameCount));
 
 		// update with args
 		clayMesh.Height = args.height;
-		clayMesh.Thickness = args.thickness;
+		clayMesh.ThicknessRatio = args.thickness;
 
 		if (args.radiusList != null)
 			clayMesh.RadiusList = new List<float>(args.radiusList);
@@ -235,7 +235,7 @@ public abstract class DeformableBase : MonoBehaviour
 
         //register undo
         DeformManager.Instance.RegisterUndo(new DeformManager.UndoArgs(this, m_clayMeshContext.clayMesh.Height,
-            m_clayMeshContext.clayMesh.Thickness, m_orgRadiusList, Time.frameCount));
+            m_clayMeshContext.clayMesh.ThicknessRatio, m_orgRadiusList, Time.frameCount));
         DeformManager.Instance.ClearRedo();
     }
 }
