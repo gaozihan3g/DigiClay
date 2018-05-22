@@ -159,29 +159,10 @@ MonoBehaviour:
     m_row: 0
     m_column: 0
     m_thicknessRatio: 0
-    m_thicknessMatrix:
-      e00: 0
-      e01: 0
-      e02: 0
-      e03: 0
-      e10: 0
-      e11: 0
-      e12: 0
-      e13: 0
-      e20: 0
-      e21: 0
-      e22: 0
-      e23: 0
-      e30: 0
-      e31: 0
-      e32: 0
-      e33: 0
     m_height: 0
     m_radiusList: []
     m_rowAvgRadiusList: []
     m_mesh: {fileID: 0}
-    m_angleDelta: 0
-    m_heightDelta: 0
 --- !u!114 &114424686280041234
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -220,6 +201,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d00f26a9838c9c49bbe209df4d08581, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  highlightObjName: Outline
 --- !u!114 &114516232368847494
 MonoBehaviour:
   m_ObjectHideFlags: 1

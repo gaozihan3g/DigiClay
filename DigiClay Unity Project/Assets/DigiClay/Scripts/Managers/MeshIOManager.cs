@@ -54,7 +54,7 @@ public class MeshIOManager : MonoBehaviour {
 
     void Start()
     {
-        OnScreenUIManager.Instance.AddCommand("Load All Mesh", () => {
+        UIManager.Instance.AddCommand("Load All Mesh", () => {
             
             var files = Directory.GetFiles(DigiClayConstant.CLAY_DATA_PATH, "*.obj");
 
@@ -65,7 +65,7 @@ public class MeshIOManager : MonoBehaviour {
             //TODO load mesh data
         });
 
-        OnScreenUIManager.Instance.AddCommand("Create Clay Object", () => {
+        UIManager.Instance.AddCommand("Create Clay Object", () => {
 
             ClayObject a = ScriptableObject.CreateInstance<ClayObject>();
             AssetDatabase.CreateAsset(a, DigiClayConstant.CLAY_DATA_PATH + "MyClay.asset");

@@ -18,9 +18,6 @@ namespace DigiClay
 		public Transform outerSphere;
 		public Transform innerSphere;
 
-		public Slider outerSlider;
-		public Slider innerSlider;
-
         void OnValidate()
         {
             if (outerSphere != null)

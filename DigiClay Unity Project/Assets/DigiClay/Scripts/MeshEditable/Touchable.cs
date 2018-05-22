@@ -11,12 +11,14 @@ public class Touchable : MonoBehaviour
 , IColliderEventHoverEnterHandler
 , IColliderEventHoverExitHandler
 {
+    public string highlightObjName = "Outline";
+
 	#region implementation
 	public void OnColliderEventHoverEnter (ColliderHoverEventData eventData)
 	{
 		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
 
-        eventData.eventCaster.gameObject.transform.Find("Outline").gameObject.SetActive(true);
+        eventData.eventCaster.gameObject.transform.Find(highlightObjName).gameObject.SetActive(true);
 
         HapticManager.Instance.TriggerHaptic(role);
 
@@ -27,7 +29,7 @@ public class Touchable : MonoBehaviour
 	{
 		HandRole role = (HandRole)(eventData.eventCaster.gameObject.GetComponent<ViveColliderEventCaster> ().viveRole.roleValue);
 
-        eventData.eventCaster.gameObject.transform.Find("Outline").gameObject.SetActive(false);
+        eventData.eventCaster.gameObject.transform.Find(highlightObjName).gameObject.SetActive(false);
 
         //DeformManager.Instance.IsTouching(role, false);
 	}

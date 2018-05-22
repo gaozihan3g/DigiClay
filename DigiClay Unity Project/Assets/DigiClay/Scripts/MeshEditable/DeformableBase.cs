@@ -139,8 +139,8 @@ public abstract class DeformableBase : MonoBehaviour
 
 		if (args.radiusList != null)
 			clayMesh.RadiusList = new List<float>(args.radiusList);
-
-		clayMesh.UpdateMesh();
+        
+		clayMesh.UpdateMesh(true);
 
 		m_meshFilter.sharedMesh = clayMesh.Mesh;
 		m_meshCollider.sharedMesh = clayMesh.Mesh;
@@ -164,7 +164,7 @@ public abstract class DeformableBase : MonoBehaviour
 		if (args.radiusList != null)
 			clayMesh.RadiusList = new List<float>(args.radiusList);
 
-		clayMesh.UpdateMesh();
+		clayMesh.UpdateMesh(true);
 
 		m_meshFilter.sharedMesh = clayMesh.Mesh;
 		m_meshCollider.sharedMesh = clayMesh.Mesh;
