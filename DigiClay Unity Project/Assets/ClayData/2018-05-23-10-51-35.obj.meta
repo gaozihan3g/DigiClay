@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: f8a0afd976011394fa440dc65811b9c3
-timeCreated: 1526624357
+guid: dd4e70364e6709d4cbff9a299781d25a
+timeCreated: 1527043897
 licenseType: Free
 ModelImporter:
   serializedVersion: 22
@@ -12,24 +12,13 @@ ModelImporter:
     400002: Generated_Mesh_0
     400004: Generated_Mesh_1
     2100000: Generated_Mesh_0Mat
-    2100002: Generated_Mesh_1Mat
     2300000: Generated_Mesh_0
     2300002: Generated_Mesh_1
     3300000: Generated_Mesh_0
     3300002: Generated_Mesh_1
     4300000: Generated_Mesh_0
     4300002: Generated_Mesh_1
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Generated_Mesh_0Mat
-    second: {fileID: 2100000, guid: ee9e2641cd3b65548b45821a5277bef0, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Generated_Mesh_1Mat
-    second: {fileID: 2100000, guid: ee9e2641cd3b65548b45821a5277bef0, type: 2}
+  externalObjects: {}
   materials:
     importMaterials: 1
     materialName: 0

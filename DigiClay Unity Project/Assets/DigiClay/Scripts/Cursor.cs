@@ -17,6 +17,7 @@ namespace DigiClay
 
 		public Transform outerSphere;
 		public Transform innerSphere;
+        public Transform outlineSphere;
 
         void OnValidate()
         {
@@ -25,6 +26,9 @@ namespace DigiClay
 
             if (innerSphere != null)
                 innerSphere.localScale = Vector3.one * innerRadius;
+
+            if (outlineSphere != null)
+                outlineSphere.localScale = Vector3.one * outerRadius;
         }
 
 		void OnEnable()
@@ -34,18 +38,6 @@ namespace DigiClay
 			Init ();
 
 			DeformManager.Instance.ValueChanged.AddListener (DeformParameterChangedHandler);
-
-//			if (innerSlider != null)
-//			{
-//				innerSlider.value = innerRadius;
-//				innerSlider.onValueChanged.AddListener (UpdateInnerRadius);
-//			}
-//
-//			if (outerSlider != null)
-//			{
-//				outerSlider.value = Mathf.InverseLerp (DigiClayConstant.MIN_RADIUS, DigiClayConstant.MAX_RADIUS, innerRadius);
-//				outerSlider.onValueChanged.AddListener (UpdateOuterRadius);
-//			}
 		}
 
 		void OnDisable()
@@ -67,16 +59,23 @@ namespace DigiClay
 		public void UpdateOuterRadius(float v)
 		{
 			outerRadius = v;
-			outerSphere.localScale = Vector3.one * outerRadius * 2f;
-		}
+
+            if (outerSphere != null)
+                outerSphere.localScale = Vector3.one * outerRadius * 2f;
+
+            if (outlineSphere != null)
+                outlineSphere.localScale = Vector3.one * outerRadius * 2f;
+        }
 
 		public void UpdateInnerRadius(float v)
 		{
 			innerRadius = v;
-			innerSphere.localScale = Vector3.one * Mathf.Max(innerRadius * 2f, DigiClayConstant.CURSOR_MIN_RADIUS);
+
+            if (innerSphere != null)
+                innerSphere.localScale = Vector3.one * Mathf.Max(innerRadius * 2f, DigiClayConstant.CURSOR_MIN_RADIUS);
 		}
 
-		public void DeformParameterChangedHandler(DeformManager.DeformArgs args)
+        public void DeformParameterChangedHandler(DeformManager.DeformArgs args)
 		{
 //			Debug.Log ("ValueChangedHandler from Cursor");
 			UpdateInnerRadius (args.innerRadius);

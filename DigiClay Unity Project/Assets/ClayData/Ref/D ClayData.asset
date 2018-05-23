@@ -9,7 +9,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 02326a2a2089b5949b2e1c06867673a0, type: 3}
-  m_Name: 2018-05-18-14-02-53 ClayData
+  m_Name: D ClayData
   m_EditorClassIdentifier: 
   ClayName: 2018-05-18-14-02-53
   ClayMesh:

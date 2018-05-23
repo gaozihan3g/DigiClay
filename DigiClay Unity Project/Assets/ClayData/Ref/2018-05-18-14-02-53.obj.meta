@@ -24,12 +24,12 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Generated_Mesh_0Mat
-    second: {fileID: 2100000, guid: de32addad728a96479801c2f2b425ee1, type: 2}
+    second: {fileID: 2100000, guid: 0446dab0af121d74ebe4b4e65c88d288, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Generated_Mesh_1Mat
-    second: {fileID: 2100000, guid: de32addad728a96479801c2f2b425ee1, type: 2}
+    second: {fileID: 2100000, guid: 0446dab0af121d74ebe4b4e65c88d288, type: 2}
   materials:
     importMaterials: 1
     materialName: 0
