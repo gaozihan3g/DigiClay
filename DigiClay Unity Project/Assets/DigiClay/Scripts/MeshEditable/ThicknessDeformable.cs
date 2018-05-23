@@ -18,13 +18,8 @@ public class ThicknessDeformable : DeformableBase
 		if (eventData.button != m_deformButton)
 			return;
 
-		//basic init
-		base.OnColliderEventDragStart (eventData);
-
-		//additional init
-
-		if (m_role != HandRole.RightHand)
-			return;
+        //basic init
+        base.OnColliderEventDragStart (eventData);
 
         m_orgThicknessRatio = m_clayMeshContext.clayMesh.ThicknessRatio;
     }
@@ -32,9 +27,6 @@ public class ThicknessDeformable : DeformableBase
     public override void OnColliderEventDragUpdate(ColliderButtonEventData eventData)
     {
 		if (eventData.button != m_deformButton)
-			return;
-
-		if (m_role != HandRole.RightHand)
 			return;
 
 		m_curHandWorldPos = eventData.eventCaster.transform.position;
@@ -57,9 +49,6 @@ public class ThicknessDeformable : DeformableBase
     {
 		if (eventData.button != m_deformButton)
 			return;
-
-        if (m_role != HandRole.RightHand)
-            return;
 
         base.OnColliderEventDragEnd (eventData);
     }

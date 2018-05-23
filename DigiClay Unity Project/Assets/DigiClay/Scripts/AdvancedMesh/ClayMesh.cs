@@ -272,8 +272,6 @@ namespace DigiClay
 
             Vector3[] vertices = Mesh.vertices;
 
-            float thickness = Mathf.Max(DigiClayConstant.MIN_THICKNESS, RadiusList[RadiusList.Count - 1] * ThicknessRatio);
-
             for (int i = 0; i < vertices.Length; ++i)
             {
 				if (GetVertexTypeFromIndex (i) == VertexType.OuterSide) {
