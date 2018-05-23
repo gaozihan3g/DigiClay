@@ -7,23 +7,50 @@ public class DataAnalysisManager : MonoBehaviour {
 
     public enum AnalysisMode
     {
-        Editor,
-        RealTime
+        Normal,
+        Curvature
     }
 
-    public AnalysisMode m_mode = AnalysisMode.Editor;
-
+    public AnalysisMode m_mode = AnalysisMode.Normal;
+    public bool m_realtime = false;
+    public static DataAnalysisManager Instance;
     public ClayObject m_clayA;
     public ClayObject m_clayB;
 
     public List<float> m_dataA;
     public List<float> m_dataB;
 
-    public float m_correlation = 0f;
+    [SerializeField]
+    float m_correlation = 0f;
+
+    public float CC
+    {
+        get
+        {
+            return m_correlation;
+        }
+
+        set
+        {
+            m_correlation = value;
+        }
+    }
+
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(this);
+        }
+    }
 
     private void Update()
     {
-        if (m_mode != AnalysisMode.RealTime)
+        if (!m_realtime)
             return;
 
         RealtimeCalculation();
@@ -31,18 +58,22 @@ public class DataAnalysisManager : MonoBehaviour {
 
     public void RealtimeCalculation()
     {
-        Correlation(m_clayA.ClayMesh, MeshIOManager.Instance.ClayMesh);
+        if (m_mode == AnalysisMode.Normal)
+            CalculatePositionCC(m_clayA.ClayMesh, MeshIOManager.Instance.ClayMesh);
+        else
+            CalculateCurvatureCC(m_clayA.ClayMesh, MeshIOManager.Instance.ClayMesh);
     }
 
     public void EditorModeCalculation()
     {
-        Correlation(m_clayA.ClayMesh, m_clayB.ClayMesh);
+        if (m_mode == AnalysisMode.Normal)
+            CalculatePositionCC(m_clayA.ClayMesh, m_clayB.ClayMesh);
+        else
+            CalculateCurvatureCC(m_clayA.ClayMesh, m_clayB.ClayMesh);
     }
-    void Correlation(ClayMesh clayMeshA, ClayMesh clayMeshB)
-    {
-        List<float> init_dataA = clayMeshA.RowAvgRadiusList;
-        List<float> init_dataB = clayMeshB.RowAvgRadiusList;
 
+    void GetCorrelation(List<float> init_dataA, List<float> init_dataB)
+    {
         if (init_dataA.Count != init_dataB.Count)
             Debug.LogError("Two lists have different length!");
 
@@ -54,8 +85,41 @@ public class DataAnalysisManager : MonoBehaviour {
         m_dataA = GetNewData(avgA, init_dataA);
         m_dataB = GetNewData(avgB, init_dataB);
 
-        m_correlation = GetRho(m_dataA, m_dataB);
+        CC = GetRho(m_dataA, m_dataB);
     }
+
+    void CalculateCurvatureCC(ClayMesh clayMeshA, ClayMesh clayMeshB)
+    {
+        List<float> init_dataA = clayMeshA.RowAvgRadiusList;
+        List<float> init_dataB = clayMeshB.RowAvgRadiusList;
+
+        var curA = GetCurvature(init_dataA);
+        var curB = GetCurvature(init_dataB);
+
+        GetCorrelation(curA, curB);
+    }
+
+    void CalculatePositionCC(ClayMesh clayMeshA, ClayMesh clayMeshB)
+    {
+        List<float> init_dataA = clayMeshA.RowAvgRadiusList;
+        List<float> init_dataB = clayMeshB.RowAvgRadiusList;
+
+        GetCorrelation(init_dataA, init_dataB);
+    }
+
+    List<float> GetCurvature(List<float> r)
+    {
+        List<float> result = new List<float>();
+
+        for (int i = 1; i < r.Count - 1; ++i)
+        {
+            float ddr = r[i - 1] + r[i + 1] - 2 * r[i];
+            result.Add(ddr);
+        }
+
+        return result;
+    }
+
 
     float GetAvg(List<float> data)
     {

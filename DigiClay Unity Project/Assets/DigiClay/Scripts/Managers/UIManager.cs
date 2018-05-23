@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using DigiClay;
+using UnityEngine.UI;
 
-public class OnScreenUIManager : MonoBehaviour {
+public class UIManager : MonoBehaviour {
 
-	public static OnScreenUIManager Instance;
+	public static UIManager Instance;
 
 	Dictionary<string, Action> _commandDict = new Dictionary<string, Action>();
 
-	public DigiClay.Cursor Cursor;
+    public Slider m_scoreSlider;
+    public Text m_scoreText;
 
 	void Awake()
 	{
@@ -47,4 +49,19 @@ public class OnScreenUIManager : MonoBehaviour {
 			}
 		}
 	}
+
+    private void Update()
+    {
+        if (m_scoreSlider != null)
+        {
+            m_scoreSlider.value = Mathf.Clamp01(DataAnalysisManager.Instance.CC);
+        }
+
+        if (m_scoreText != null)
+        {
+            var s = Mathf.Clamp01(DataAnalysisManager.Instance.CC) * 100f;
+            m_scoreText.text = s.ToString("F2");
+        }
+        
+    }
 }

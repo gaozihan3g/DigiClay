@@ -26,11 +26,11 @@ public class TexturePainter : MonoBehaviour {
 
 	void Start()
 	{
-		OnScreenUIManager.Instance.AddCommand ("DECAL", () => {
+		UIManager.Instance.AddCommand ("DECAL", () => {
 			SetBrushMode(Painter_BrushMode.DECAL);
 		});
 
-		OnScreenUIManager.Instance.AddCommand ("PAINT", () => {
+		UIManager.Instance.AddCommand ("PAINT", () => {
 			SetBrushMode(Painter_BrushMode.PAINT);
 		});
 	}

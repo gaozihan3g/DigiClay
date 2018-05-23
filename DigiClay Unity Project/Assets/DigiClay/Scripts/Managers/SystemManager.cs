@@ -39,18 +39,18 @@ public class SystemManager : MonoBehaviour {
 
 	void Start()
 	{
-		OnScreenUIManager.Instance.AddCommand ("Sculpture", () => {
+		UIManager.Instance.AddCommand ("Sculpture", () => {
 			Mode = EditMode.Sculpture;
 		});
 
-		OnScreenUIManager.Instance.AddCommand ("Height", () => {
+		UIManager.Instance.AddCommand ("Height", () => {
 			Mode = EditMode.HeightControl;
 		});
 
-		OnScreenUIManager.Instance.AddCommand ("Paint", () => {
+		UIManager.Instance.AddCommand ("Paint", () => {
 			Mode = EditMode.Paint;
 		});
-		OnScreenUIManager.Instance.AddCommand ("Smooth", () => {
+		UIManager.Instance.AddCommand ("Smooth", () => {
 			Mode = EditMode.Smooth;
 		});
 

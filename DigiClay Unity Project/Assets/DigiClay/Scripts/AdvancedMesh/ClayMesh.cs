@@ -264,9 +264,10 @@ namespace DigiClay
             m_mesh.RecalculateNormals();
         }
 
-        public void UpdateMesh()
+        public void UpdateMesh(bool forceUpdate = false)
         {
-            if (!m_isDirty)
+
+            if (!forceUpdate && !m_isDirty)
                 return;
 
             Vector3[] vertices = Mesh.vertices;

@@ -34,7 +34,7 @@ public class CodeExecutionTime : MonoBehaviour {
 
         var span = after.Subtract(before);
 
-        Debug.Log(span.TotalMilliseconds);
+        //Debug.Log(span.TotalMilliseconds);
 
         return span.TotalMilliseconds;
     }
