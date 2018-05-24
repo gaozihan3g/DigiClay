@@ -11,6 +11,7 @@ namespace DigiClay
         public string ClayName;
         public ClayMesh ClayMesh;
         public Object ModelFile;
+        public Texture RefImage;
 
 
         public void Link()

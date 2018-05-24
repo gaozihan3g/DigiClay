@@ -4,6 +4,8 @@ DigiClay Unity Project/Library/
 DigiClay Unity Project/ProjectSettings/
 DigiClay Unity Project/Temp/
 DigiClay Unity Project/UnityPackageManager/
+DigiClay Unity Project/Packages/
+DigiClay Unity Project/obj/
 *.csproj
 *.sln
 *.unityproj

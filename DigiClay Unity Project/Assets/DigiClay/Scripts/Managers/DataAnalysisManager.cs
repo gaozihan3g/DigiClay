@@ -12,13 +12,19 @@ public class DataAnalysisManager : MonoBehaviour {
     }
 
     public AnalysisMode m_mode = AnalysisMode.Normal;
-    public bool m_realtime = false;
-    public static DataAnalysisManager Instance;
-    public ClayObject m_clayA;
-    public ClayObject m_clayB;
 
-    public List<float> m_dataA;
-    public List<float> m_dataB;
+
+    public static DataAnalysisManager Instance;
+
+    [SerializeField]
+    bool m_realtime = false;
+    [SerializeField]
+    ClayObject m_clayA;
+    [SerializeField]
+    ClayObject m_clayB;
+
+    List<float> m_dataA;
+    List<float> m_dataB;
 
     [SerializeField]
     float m_correlation = 0f;
@@ -36,6 +42,33 @@ public class DataAnalysisManager : MonoBehaviour {
         }
     }
 
+    public bool Realtime
+    {
+        get
+        {
+            return m_realtime;
+        }
+
+        set
+        {
+            m_realtime = value;
+        }
+    }
+
+    public ClayObject TargetClay
+    {
+        get
+        {
+            return m_clayA;
+        }
+
+        set
+        {
+            m_clayA = value;
+            Realtime = true;
+        }
+    }
+
     void Awake()
     {
         if (Instance == null)
@@ -50,7 +83,7 @@ public class DataAnalysisManager : MonoBehaviour {
 
     private void Update()
     {
-        if (!m_realtime)
+        if (!Realtime)
             return;
 
         RealtimeCalculation();

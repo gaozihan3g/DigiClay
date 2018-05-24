@@ -6182,3 +6182,4 @@ MonoBehaviour:
     - 0.010728727
     m_mesh: {fileID: 0}
   ModelFile: {fileID: 100000, guid: f2823d9c9d813454a996be60803438ad, type: 3}
+  RefImage: {fileID: 2800000, guid: 350c98a3239d83f4e86f172d7112ce88, type: 3}
