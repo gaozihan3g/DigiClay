@@ -71,8 +71,8 @@ Material:
     - _UVSec: 0
     - _ZWrite: 1
     - _node_6969: 0
-    - g_flCornerAdjust: 0.5
-    - g_flOutlineWidth: 0.005
+    - g_flCornerAdjust: 0
+    - g_flOutlineWidth: 0.01
     m_Colors:
     - _Color: {r: 0.486632, g: 0.78411454, b: 0.8823653, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
