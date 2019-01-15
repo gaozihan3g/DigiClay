@@ -17,7 +17,8 @@ public static class DigiClayConstant {
 
     public const ushort MIN_HAPTIC = 100;
 	public const ushort MAX_HAPTIC = 2000;
-	public const float HAPTIC_MAX_DISTANCE = 0.05f;
+    public const ushort HAPTIC_MU = 1000;
+    public const float HAPTIC_MAX_DISTANCE = 0.05f;
 
     public const string CLAY_DATA_PATH = "Assets/ClayData/";
     public const string STAT_DATA_PATH = "Assets/";
