@@ -7,25 +7,33 @@ public class HapticManager : MonoBehaviour {
 
     public enum HapticModel
     {
-        No,
+        None,
         Basic,
         Advanced
     }
 
     [SerializeField]
-    HapticModel model = HapticModel.No;
+    HapticModel hapticModel = HapticModel.None;
+    public bool friction;
+    public bool reaction;
+    public bool[] Flag = new bool[2];
+    public ushort[] hapticValue = new ushort[2];
+    public ushort min;
+    public ushort max;
+    public ushort mu;
+    public float stableThreshold;
+    public float c;
+    public VivePoseTracker[] vivePoseTrackers = new VivePoseTracker[2];
+    public float[] triggerValue = new float[2];
 
-	[SerializeField]
-	ushort[] m_duration = new ushort[2];
-	[SerializeField]
-	float[] m_strength = new float[2];
+    //current
+    public Vector3[] p0 = new Vector3[2];
+    // 1 frame before
+    public Vector3[] p1 = new Vector3[2];
 
-    [SerializeField]
-    [Range(0f, 1f)]
-    float interval;
+    public float[] delta = new float[2];
 
 	public static HapticManager Instance;
-	Dictionary<HandRole, IEnumerator> coroutineDic = new Dictionary<HandRole, IEnumerator>();
 
 	void Awake()
 	{
@@ -39,64 +47,91 @@ public class HapticManager : MonoBehaviour {
 		}
 	}
 
-	public void SetRoleStrength(HandRole role, float str = 0f)
-	{
-        if (model == HapticModel.No)
+    void OnValidate()
+    {
+        switch (hapticModel)
+        {
+            case HapticModel.None:
+                friction = false;
+                reaction = false;
+                break;
+            case HapticModel.Basic:
+                friction = true;
+                reaction = false;
+                break;
+            case HapticModel.Advanced:
+                friction = true;
+                reaction = true;
+                break;
+        }
+    }
+
+    void Update()
+    {
+        if (hapticModel == HapticModel.None)
             return;
 
-        //get trigger value
-        float t = ViveInput.GetTriggerValue(role);
-        ushort r = (ushort)(t * DigiClayConstant.HAPTIC_MU);
+        UpdateControllerPosition();
+        UpdateTriggerValue();
+        UpdateHaptic();
+    }
 
-		int i = (int)role;
-		str = Mathf.Clamp01 (str);
-		m_strength[i] = str;
+    void UpdateControllerPosition()
+    {
+        for (int i = 0; i < 2; ++i)
+        {
+            if (!Flag[i])
+                continue;
 
-        ushort f = (ushort)(DigiClayConstant.MIN_HAPTIC + (DigiClayConstant.MAX_HAPTIC - DigiClayConstant.MIN_HAPTIC) * str);
+            p1[i] = p0[i];
+            p0[i] = vivePoseTrackers[i].transform.position;
 
-        m_duration[i] = (ushort)(r + f);
-	}
-		
-	public void StartHaptic(HandRole role, float str = 0f)
-	{
-        if (model == HapticModel.No)
-            return;
+            // speed
+            float dist = (p0[i] - p1[i]).magnitude * c;
 
-        SetRoleStrength (role, str);
+            if (dist < stableThreshold)
+                dist = 0f;
 
-		if (!coroutineDic.ContainsKey (role)) {
-			IEnumerator c = HapticSequence (role);
-			coroutineDic.Add (role, c);
-			StartCoroutine (c);
-		}
-	}
+            delta[i] = dist;
+        }
+    }
 
-	public void EndHaptic(HandRole role)
-	{
-        if (model == HapticModel.No)
-            return;
+    void UpdateTriggerValue()
+    {
+        for (int i = 0; i < 2; ++i)
+            triggerValue[i] = ViveInput.GetTriggerValue((HandRole)i);
+    }
 
-        if (!coroutineDic.ContainsKey (role))
-			return;
-		
-		IEnumerator c = coroutineDic [role];
-		StopCoroutine (c);
-		coroutineDic.Remove (role);
-	}
 
-	IEnumerator HapticSequence(HandRole role)
-	{
-		int i = (int)role;
-		while (true)
-		{
-			ViveInput.TriggerHapticPulse(role, m_duration[i]);
-			yield return new WaitForSecondsRealtime(interval);
-		}
-	}
+
+    void UpdateHaptic()
+    {
+        for (int i = 0; i < 2; ++i)
+        {
+            // init
+            hapticValue[i] = 0;
+
+            if (!Flag[i])
+                continue;
+
+            if (reaction)
+            {
+                float t = DigiClayHelpers.Map(triggerValue[i], 0.5f, 1f, 0f, 1f, true);
+                hapticValue[i] += (ushort)(min + t * (max - min));
+            }
+
+            if (friction)
+            {
+                hapticValue[i] += (ushort)(delta[i] * mu);
+            }
+
+            ViveInput.TriggerHapticPulse((HandRole)i, hapticValue[i]);
+        }
+    }
 
     public void TriggerHaptic(HandRole role)
     {
-        if (model == HapticModel.No)
+        if (hapticModel == HapticModel.None)
             return;
 
         ViveInput.TriggerHapticPulse(role);

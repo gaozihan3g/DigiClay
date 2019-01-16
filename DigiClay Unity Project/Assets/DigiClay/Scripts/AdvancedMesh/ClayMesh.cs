@@ -383,7 +383,7 @@ namespace DigiClay
                 if (Mathf.Approximately(weightList[i], 0f))
                     continue;
                 //deform
-                Deform(i, orgRadiusList[i], sign, length * DeformManager.Instance.DeformRatio, weightList[i]);
+                Deform(i, orgRadiusList[i], sign, length * DeformManager.Instance.DeformStrength, weightList[i]);
             }
             m_isDirty = true;
         }

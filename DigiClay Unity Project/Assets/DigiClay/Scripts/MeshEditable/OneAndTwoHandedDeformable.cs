@@ -183,6 +183,8 @@ public class OneAndTwoHandedDeformable : DeformableBase
         // ## sign
         var sign = (curHand2DLocalDist > m_orgHand2DLocalDistAry[roleIndex]) ? 1f : -1f;
 
+        DeformManager.Instance.Pressure = ViveInput.GetTriggerValue((HandRole)roleIndex);
+
         m_clayMeshContext.clayMesh.Deform(sign, offsetDistAry[roleIndex], m_orgRadiusList, m_weightList);
     }
 
@@ -201,13 +203,13 @@ public class OneAndTwoHandedDeformable : DeformableBase
         // ### deform
 
         // get the index of min dist
-        int minDistIndex = (offsetDistAry[0] < offsetDistAry[1]) ? 0 : 1;
+        //int minDistIndex = (offsetDistAry[0] < offsetDistAry[1]) ? 0 : 1;
         // the distance of the closer hand
-        float curHand2DLocalDist = m_curHand2DLocalPosAry[minDistIndex].magnitude;
+        //float curHand2DLocalDist = m_curHand2DLocalPosAry[minDistIndex].magnitude;
         // ## sign, compare the dist to get the sign
-        float sign = (curHand2DLocalDist > m_orgHand2DLocalDistAry[minDistIndex]) ? 1f : -1f;
+        //float sign = (curHand2DLocalDist > m_orgHand2DLocalDistAry[minDistIndex]) ? 1f : -1f;
 
-        m_clayMeshContext.clayMesh.Deform(sign, offsetDistAry[minDistIndex], m_orgRadiusList, m_weightList);
+        //m_clayMeshContext.clayMesh.Deform(sign, offsetDistAry[minDistIndex], m_orgRadiusList, m_weightList);
 
         // ### RadialSmooth
         m_clayMeshContext.clayMesh.RadialSmooth(m_weightList);
@@ -216,7 +218,7 @@ public class OneAndTwoHandedDeformable : DeformableBase
 
         var avgHandDeltaPos = (m_curHandLocalPosAry[0] - m_orgHandLocalPosAry[0] + m_curHandLocalPosAry[1] - m_orgHandLocalPosAry[1]) / 2f;
         // ## heightDelta
-        float heightDelta = avgHandDeltaPos.y * DeformManager.Instance.DeformRatio;
+        float heightDelta = avgHandDeltaPos.y * DeformManager.Instance.DeformStrength;
         // ## update HEIGHT
         m_clayMeshContext.clayMesh.Height = m_orgHeight + heightDelta;
 
@@ -262,7 +264,6 @@ public class OneAndTwoHandedDeformable : DeformableBase
         // dist of offset
         offsetDistAry[roleIndex] = offsetVectorAry[roleIndex].magnitude;
 
-        UpdateHapticStrength((HandRole)roleIndex, m_prevHandWorldPosAry[roleIndex], m_curHandWorldPosAry[roleIndex]);
         m_prevHandWorldPosAry[roleIndex] = m_curHandWorldPosAry[roleIndex];
     }
 }

@@ -78,7 +78,6 @@ public abstract class DeformableBase : MonoBehaviour
 	public virtual void OnColliderEventDragUpdate (ColliderButtonEventData eventData)
 	{
 		m_clayMeshContext.clayMesh.UpdateMesh();
-		UpdateHapticStrength(m_role, m_prevHandWorldPos, m_curHandWorldPos);
 		m_prevHandWorldPos = m_curHandWorldPos;
 	}
 
@@ -219,12 +218,6 @@ public abstract class DeformableBase : MonoBehaviour
             m_weightList.Add(weight);
         }
     }
-
-    protected void UpdateHapticStrength(HandRole role, Vector3 oldP, Vector3 newP)
-	{
-		float dist = Vector3.Distance (oldP, newP);
-		HapticManager.Instance.SetRoleStrength(role, dist / DigiClayConstant.HAPTIC_MAX_DISTANCE);
-	}
 
     //TODO move to base
     protected void RegisterOrgClayMesh()

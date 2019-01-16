@@ -68,9 +68,13 @@ namespace DigiClay
 		float m_ratio = 0.5f;
         [Range(DigiClayConstant.CURSOR_MIN_RADIUS, DigiClayConstant.CURSOR_MAX_RADIUS), SerializeField]
         float m_outerRadius = 0.5f;
-		[Range(0.01f, 1f)]
-		public float DeformRatio = 0.5f;
-		[Range(0.01f, 1f)]
+
+        [Range(0.01f, 1f), SerializeField]
+        float m_deformRatio = 0.5f;
+        [SerializeField]
+        float m_pressure = 0f;
+
+        [Range(0.01f, 1f)]
 		public float RadialSmoothingRatio = 0.1f;
 		[Range(0.01f, 1f)]
 		public float LaplacianSmoothingRatio = 0.1f;
@@ -82,7 +86,6 @@ namespace DigiClay
 		// this is a flag for haptic
 		bool[] m_isDeforming = new bool[2];
 		bool[] m_isTouching = new bool[2];
-
 
 		public void IsDeforming(HandRole role, bool b)
 		{
@@ -101,19 +104,7 @@ namespace DigiClay
 		void HapticCheck(HandRole role)
 		{
 			int i = (int)role;
-
-            if (m_isDeforming[i])
-                HapticManager.Instance.StartHaptic(role);
-
-            if (!m_isDeforming[i])
-                HapticManager.Instance.EndHaptic(role);
-
-
-            //if (m_isTouching[i])
-            //	HapticManager.Instance.StartHaptic (role);
-
-            //if (!m_isDeforming[i] && !m_isTouching[i])
-            //	HapticManager.Instance.EndHaptic (role);
+            HapticManager.Instance.Flag[i] = m_isDeforming[i];
         }
 
 		[HideInInspector]
@@ -148,7 +139,23 @@ namespace DigiClay
 			}
 		}
 
-		void Awake()
+        public float DeformStrength
+        {
+            get
+            {
+                return m_deformRatio * m_pressure;
+            }
+        }
+
+        public float Pressure
+        {
+            set
+            {
+                m_pressure = value;
+            }
+        }
+
+        void Awake()
 		{
 			Debug.Log ("DeformManager Awake" + gameObject.name + " frame " + Time.frameCount );
 
