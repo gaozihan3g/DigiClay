@@ -200,19 +200,22 @@ public class OneAndTwoHandedDeformable : DeformableBase
         if (roleIndex == 0)
             return;
 
-        // ### deform
-
-        // get the index of min dist
-        //int minDistIndex = (offsetDistAry[0] < offsetDistAry[1]) ? 0 : 1;
-        // the distance of the closer hand
-        //float curHand2DLocalDist = m_curHand2DLocalPosAry[minDistIndex].magnitude;
-        // ## sign, compare the dist to get the sign
-        //float sign = (curHand2DLocalDist > m_orgHand2DLocalDistAry[minDistIndex]) ? 1f : -1f;
-
-        //m_clayMeshContext.clayMesh.Deform(sign, offsetDistAry[minDistIndex], m_orgRadiusList, m_weightList);
-
         // ### RadialSmooth
         m_clayMeshContext.clayMesh.RadialSmooth(m_weightList);
+
+
+        // ### deform
+        if (false)
+        {
+            // get the index of min dist
+            int minDistIndex = (offsetDistAry[0] < offsetDistAry[1]) ? 0 : 1;
+            // the distance of the closer hand
+            float curHand2DLocalDist = m_curHand2DLocalPosAry[minDistIndex].magnitude;
+            // ## sign, compare the dist to get the sign
+            float sign = (curHand2DLocalDist > m_orgHand2DLocalDistAry[minDistIndex]) ? 1f : -1f;
+
+            m_clayMeshContext.clayMesh.Deform(sign, offsetDistAry[minDistIndex], m_orgRadiusList, m_weightList);
+        }
 
         // ### HeightChange
 

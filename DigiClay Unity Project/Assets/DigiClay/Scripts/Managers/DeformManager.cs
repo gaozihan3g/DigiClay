@@ -212,7 +212,8 @@ namespace DigiClay
 					OuterRadius -= m_radiusDeltaAmount;
 					InnerRadius = OuterRadius * Ratio;
 				}
-			});
+                HapticManager.Instance.TriggerHaptic(HandRole.RightHand, 1000);
+            });
 
 			ViveInput.AddPressUp (HandRole.LeftHand, ControllerButton.Pad, () => {
 
@@ -225,13 +226,13 @@ namespace DigiClay
 				{
 					//right
 					PerformRedo();
-				}
+                }
 				else if (Mathf.Abs(angle) > 135f)
 				{
 					//left
 					//undo
 					PerformUndo();
-				}
+                }
 				else if (angle > 45f && angle < 135f)
 				{
 					//up
@@ -242,7 +243,8 @@ namespace DigiClay
 					//down
 					//MeshIOManager.Instance.ExportMesh();
 				}
-			});
+                HapticManager.Instance.TriggerHaptic(HandRole.LeftHand, 1000);
+            });
 
 			ViveInput.AddPressUp (HandRole.RightHand, ControllerButton.Menu, () => {
 				//ToolState = (DeformTools.ToolState)(((int)ToolState + 1) % 5);

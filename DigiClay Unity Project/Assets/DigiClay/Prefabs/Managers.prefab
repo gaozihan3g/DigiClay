@@ -52,7 +52,7 @@ MonoBehaviour:
   m_centerNoiseScale: 0.33
   m_rowNoiseScale: 0.16
   m_individualNoiseScale: 0.07
-  m_centerNoiseSpan: 0.24
+  m_centerNoiseSpan: 0.31
   m_rowNoiseSpan: 3.19
   m_individualNoiseSpan: 0.86
   m_angleNoiseSpan: 3.75
@@ -199,7 +199,7 @@ MonoBehaviour:
   m_outerRadius: 0.1
   m_deformRatio: 0.25
   m_pressure: 0
-  RadialSmoothingRatio: 0.3
+  RadialSmoothingRatio: 0.05
   LaplacianSmoothingRatio: 1
   m_radiusDeltaAmount: 0.01
   m_ratioDeltaAmount: 0.25
@@ -299,9 +299,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1135067a3609c7242a9640f056cba6ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hapticModel: 0
-  friction: 0
-  reaction: 0
+  hapticModel: 2
+  hapticPattern: 0
+  friction: 1
+  reaction: 1
   Flag: 0000
   hapticValue: 00000000
   min: 100
@@ -315,12 +316,11 @@ MonoBehaviour:
   triggerValue:
   - 0
   - 0
-  p0:
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  p1:
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
+  frequency: 100
+  timeCounter:
+  - 0
+  - 0
+  patternFrequency: 1
   delta:
   - 0
   - 0
